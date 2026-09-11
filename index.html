@@ -21,6 +21,8 @@
             --text-main: #3b2308;
             --text-light: #ffffff;
             --accent-red: #ef4444;
+            --play-btn-green: #22c55e;
+            --play-btn-hover: #16a34a;
         }
 
         * {
@@ -68,6 +70,35 @@
             color: #fef3c7;
             text-shadow: 1px 1px 2px rgba(0,0,0,0.6);
             margin-bottom: 1.5rem;
+        }
+
+        /* Play Button */
+        .play-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-family: 'Fredoka', cursive;
+            font-size: 1.25rem;
+            color: white;
+            background: linear-gradient(180deg, #34d399 0%, #059669 100%);
+            border: 3px solid #064e3b;
+            border-radius: 12px;
+            padding: 0.6rem 1.8rem;
+            text-decoration: none;
+            box-shadow: 0 4px 0px #064e3b, 0 6px 10px rgba(0,0,0,0.3);
+            transition: all 0.15s ease-in-out;
+            margin-bottom: 1.2rem;
+        }
+
+        .play-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 0px #064e3b, 0 8px 12px rgba(0,0,0,0.35);
+            background: linear-gradient(180deg, #6ee7b7 0%, #10b981 100%);
+        }
+
+        .play-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0px #064e3b, 0 3px 6px rgba(0,0,0,0.2);
         }
 
         /* Navigation Bar - Bamboo Style */
@@ -263,6 +294,11 @@
             text-shadow: 1px 1px 0px rgba(255,255,255,0.5);
         }
 
+        footer a {
+            color: #8c531b;
+            text-decoration: underline;
+        }
+
         @media (max-width: 768px) {
             .grid-2 { grid-template-columns: 1fr; }
             header h1 { font-size: 2.2rem; }
@@ -274,6 +310,11 @@
     <header>
         <h1>ISLA MARAHUYO</h1>
         <p>Official Survivor & Explorer Guide</p>
+        <div>
+            <a href="https://www.roblox.com/games/128146022575640/Isla-Marahuyo" target="_blank" class="play-btn">
+                ▶ PLAY ON ROBLOX
+            </a>
+        </div>
         <nav>
             <a href="#welcome">Welcome</a>
             <a href="#economy">Economy & Shells</a>
@@ -289,6 +330,11 @@
         <div class="bamboo-card" id="welcome">
             <h2 class="section-title">Mabuhay! Welcome to the Island</h2>
             <p style="font-size: 1.05rem; font-weight: 700;">Explore a tropical open-world packed with deep-sea diving, open-water fishing, competitive bangka racing, and coastal village living! Use this guide to master the island's features, maximize your Shell earnings, and navigate the deep ocean safely.</p>
+            <div style="margin-top: 1rem;">
+                <a href="https://www.roblox.com/games/128146022575640/Isla-Marahuyo" target="_blank" style="color: #0284c7; font-weight: 800; text-decoration: none;">
+                    👉 Launch Isla Marahuyo on Roblox →
+                </a>
+            </div>
         </div>
 
         <!-- Economy Section -->
@@ -417,7 +463,9 @@
 
     <footer>
         <p>ISLA MARAHUYO · Built with Roblox Studio</p>
-        <p style="font-size: 0.9rem; margin-top: 0.25rem;">QA Patch Version 2.0</p>
+        <p style="font-size: 0.9rem; margin-top: 0.25rem;">
+            <a href="https://www.roblox.com/games/128146022575640/Isla-Marahuyo" target="_blank">Play on Roblox</a> · QA Patch Version 2.0
+        </p>
     </footer>
 
 </body>
