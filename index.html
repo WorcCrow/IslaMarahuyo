@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Isla Marahuyo — Official Player Guide</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800&display=swap');
+
+        :root {
+            --wood-base: #e5c382;
+            --wood-dark: #8c531b;
+            --wood-border: #5a350e;
+            --bamboo-green: #38761d;
+            --bamboo-border: #1e460d;
+            --ocean-blue: #008eb0;
+            --ocean-dark: #005c75;
+            --aqua-bg: #14b8a6;
+            --sand-yellow: #facc15;
+            --card-inner: #fefce8;
+            --text-main: #3b2308;
+            --text-light: #ffffff;
+            --accent-red: #ef4444;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Nunito', sans-serif;
+        }
+
+        body {
+            /* Wooden Plank Background Simulation */
+            background-color: var(--wood-base);
+            background-image: 
+                linear-gradient(90deg, rgba(90, 53, 14, 0.08) 1px, transparent 1px),
+                linear-gradient(0deg, rgba(90, 53, 14, 0.15) 2px, transparent 2px);
+            background-size: 100% 40px, 100% 40px;
+            color: var(--text-main);
+            line-height: 1.5;
+            padding-bottom: 3rem;
+        }
+
+        /* Header Header - Wooden Banner */
+        header {
+            background: linear-gradient(180deg, #a06326 0%, #6e3d0c 100%);
+            border-bottom: 6px solid var(--wood-border);
+            color: var(--text-light);
+            padding: 2.5rem 1rem 1.5rem 1rem;
+            text-align: center;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+            position: relative;
+        }
+
+        header h1 {
+            font-family: 'Fredoka', cursive;
+            font-size: 3rem;
+            letter-spacing: 1.5px;
+            color: #fef08a;
+            text-shadow: 3px 3px 0px var(--wood-border), -2px -2px 0px var(--wood-border), 2px -2px 0px var(--wood-border), -2px 2px 0px var(--wood-border);
+            margin-bottom: 0.2rem;
+        }
+
+        header p {
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: #fef3c7;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.6);
+            margin-bottom: 1.5rem;
+        }
+
+        /* Navigation Bar - Bamboo Style */
+        nav {
+            background: #225410;
+            border: 3px solid var(--bamboo-border);
+            border-radius: 12px;
+            padding: 0.6rem;
+            display: inline-flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: inset 0 2px 4px rgba(255,255,255,0.2), 0 4px 6px rgba(0,0,0,0.3);
+        }
+
+        nav a {
+            font-family: 'Fredoka', cursive;
+            color: var(--text-light);
+            text-decoration: none;
+            padding: 0.4rem 1rem;
+            background: var(--bamboo-green);
+            border: 2px solid #55a630;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1rem;
+            text-shadow: 1px 1px 0px rgba(0,0,0,0.5);
+            transition: all 0.15s ease-in-out;
+        }
+
+        nav a:hover {
+            background: #4cd964;
+            color: #000;
+            transform: translateY(-2px);
+        }
+
+        /* Container */
+        .container {
+            max-width: 1100px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        /* Bamboo Framed Container Card */
+        .bamboo-card {
+            background: var(--card-inner);
+            border: 6px solid #482307;
+            outline: 4px solid var(--wood-base);
+            border-radius: 16px;
+            padding: 1.75rem;
+            margin-bottom: 2.5rem;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.25);
+            position: relative;
+        }
+
+        /* Section Titles with Wooden Sign Boarding */
+        .section-title {
+            font-family: 'Fredoka', cursive;
+            font-size: 1.8rem;
+            background: linear-gradient(180deg, #00a8cc 0%, #006680 100%);
+            color: white;
+            padding: 0.5rem 1.2rem;
+            border-radius: 10px;
+            border: 3px solid #003644;
+            display: inline-block;
+            margin-bottom: 1.5rem;
+            text-shadow: 2px 2px 0px #00222b;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+
+        /* Grid Layouts */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.25rem;
+        }
+
+        /* Sub Cards - Roblox Gamepass Style Frame */
+        .gamepass-frame {
+            background: #ffffff;
+            border: 4px solid var(--wood-dark);
+            border-radius: 12px;
+            padding: 1.25rem;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.05), 0 4px 8px rgba(0,0,0,0.15);
+            position: relative;
+        }
+
+        .gamepass-frame.aqua {
+            background: linear-gradient(180deg, #e0f2fe 0%, #bae6fd 100%);
+            border-color: #0284c7;
+        }
+
+        .gamepass-frame.green {
+            background: linear-gradient(180deg, #dcfce7 0%, #bbf7d0 100%);
+            border-color: #15803d;
+        }
+
+        .gamepass-frame h3 {
+            font-family: 'Fredoka', cursive;
+            font-size: 1.3rem;
+            color: var(--wood-border);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .gamepass-frame.aqua h3 { color: #0369a1; }
+        .gamepass-frame.green h3 { color: #166534; }
+
+        /* Custom Tables */
+        .data-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 3px solid var(--wood-dark);
+            margin-top: 1rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .data-table th {
+            background: linear-gradient(180deg, #a06326 0%, #6e3d0c 100%);
+            color: white;
+            font-family: 'Fredoka', cursive;
+            font-size: 1.1rem;
+            padding: 0.75rem 1rem;
+            text-align: left;
+            text-shadow: 1px 1px 0px #381e05;
+        }
+
+        .data-table td {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid #e5e7eb;
+            font-weight: 700;
+        }
+
+        .data-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .data-table tr:nth-child(even) {
+            background-color: #fefce8;
+        }
+
+        /* Badges */
+        .badge {
+            font-family: 'Fredoka', cursive;
+            display: inline-block;
+            padding: 0.2rem 0.6rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            border: 2px solid rgba(0,0,0,0.15);
+            text-shadow: 0 1px 1px rgba(0,0,0,0.2);
+            color: white;
+        }
+
+        .badge-safe { background: #22c55e; border-color: #15803d; }
+        .badge-low { background: #0ea5e9; border-color: #0369a1; }
+        .badge-mid { background: #f59e0b; border-color: #b45309; }
+        .badge-danger { background: #ef4444; border-color: #b91c1c; }
+
+        /* Alert Callout Box */
+        .alert-box {
+            background: #fee2e2;
+            border: 3px solid #ef4444;
+            border-radius: 10px;
+            padding: 1rem;
+            margin-top: 1.25rem;
+            color: #7f1d1d;
+            font-weight: 700;
+        }
+
+        .alert-box strong {
+            font-family: 'Fredoka', cursive;
+            color: #b91c1c;
+            font-size: 1.1rem;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            margin-top: 3rem;
+            color: var(--wood-border);
+            font-weight: 800;
+            text-shadow: 1px 1px 0px rgba(255,255,255,0.5);
+        }
+
+        @media (max-width: 768px) {
+            .grid-2 { grid-template-columns: 1fr; }
+            header h1 { font-size: 2.2rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>ISLA MARAHUYO</h1>
+        <p>Official Survivor & Explorer Guide</p>
+        <nav>
+            <a href="#welcome">Welcome</a>
+            <a href="#economy">Economy & Shells</a>
+            <a href="#diving">Diving & Abyss</a>
+            <a href="#travel">Travel & Transport</a>
+            <a href="#tasks">Daily Tasks</a>
+        </nav>
+    </header>
+
+    <div class="container">
+
+        <!-- Welcome Banner -->
+        <div class="bamboo-card" id="welcome">
+            <h2 class="section-title">Mabuhay! Welcome to the Island</h2>
+            <p style="font-size: 1.05rem; font-weight: 700;">Explore a tropical open-world packed with deep-sea diving, open-water fishing, competitive bangka racing, and coastal village living! Use this guide to master the island's features, maximize your Shell earnings, and navigate the deep ocean safely.</p>
+        </div>
+
+        <!-- Economy Section -->
+        <div class="bamboo-card" id="economy">
+            <h2 class="section-title">Economy & Shell Gathering</h2>
+            <p style="font-weight: 700; margin-bottom: 0.5rem;">Earnings in Isla Marahuyo scale with depth and risk. Paddle in the shallows for steady rewards, or dive into the dark abyss for massive payouts!</p>
+
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Gathering Zone</th>
+                        <th>Depth Range</th>
+                        <th>Payout per Find</th>
+                        <th>Risk Level</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Kabibe</strong> (Shallows)</td>
+                        <td>4m – 14m</td>
+                        <td>6 – 7 Shells</td>
+                        <td><span class="badge badge-safe">SAFE</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Bahura</strong> (Reef Band)</td>
+                        <td>16m – 20m</td>
+                        <td>17 Shells</td>
+                        <td><span class="badge badge-low">LOW</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Yungib</strong> (Upper Caves)</td>
+                        <td>20m – 33m</td>
+                        <td>36 – 39 Shells</td>
+                        <td><span class="badge badge-mid">MODERATE</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Kailaliman</strong> (The Abyss)</td>
+                        <td>63m – 67m</td>
+                        <td>81 – 82 Shells</td>
+                        <td><span class="badge badge-danger">HIGH (SHARKS)</span></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="grid-2" style="margin-top: 1.5rem;">
+                <div class="gamepass-frame aqua">
+                    <h3>Palengke Stilt Market</h3>
+                    <p>Deliver market crates in the <strong>1 → 2 → 3</strong> order along the stilt deck. Pays 3 Shells per crate + 12 bonus on completion (up to 31 Shells on a streak).</p>
+                </div>
+                <div class="gamepass-frame green">
+                    <h3>Bantay Lambat (12 Buoys)</h3>
+                    <p>Haul fish traps moored around the coast for named catches (<em>Tilapia, Bangus, Lapu-lapu, Tanigue</em>). Cooldowns are per-player so everyone can harvest together!</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Diving & Deep Sea -->
+        <div class="bamboo-card" id="diving">
+            <h2 class="section-title">Scuba Diving & Air Mechanics</h2>
+            <p style="font-weight: 700; margin-bottom: 1rem;">Diving is strictly skill and exploration-based—dive tanks cannot be bought with pay-to-win mechanics!</p>
+
+            <div class="grid-3">
+                <div class="gamepass-frame">
+                    <h3>Lung Coral Upgrades</h3>
+                    <p>Base breath is <strong>45s</strong>. Search <em>Yungib ng Perlas</em> for 3 hidden Lung Corals to permanently boost max breath by +15s each (up to <strong>90s</strong>).</p>
+                </div>
+                <div class="gamepass-frame">
+                    <h3>Air Refill Rules</h3>
+                    <p>Waterline hopping is disabled. Air only refills after standing on dry land or inside dry cave air pockets for <strong>3 continuous seconds</strong>.</p>
+                </div>
+                <div class="gamepass-frame">
+                    <h3>Guardian Dugong</h3>
+                    <p>If breath drops below 12 seconds, a friendly Dugong rescues you and restores 45% air. Drowning teleports you to Nurse Fely for 5s.</p>
+                </div>
+            </div>
+
+            <div class="alert-box">
+                <strong>WARNING: Patrolling Sharks!</strong> Between 3 to 6 <em>Pating</em> (Sharks) patrol open waters daily. They swim at 30% of player swim speed (outrunnable), but a bite deducts <strong>14s of air</strong> and shoves you off course!
+            </div>
+        </div>
+
+        <!-- Travel & Island Secrets -->
+        <div class="bamboo-card" id="travel">
+            <h2 class="section-title">Travel, Boats & Isla Ningning</h2>
+
+            <div class="grid-2">
+                <div class="gamepass-frame green">
+                    <h3>Bangka Rental (Outrigger Boats)</h3>
+                    <p>Hire outrigger boats at the Bangkaan pier (Kasama VIP rides free):</p>
+                    <ul style="margin-left: 1.2rem; margin-top: 0.5rem; font-weight: 700;">
+                        <li>Maikli (1 min): 15 Shells</li>
+                        <li>Katamtaman (3 min): 40 Shells</li>
+                        <li>Mahaba (5 min): 70 Shells</li>
+                        <li>Long Hire (10 min): 180 Shells</li>
+                    </ul>
+                </div>
+                <div class="gamepass-frame aqua">
+                    <h3>Northern Ridge Zipline</h3>
+                    <p>Ride cables connecting Tanaw Ridge → Batong Hilaga → Batong Silangan → Batong Timog for <strong>25 Shells per leg</strong> (75 Shells full trip).</p>
+                </div>
+            </div>
+
+            <div class="gamepass-frame" style="margin-top: 1.25rem; background: #fffde7;">
+                <h3>Secrets of Isla Ningning</h3>
+                <p>Located ~1,269 studs southeast, <strong>Isla Ningning</strong> is completely out of swimming reach on air alone. Hire a Bangka for a 35-second sail to access exclusive scenic spots, lookout decks, and 3 interactive photo-pad postcard frame camera spots!</p>
+            </div>
+        </div>
+
+        <!-- Daily Tasks & Plots -->
+        <div class="bamboo-card" id="tasks">
+            <h2 class="section-title">Daily Island Tasks & Cabin Plots</h2>
+
+            <div class="grid-2">
+                <div class="gamepass-frame">
+                    <h3>Gawain sa Isla (Daily Tasks)</h3>
+                    <p>Complete 4 daily server-side validated tasks (+30 to +60 Shells each). Clearing all 4 awards a <strong>+50 Shell Bonus</strong>! Tasks rotate globally at UTC midnight.</p>
+                </div>
+                <div class="gamepass-frame">
+                    <h3>Claiming Cabin Plots</h3>
+                    <p>Claim 1 of 6 stilted <em>bahay kubo</em> cabin plots near the villages to place your name on the signboard. Extra Cabin Plot holders can claim up to 2 plots simultaneously.</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <footer>
+        <p>ISLA MARAHUYO · Built with Roblox Studio</p>
+        <p style="font-size: 0.9rem; margin-top: 0.25rem;">QA Patch Version 2.0</p>
+    </footer>
+
+</body>
+</html>
