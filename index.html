@@ -1,68 +1,382 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<script src="./support.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Isla Marahuyo — Dive the island. 0 m to 67 m.</title>
+<meta name="description" content="Isla Marahuyo is a Filipino island hangout on Roblox. Dive four ocean zones from the Kabibe shallows to the 67-metre Kailaliman abyss, build a bahay kubo, and trade shells at the palengke.">
+<link rel="icon" type="image/jpeg" href="assets/icon.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Manrope:wght@400;500;600;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
-<x-dc>
-<helmet>
-<link rel="icon" href="./assets/icon.jpg">
-<title>Isla Marahuyo — Island hangout</title>
-<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800&family=Quicksand:wght@600;700&display=swap" rel="stylesheet">
-<style>
-body{margin:0;background:#ffd9a0;}
-a{color:#d94f2b;}
-a:hover{color:#a8371a;}
-@keyframes wob{0%,100%{transform:rotate(-1.5deg)}50%{transform:rotate(1.5deg)}}
-</style>
-</helmet>
-<div style="font-family:'Quicksand',sans-serif;background:#ffd9a0;color:#40220f;min-height:100%;">
 
-  <div style="max-width:1040px;margin:0 auto;padding:3rem 1.5rem 2rem;text-align:center;">
-    <div style="display:inline-block;background:#fff;border:4px solid #40220f;border-radius:999px;padding:.35rem 1.2rem;font-weight:700;box-shadow:4px 4px 0 #40220f;animation:wob 4s ease-in-out infinite;">🌴 A Filipino island hangout on Roblox</div>
-    <h1 style="font-family:'Baloo 2',cursive;font-size:clamp(2.6rem,9vw,5.4rem);line-height:.95;margin:1.4rem 0 .8rem;color:#fff;text-shadow:5px 5px 0 #40220f;">ISLA MARAHUYO</h1>
-    <p style="font-size:1.15rem;font-weight:700;max-width:38ch;margin:0 auto 1.8rem;">Dive, fish, build a kubo, sell your shells and try not to meet a shark.</p>
-    <a href="https://www.roblox.com/games/128146022575640/Isla-Marahuyo" target="_blank" style="display:inline-block;font-family:'Baloo 2',cursive;font-size:1.4rem;background:#ff5a3c;color:#fff;text-decoration:none;padding:.8rem 2.4rem;border:4px solid #40220f;border-radius:999px;box-shadow:6px 6px 0 #40220f;" style-hover="background:#ff7a5f;">▶ Play free now</a>
-  </div>
+<!-- ============ 3D LAYER ============ -->
+<canvas id="scene" aria-hidden="true"></canvas>
+<div id="uw-tint" aria-hidden="true"></div>
+<div id="vignette" aria-hidden="true"></div>
 
-  <div style="max-width:1040px;margin:0 auto;padding:1.5rem;">
-    <img src="./assets/wallpaper.jpg" alt="Isla Marahuyo" style="width:100%;display:block;border:5px solid #40220f;border-radius:26px;box-shadow:10px 10px 0 #40220f;">
-  </div>
+<!-- ============ TOP BAR ============ -->
+<div id="progress" aria-hidden="true"><span></span></div>
 
-  <div style="max-width:1040px;margin:0 auto;padding:2.5rem 1.5rem;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:1.5rem;">
-    <div style="background:#7fe0c9;border:4px solid #40220f;border-radius:22px;padding:1.3rem;box-shadow:6px 6px 0 #40220f;">
-      <img src="./assets/4.jpg" alt="Scuba" style="width:100%;height:150px;object-fit:cover;border:3px solid #40220f;border-radius:14px;display:block;margin-bottom:.8rem;">
-      <h3 style="font-family:'Baloo 2',cursive;font-size:1.25rem;margin:0 0 .3rem;">Breathe longer</h3>
-      <p style="margin:0;font-weight:700;font-size:.95rem;">Three hidden Lung Corals double your air, 45s → 90s. No Robux needed.</p>
-    </div>
-    <div style="background:#ffb0c8;border:4px solid #40220f;border-radius:22px;padding:1.3rem;box-shadow:6px 6px 0 #40220f;">
-      <img src="./assets/2.jpg" alt="Sharks" style="width:100%;height:150px;object-fit:cover;border:3px solid #40220f;border-radius:14px;display:block;margin-bottom:.8rem;">
-      <h3 style="font-family:'Baloo 2',cursive;font-size:1.25rem;margin:0 0 .3rem;">Dodge the sharks</h3>
-      <p style="margin:0;font-weight:700;font-size:.95rem;">Three to six patrol the caves every day. Repellent halves their nose.</p>
-    </div>
-    <div style="background:#9ec8ff;border:4px solid #40220f;border-radius:22px;padding:1.3rem;box-shadow:6px 6px 0 #40220f;">
-      <img src="./assets/1.jpg" alt="Cargo" style="width:100%;height:150px;object-fit:cover;border:3px solid #40220f;border-radius:14px;display:block;margin-bottom:.8rem;">
-      <h3 style="font-family:'Baloo 2',cursive;font-size:1.25rem;margin:0 0 .3rem;">Crack open crates</h3>
-      <p style="margin:0;font-weight:700;font-size:.95rem;">Sunken cargo drops with air refills, shell multipliers and cosmetics.</p>
-    </div>
-    <div style="background:#ffe36b;border:4px solid #40220f;border-radius:22px;padding:1.3rem;box-shadow:6px 6px 0 #40220f;">
-      <img src="./assets/3.jpg" alt="Abyss" style="width:100%;height:150px;object-fit:cover;border:3px solid #40220f;border-radius:14px;display:block;margin-bottom:.8rem;">
-      <h3 style="font-family:'Baloo 2',cursive;font-size:1.25rem;margin:0 0 .3rem;">Raid the abyss</h3>
-      <p style="margin:0;font-weight:700;font-size:.95rem;">67 metres down, 12× shell payouts and golden temple relics.</p>
-    </div>
-  </div>
+<header class="topbar">
+  <a class="brand" href="#top">
+    <img src="assets/icon.jpg" alt="">
+    <span>Isla <em>Marahuyo</em></span>
+  </a>
 
-  <div style="max-width:1040px;margin:0 auto;padding:1rem 1.5rem 3rem;">
-    <div style="background:#fff;border:5px solid #40220f;border-radius:26px;padding:2rem;box-shadow:10px 10px 0 #40220f;text-align:center;">
-      <h2 style="font-family:'Baloo 2',cursive;font-size:clamp(1.6rem,4vw,2.4rem);margin:0 0 .6rem;">Pick a pass, keep it forever</h2>
-      <p style="font-weight:700;margin:0 0 1.6rem;">👑 Island VIP · 🤿 Pro Scuba · 📡 Fishing Sonar · ⚡ Zipline Express · 🦈 Shark Repellent · 🏡 Extra Plot</p>
-      <a href="https://www.roblox.com/games/128146022575640/Isla-Marahuyo" target="_blank" style="display:inline-block;font-family:'Baloo 2',cursive;font-size:1.3rem;background:#40220f;color:#ffd9a0;text-decoration:none;padding:.75rem 2.2rem;border-radius:999px;">Open the shop 🛒</a>
-    </div>
-    <p style="text-align:center;font-weight:700;margin:2rem 0 0;color:#8a5a34;">Isla Marahuyo · Roblox Experience · Version 2.0</p>
+  <nav class="nav" id="nav">
+    <a href="#dive">Dive zones</a>
+    <a href="#secrets">Secrets</a>
+    <a href="#weather">Weather</a>
+    <a href="#passes">Passes</a>
+    <a href="#gallery">Gallery</a>
+  </nav>
+
+  <div class="topbar-actions">
+    <button class="icon-btn" id="sound-btn" type="button" aria-pressed="false" title="Island music">
+      <span class="ico-mute" aria-hidden="true">♪</span>
+      <span class="sr-only">Toggle island music</span>
+    </button>
+    <a class="btn btn-play" href="https://www.roblox.com/games/128146022575640/Isla-Marahuyo" target="_blank" rel="noopener">▶ Play free</a>
+    <button class="icon-btn menu-btn" id="menu-btn" type="button" aria-expanded="false" aria-controls="nav">
+      <span aria-hidden="true">☰</span><span class="sr-only">Menu</span>
+    </button>
   </div>
-</div>
-</x-dc>
+</header>
+
+<!-- ============ DEPTH HUD ============ -->
+<aside class="hud" id="hud" aria-hidden="true">
+  <div class="hud-rail">
+    <div class="hud-track">
+      <div class="hud-fill" id="hud-fill"></div>
+      <div class="hud-marker" id="hud-marker"></div>
+    </div>
+    <ul class="hud-ticks">
+      <li style="--p:0%"><span>0 m</span></li>
+      <li style="--p:21%"><span>14 m</span></li>
+      <li style="--p:30%"><span>20 m</span></li>
+      <li style="--p:49%"><span>33 m</span></li>
+      <li style="--p:100%"><span>67 m</span></li>
+    </ul>
+  </div>
+  <div class="hud-read">
+    <div class="hud-depth"><b id="hud-num">0</b><i>m</i></div>
+    <div class="hud-zone" id="hud-zone">Ibabaw · Surface</div>
+    <div class="hud-risk" id="hud-risk" data-risk="safe">Safe</div>
+    <div class="hud-earn" id="hud-earn">Boats, market, kubo plots</div>
+  </div>
+</aside>
+
+<main id="top">
+
+  <!-- ============ HERO ============ -->
+  <section class="sec hero" data-depth="-16" data-night="0">
+    <div class="wrap hero-wrap">
+      <p class="eyebrow reveal">🌴 A Filipino island hangout on Roblox</p>
+      <h1 class="reveal" style="--i:1">ISLA<br>MARAHUYO</h1>
+      <p class="lede reveal" style="--i:2">
+        Dive the reef, raid the abyss, out-swim the sharks, then come back up and
+        sell your shells at the palengke. Scroll to descend.
+      </p>
+      <div class="cta-row reveal" style="--i:3">
+        <a class="btn btn-big" href="https://www.roblox.com/games/128146022575640/Isla-Marahuyo" target="_blank" rel="noopener">▶ Play free on Roblox</a>
+        <a class="btn btn-ghost" href="#dive">Take the dive ↓</a>
+      </div>
+      <ul class="chips reveal" style="--i:4">
+        <li><b>67 m</b><span>max depth</span></li>
+        <li><b>4</b><span>dive zones</span></li>
+        <li><b>30+</b><span>gamepasses</span></li>
+        <li><b>6</b><span>kubo plots</span></li>
+      </ul>
+    </div>
+    <div class="scroll-hint" aria-hidden="true"><span></span>scroll to dive</div>
+  </section>
+
+  <!-- ============ SURFACE ============ -->
+  <section class="sec" id="surface" data-depth="-4" data-night="0">
+    <div class="wrap">
+      <div class="card card-warm reveal">
+        <p class="kicker">0 m · Ibabaw</p>
+        <h2>Mabuhay. This is the surface.</h2>
+        <p class="body">
+          Stilt houses on the water, outrigger bangka tied to the piers, and a mountain
+          behind it all. Everything on Isla Marahuyo starts here — you pick a boat, you pick
+          a direction, and the island decides how deep you are willing to go.
+        </p>
+        <div class="mini-grid">
+          <div class="mini"><b>🛶 Bangka runs</b><span>Race the outriggers out to the reef band and the far island.</span></div>
+          <div class="mini"><b>🐚 Palengke market</b><span>Aling Nena buys every shell you bring up. Chain deliveries for bonuses.</span></div>
+          <div class="mini"><b>🏡 Bahay kubo plots</b><span>Claim 1 of 6 waterfront plots and furnish it with banig, lanterns and trophies.</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ DIVE ZONES ============ -->
+  <section class="sec sec-tall" id="dive" data-depth="9" data-night="0">
+    <div class="wrap">
+      <div class="zone reveal">
+        <div class="zone-num"><b>04</b><em>–14 m</em></div>
+        <div class="zone-body">
+          <p class="kicker">Zone 01</p>
+          <h2>Kabibe <span>· the shallows</span></h2>
+          <p class="body">
+            Sunlit coral beds a short swim from the village piers. Nothing down here
+            wants to eat you. Learn the air bar, learn the shell spawns, come up rich enough
+            to buy fins.
+          </p>
+          <ul class="stats">
+            <li><b>6–7</b><span>shells / item</span></li>
+            <li><b>45 s</b><span>starting air</span></li>
+            <li class="risk safe"><b>Safe</b><span>risk level</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec sec-tall" data-depth="18" data-night="0">
+    <div class="wrap">
+      <div class="zone zone-flip reveal">
+        <div class="zone-num"><b>16</b><em>–20 m</em></div>
+        <div class="zone-body">
+          <p class="kicker">Zone 02</p>
+          <h2>Bahura <span>· the reef band</span></h2>
+          <p class="body">
+            The drop-off. Colour everywhere, fish schools thick enough to lose a friend in,
+            and the first honest paycheck of the dive. Sonar owners see the good spawns from
+            the boat.
+          </p>
+          <ul class="stats">
+            <li><b>17</b><span>shells / item</span></li>
+            <li><b>📡</b><span>sonar shines here</span></li>
+            <li class="risk low"><b>Low</b><span>risk level</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec sec-tall" data-depth="27" data-night="0">
+    <div class="wrap">
+      <div class="zone reveal">
+        <div class="zone-num"><b>20</b><em>–33 m</em></div>
+        <div class="zone-body">
+          <p class="kicker">Zone 03</p>
+          <h2>Yungib <span>· the cave systems</span></h2>
+          <p class="body">
+            Submerged limestone. The walls close in, the light goes green, and the only
+            way to stay down is to find the air pockets. Three <strong>Lung Corals</strong> are hidden in
+            here — all three push your natural air from 45 s to 90 s, free, forever.
+          </p>
+          <ul class="stats">
+            <li><b>36–39</b><span>shells / item</span></li>
+            <li><b>90 s</b><span>air, fully upgraded</span></li>
+            <li class="risk mid"><b>Moderate</b><span>risk level</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec sec-tall" data-depth="65" data-night="0">
+    <div class="wrap">
+      <div class="zone zone-flip reveal">
+        <div class="zone-num danger"><b>63</b><em>–67 m</em></div>
+        <div class="zone-body">
+          <p class="kicker">Zone 04</p>
+          <h2>Kailaliman <span>· the abyss</span></h2>
+          <p class="body">
+            Bottom of the map. Three to six sharks patrol it on any given day, the fog eats
+            your torch at ten metres, and a single relic off the temple floor is worth more
+            than an afternoon in the shallows. Repellent halves their nose. It does not
+            make you invisible.
+          </p>
+          <ul class="stats">
+            <li><b>81–82</b><span>shells / item</span></li>
+            <li><b>12×</b><span>payout multiplier</span></li>
+            <li class="risk high"><b>High · sharks</b><span>risk level</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SECRETS ============ -->
+  <section class="sec" id="secrets" data-depth="55" data-night="0">
+    <div class="wrap">
+      <header class="sec-head reveal">
+        <p class="kicker">Down here somewhere</p>
+        <h2>Quests, ruins and things nobody wrote down</h2>
+      </header>
+      <div class="grid-3">
+        <article class="card reveal" style="--i:1">
+          <h3>🫁 Yungib ng Perlas</h3>
+          <p>Three ancient Lung Corals in one cavern system. Find all three and your air
+             bar doubles permanently — 45 s to 90 s, no Robux involved.</p>
+        </article>
+        <article class="card reveal" style="--i:2">
+          <h3>🏛️ Sunken temple ruins</h3>
+          <p>Deepest pocket of Kailaliman, 67 m down. Get past the patrol, get out with
+             Golden Relics worth 100+ shells each.</p>
+        </article>
+        <article class="card reveal" style="--i:3">
+          <h3>📸 Isla Ningning postcards</h3>
+          <p>Sail 1,269 studs southeast to the companion island. Three camera pads, three
+             custom postcard frames, exclusive chat badges.</p>
+        </article>
+        <article class="card reveal" style="--i:4">
+          <h3>⚓ Aling Nena's deliveries</h3>
+          <p>Timed supply runs along the palengke stilt decks, strictly 1 → 2 → 3. Five
+             clean deliveries in a row unlocks a +50 shell bonus multiplier.</p>
+        </article>
+        <article class="card reveal" style="--i:5">
+          <h3>🪵 Build your kubo</h3>
+          <p>One of six stilted waterfront plots. Bamboo furniture, woven banig, shell
+             lanterns, and whatever you dragged up from the deep on the wall.</p>
+        </article>
+        <article class="card card-accent reveal" style="--i:6">
+          <h3>📦 Sunken cargo</h3>
+          <p>Merchant crates drop at random across the seafloor. Pry them open for air
+             refills, shell multipliers and cosmetics you cannot buy.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ WEATHER / NIGHT ============ -->
+  <section class="sec" id="weather" data-depth="20" data-night="1">
+    <div class="wrap">
+      <header class="sec-head reveal">
+        <p class="kicker">The island changes on you</p>
+        <h2>Weather, tides and the night shift</h2>
+      </header>
+      <div class="grid-2">
+        <article class="card reveal">
+          <h3>🌧️ High-tide storms</h3>
+          <p>Heavy rain lifts the whole ocean by three metres. Shallow reefs briefly become
+             deep zones, and high-tier shell spawns drift close enough to the shore that you
+             can work them from the pier.</p>
+        </article>
+        <article class="card card-glow reveal" style="--i:1">
+          <h3>🌙 Bioluminescent night shift</h3>
+          <p>After dark the floor lights up. Glow Coral and drifting jellyfish turn the reef
+             into a lantern, and anything glowing you hand to the market between midnight and
+             dawn pays <strong>1.5×</strong>.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ PASSES ============ -->
+  <section class="sec" id="passes" data-depth="-3" data-night="0">
+    <div class="wrap">
+      <header class="sec-head reveal">
+        <p class="kicker">Back at the surface · 0 m</p>
+        <h2>Pick a pass, keep it forever</h2>
+        <p class="sub">Every pass is permanent and stacks with everything you earn in-game.</p>
+      </header>
+
+      <div class="pass-grid">
+        <article class="pass featured reveal" style="--i:1">
+          <span class="tag">Best value</span>
+          <h3>👑 Island VIP</h3>
+          <p>Free bangka rentals, golden chat tag, VIP title, and double daily streak rewards.</p>
+          <a class="btn btn-buy" href="https://www.roblox.com/games/128146022575640/Isla-Marahuyo" target="_blank" rel="noopener">Get VIP</a>
+        </article>
+        <article class="pass reveal" style="--i:2">
+          <h3>🤿 Pro Scuba Gear</h3>
+          <p>+30 s of base air from your first dive. Stacks on top of the Lung Corals.</p>
+          <a class="btn btn-buy" href="https://www.roblox.com/games/128146022575640/Isla-Marahuyo" target="_blank" rel="noopener">Buy dive gear</a>
+        </article>
+        <article class="pass reveal" style="--i:3">
+          <h3>📡 Fishing Sonar</h3>
+          <p>High-value fish schools and Net Buoy refresh timers, straight on your minimap.</p>
+          <a class="btn btn-buy" href="https://www.roblox.com/games/128146022575640/Isla-Marahuyo" target="_blank" rel="noopener">Unlock sonar</a>
+        </article>
+        <article class="pass reveal" style="--i:4">
+          <h3>⚡ Zipline Express</h3>
+          <p>Unlimited rides on all four Tanaw Ridge zipline legs. No shell tolls, ever.</p>
+          <a class="btn btn-buy" href="https://www.roblox.com/games/128146022575640/Isla-Marahuyo" target="_blank" rel="noopener">Get zipline pass</a>
+        </article>
+        <article class="pass reveal" style="--i:5">
+          <h3>🦈 Shark Repellent</h3>
+          <p>Cuts shark detection range by 50% in the Kailaliman deep caves.</p>
+          <a class="btn btn-buy" href="https://www.roblox.com/games/128146022575640/Isla-Marahuyo" target="_blank" rel="noopener">Buy repellent</a>
+        </article>
+        <article class="pass reveal" style="--i:6">
+          <h3>🏡 Extra Cabin Plot</h3>
+          <p>Hold two bahay kubo plots at once and build a proper beachfront compound.</p>
+          <a class="btn btn-buy" href="https://www.roblox.com/games/128146022575640/Isla-Marahuyo" target="_blank" rel="noopener">Claim extra plot</a>
+        </article>
+      </div>
+
+      <div class="banner reveal">
+        <img src="assets/islamarahuyowallpaper.jpg" alt="Painted map of Isla Marahuyo at sunset, with stilt villages, bangka boats and the mountain">
+        <div class="banner-body">
+          <h3>30+ passes live in-game</h3>
+          <p>Cosmetics, tools, boats and titles — the full shelf is inside the experience.</p>
+          <a class="btn btn-big" href="https://www.roblox.com/games/128146022575640/Isla-Marahuyo" target="_blank" rel="noopener">🛒 Open the shop</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ GALLERY ============ -->
+  <section class="sec" id="gallery" data-depth="-8" data-night="0">
+    <div class="wrap">
+      <header class="sec-head reveal">
+        <p class="kicker">From the deep</p>
+        <h2>What you actually come back with</h2>
+      </header>
+      <div class="shots">
+        <figure class="shot reveal" style="--i:1">
+          <img src="assets/4.jpg" alt="Diver in full scuba gear beside an open treasure chest" loading="lazy">
+          <figcaption><b>Pro scuba gear</b>Longer dives, deeper zones, better shells.</figcaption>
+        </figure>
+        <figure class="shot reveal" style="--i:2">
+          <img src="assets/1.jpg" alt="Sunken cargo crates on a coral seafloor" loading="lazy">
+          <figcaption><b>Sunken cargo crates</b>Air refills, multipliers, cosmetics.</figcaption>
+        </figure>
+        <figure class="shot reveal" style="--i:3">
+          <img src="assets/2.jpg" alt="Shark patrolling the deep water" loading="lazy">
+          <figcaption><b>Patrolling sharks</b>Three to six a day, guarding the caves.</figcaption>
+        </figure>
+        <figure class="shot reveal" style="--i:4">
+          <img src="assets/3.jpg" alt="Deep abyss caverns" loading="lazy">
+          <figcaption><b>Abyss caverns</b>67 m down, 12× payouts, golden relics.</figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ CLOSER ============ -->
+  <section class="sec sec-end" data-depth="-20" data-night="0">
+    <div class="wrap center">
+      <div class="closer reveal">
+        <p class="kicker">Surfaced. Sun's still up.</p>
+        <h2>The boat is waiting.</h2>
+        <p class="lede">Free to play. No download. Bring friends — the sharks are more
+          interesting with an audience.</p>
+        <a class="btn btn-big" href="https://www.roblox.com/games/128146022575640/Isla-Marahuyo" target="_blank" rel="noopener">▶ Play Isla Marahuyo</a>
+      </div>
+    </div>
+
+    <footer class="foot">
+      <p><b>Isla Marahuyo</b> · Roblox Experience · Version 2.0</p>
+      <p><a href="https://www.roblox.com/games/128146022575640/Isla-Marahuyo" target="_blank" rel="noopener">roblox.com/games/128146022575640</a></p>
+    </footer>
+  </section>
+
+</main>
+
+<audio id="bg-audio" loop preload="none" src="assets/island-music.mp3"></audio>
+
+<script src="vendor/three.min.js"></script>
+<script src="scene.js"></script>
+<script src="ui.js"></script>
 </body>
 </html>
