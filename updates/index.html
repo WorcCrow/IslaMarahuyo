@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Isla Marahuyo updates</title>
+<style>
+  body { margin:0; background:#fbfbf9; color:#1d2430; font:15px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width:860px; margin:0 auto; padding:32px 16px 64px; }
+  h1 { font-size:26px; margin:0 0 4px; }
+  p.meta { color:#5b6675; }
+  li { margin:10px 0; }
+  .when { color:#5b6675; font-size:13px; }
+</style>
+</head>
+<body>
+<main>
+<h1>Isla Marahuyo &mdash; update log</h1>
+<p class="meta">One page per change to the Roblox place, newest first. Each page says what was asked, what changed and why, every script and instance touched, how it was tested and what is still unverified. From 2026-09-27 on, each page also has screenshots (tool: <code>_tools/Capture-Studio.ps1</code>). Older history lives in <code>../backups/</code>.</p>
+<ul>
+  <li><span class="when">2026-09-30 09:15</span><br>
+    <a href="2026-09-30_0915_phase9-gamepasses/index.html">Phase 9: gamepasses, products and the website</a>
+    &mdash; the Island Shop and the Palengke now draw from MonetizationConfig (new ShopCatalog), so nothing without a real id shows to players and every pass on sale is listed, with OWNED shown reliably. Kasama VIP is 1.5&times; (was 2&times;) plus one free job clearance a day and a gold nametag, and owners are told once. Bangkero Speed cut; Instant Restock (it granted nothing) and Bilao Box (cosmetics never shown) retired; Peso packs resized to 250 / 1,200 / 2,800 / 7,000; Task Reroll and Streak Saver finally sold in the shop. New and waiting for Dashboard ids: Permanenteng Lisensya, four Pating skins (Uling, Perlas, Ginto, Neon), Tawag ng Diwata (calls a Mutya for the server) and Pista Ngayon (+50% for everyone for 10 min, 1,000 into the fund). The website caught up with Phases 1&ndash;9. Solo-tested with a new DebugProduct hook; no real purchase. Not published yet.</li>
+  <li><span class="when">2026-09-30 08:47</span><br>
+    <a href="2026-09-30_0847_phase8-gabay-tutorial/index.html">Phase 8: the Gabay tutorial</a>
+    &mdash; a new GABAY panel (the menu's Help entry) replaces the old welcome panel: nine track cards (Unang Araw, Mangingisda, Maninisid, Lung Coral, Tindero, Nars, Pulis, Pating, Pasaway), each paying once. A step card under the top bar says what to do next and how far. A trail of gold chevrons along the ground leads to the target (the owner's reference picture), with a marker over it, an arrow on the screen edge, and a pulse on the button to press. Every step is checked on the server: new TutorialService, hooks in CurrencyService and QuestService, and a one-line event in seven services. First join offers "Simulan ang Unang Araw?". Unang Araw and Pating were run end to end; most purchase steps were faked in testing. Not published yet.</li>
+  <li><span class="when">2026-09-30 02:11</span><br>
+    <a href="2026-09-30_0211_phase7-bodega-chests/index.html">Phase 7: bodega chests</a>
+    &mdash; the walk-in bodega huts became four chest-sized tiers: Kahon (free, 100 health, 30 slots), Bato (3,000, 200, 60), Bakal (8,000, 350, 120) and Ginto (20,000 or a pass, 500, 250). They open from a prompt on the chest, and storage is now capped in bag slots (a hoard already over the limit keeps everything). Upgrades go one tier at a time for the difference in price, and rebuild a standing chest in place. Stone Bodega pass owners get Bakal as goodwill, and a Ginto pass slot is wired (id 0 until Phase 9). The axe is back to 1 per swing (the quick-test 20 is gone). The bag's Bodega tab shows storage and has an UPGRADE confirm. Solo-tested; chopping and a paid upgrade were not. Not published yet.</li>
+  <li><span class="when">2026-09-30 01:59</span><br>
+    <a href="2026-09-30_0159_seabed-outer-sea/index.html">A seabed and walls for the outer sea</a>
+    &mdash; a third of the sea (99,553 columns) had no seabed: an outer ring from about &plusmn;830 studs to the edge was 32 studs of water over empty air, and so was the Shipwreck arena's outer water. A leaping Pating or a diver could fall out of the world. Every one of those columns now has 16 studs of sand under it. Nothing stopped a swimmer leaving the sea either, so 14 invisible collision walls (new SeaBounds model, y &minus;56 to 520, tall enough for a shark-bite throw) now close the main sea's edges. Tested by rescan, swimming, a bite-style throw and the Pating leap. Not published yet.</li>
+  <li><span class="when">2026-09-30 01:46</span><br>
+    <a href="2026-09-30_0146_phase6-shark-bait-galit/index.html">Phase 6: shark bait on the Pating's radar, and Galit</a>
+    &mdash; a Pating now smells Shark Bait from 400 studs (prey: 300): bait thrown in the water and swimmers holding it show as gold arcs on the sense ring. Swimming into thrown bait eats it, and swimming into a holder or lunging into one tears one bait off their hook. AI sharks still race for thrown bait. Eating bait makes the shark GALIT for 20 s: 1.5&times; swim and dash, half the leap and missed-strike waits, eyes forced on and bright, and a red GALIT bar on the HUD. Solo-tested with stand-ins and new Studio hooks (DebugPatingJob, DebugBaitDrop). Testing found a bottomless patch of sea near z 700&ndash;790 that a leaping shark fell through; it's queued as its own task. Not published yet.</li>
+  <li><span class="when">2026-09-30 01:28</span><br>
+    <a href="2026-09-30_0128_phase5-mutya/index.html">Phase 5: Mutya, the rare finds of the deep</a>
+    &mdash; new RareFindService: a Mutya surfaces deep in the cave every 20&ndash;35 min (the first after 10), announced server-wide, with a riddle and a broad area beforehand and 6 minutes to grab it (3 s hold; a shark hit knocks it loose). First five: Agimat ng Pating (no shark can touch you for 60 s, 3 uses), Hininga ng Diwata (no air drain for 90 s, 2 uses), Mata ng Bakunawa (sharks outlined through rock for 3 min, 2 uses), Perlas ng Buwan (a 1,500 Peso find) and Susi ng Yungib (a bag item that clears a cave-in). A crystal-ball badge opens the MGA MUTYA dropdown: schedule, your Mutya with USE buttons, recent finds. Solo-tested with a Studio hook, including the Agimat against a real AI shark; the natural clock and the chime were not watched; not published yet.</li>
+  <li><span class="when">2026-09-30 01:12</span><br>
+    <a href="2026-09-30_0112_phase4-cave-ins/index.html">Phase 4: five to ten cave-ins a day, with a warning and a way to dig out</a>
+    &mdash; CaveInService now drops 5&ndash;10 collapses per island day, spread across it, still only in dead ends and deep runs. A diver behind one no longer stops it: everyone within 80 studs gets 4 s of rumble, camera shake and falling silt first (new CaveInClient), and rock is never filled on top of someone inside the plug. A diver shut in can hold "Dig out" on the far face for 8 s. At most 3 stand at once; the oldest clears as a new one falls. Solo-tested with a Studio hook (shut in, dig out, cap of 3, held off); a full day and the audit with 3 standing were not watched; not published yet.</li>
+  <li><span class="when">2026-09-30 00:48</span><br>
+    <a href="2026-09-30_0048_phase3-air-lung-coral/index.html">Phase 3: air in seconds, and Lung Corals processed on land</a>
+    &mdash; the air badge reads "38 s / 60 s" with a gold "+15 s" chip for extra lung, and pulses gold when a coral is absorbed. A Lung Coral is now picked up raw, lost if you drown, and processed for one island day (24 min) in a banga that stands beside your bodega. Processing continues offline, one coral at a time, and shows in a new Pinoproseso hourglass badge with a dropdown. Corals are per player now (the first diver used to remove one for the whole server). The floating deep-run plates are now stone slabs on the chamber walls, reading "KAILANGAN: 75 s" and tinted green or red for your own lungs. New ProcessingService, LungCoralService, LungCoralClient. Solo-tested with a Studio hook; the gold pulse was checked by log, not screenshot; not published yet.</li>
+  <li><span class="when">2026-09-29 23:11</span><br>
+    <a href="2026-09-29_2311_phase2-roles-loadouts/index.html">Phase 2: the Maninisid job, and gear that belongs to a job</a>
+    &mdash; new sixth job Maninisid (Diver): cap 6, fee 100, the only job with Oxygen Tanks, +10% on cave finds when sold. Each job now carries only its own gear (ItemConfig.RoleGear): glowsticks, bait, poison and repellent for Maninisid and Mangingisda, the lambat for Mangingisda, binoculars for Pulis, and the axe and tolda for a Tambay (no job, the outlaw path). The flashlight goes to Tambay, Maninisid, Mangingisda and Pulis only. Other jobs' gear stays in the bag, off the hotbar, and can't be bought, used or laid down. The Palengke and Bag show whose gear it is. Solo-tested; the diver's +10% on a cave find was checked by code review only; not published yet.</li>
+  <li><span class="when">2026-09-29 22:42</span><br>
+    <a href="2026-09-29_2242_economy-phase1/index.html">Economy Phase 1: the money rules</a>
+    &mdash; new Kaban ng Barangay (Community Fund) with a plaza board: every Peso paid to NPCs (Palengke, fares, job fees, repairs, bot nurse bills, ronda raids) lands there, with an announcement every 10,000. Drowning now bills 15% of the wallet: a player nurse keeps it, a passer-by half, a bot's goes to the fund; at most one bill per 10 min, and the carrier's share is halved if a player shark caused it. Glowsticks are 25 each (no packs), no free starter gear, starting money 750. Every job has a fee (Nars 80, Pulis 120, Tindero 60, Mangingisda 100, Pating 100); the first job is free; 5 min between jobs. Crates are Tindero-only and shift pay tops out at 450. New prices from the economy adjuster. Solo-tested; not published yet.</li>
+  <li><span class="when">2026-09-29 20:14</span><br>
+    <a href="2026-09-29_2014_shark-cave-and-admin-commands/index.html">A shark explores nothing in the cave; admin chat commands</a>
+    &mdash; a Pating swimming the cave no longer earns chambers, call-outs or exploration badges, and the cave's other rewards (Lung Coral, the Perlas pearl, kristal, hoards, slates) now refuse a shark on the server too. New admin-only chat commands answered privately in chat: /cmds, /give, /tp, /bring, /job (free job, e.g. /job me pating), /time, /kick. Solo-tested; not published yet.</li>
+  <li><span class="when">2026-09-29 19:06</span><br>
+    <a href="2026-09-29_1906_shark-sense-and-strike/index.html">Shark sense ring (PUBG-style), the tail-slap strike, and admin /give</a>
+    &mdash; the shark's scent is now a faint ring round the middle of the screen with one red arc per prey within 300 studs (brighter when closer) and a red screen-edge glow toward prey within 60 studs, drawn from three uploaded PNGs. New strike: click/tap a red-outlined player within 30 studs who is swimming or near the water (shore, small island, dock, boat); the shark leaps up beside them (no collision), slaps them with its tail at the top and falls back into the sea; 49% of the time that throws them as high as an AI shark bite (no damage) back the way the shark came; a miss costs a 4 s wait; 25 stamina either way. Clicks say why they can't strike. Sharks called for backup no longer drop finds in a lambat. Admins can /give Peso to anyone on the server. Solo-tested with stand-ins; not published yet; 1000 Peso granted back to the test account.</li>
+  <li><span class="when">2026-09-29 17:52</span><br>
+    <a href="2026-09-29_1752_pating-shark-round2/index.html">Pating round 2 and the jump-button fix</a>
+    &mdash; fixes the Roblox touch jump button vanishing in the sea for everyone (SprintScript disabled the Jumping state; a blocked hop was JumpHeight 0). Shark: one stamina bar for dash and air (no oxygen UI; out of the water it drains and at 0 sends the shark to the den); the jump button leaps near the surface in a real curve (26 studs, 52 out of a dash); dash on Shift / the native Sprint button; the mesh points where it swims (Motor6D Transform); smaller eyes; no scare shake for sharks; CALL for backup (other Pating + ambient sharks) and DEN; hits ragdoll and fling like an ambient bite; drops, finds, cave lights, slates, air corals and deep-run plates hidden on a shark's screen, blurred in the cave, and refused server-side. HUD moved to a top-left card and a small top-right stack. Solo-tested; no 2-player test yet.</li>
+  <li><span class="when">2026-09-29 15:55</span><br>
+    <a href="2026-09-29_1555_pating-shark-role/index.html">Pating (shark) job and Shark Poison</a>
+    &mdash; a fifth job on the Munisipyo board (100 Peso): the player becomes a hidden-avatar shark that spawns in a new Pating Den on the seabed, lunges out of the water to shove swimmers, divers and fishers (18 air lost, 10 s per-shark immunity), smells the nearest swimmer (warmer/colder compass) and can light red eyes that everyone sees, or leave them off to sneak; it holds no tools and has no flashlight. New reusable, droppable Shark Poison (100 Peso, 1 slot): a shark that lunges at someone holding it dies, loses the job for 60 s and wakes on the Health Post dock. The board panel was restyled to wood + neon (two columns). Solo-tested against stand-in victims; no real 2-player test yet.</li>
+  <li><span class="when">2026-09-29 11:20</span><br>
+    <a href="2026-09-29_1120_palengke-wood-neon/index.html">Palengke rebuilt in the wood + neon style</a>
+    &mdash; GearHud's market panel moved onto UIKit: a YOUR SACK column (finds as tier-ringed rows, the lot's value, a gold SELL that still confirms), GEAR and UPGRADES tabs of steel and violet-neon tiles with price buttons, a bag-slots chip; the toast and first-dive tip restyled to match. Same remotes and PanelUtil behaviour. Tested on the phone layout and with real desktop clicks (buy, sell-confirm, tabs).</li>
+  <li><span class="when">2026-09-29 10:50</span><br>
+    <a href="2026-09-29_1050_firstperson-cursor-guard/index.html">First-person desktop players can always use the UI (CursorGuard, BACK TO CELL [C])</a>
+    &mdash; new <code>PanelUtil.Watch</code>/<code>IsPassive</code> and a <code>CursorGuard</code> LocalScript free the mouse while any of 12 self-showing screens is up (vote, service choice, WAKE UP, boat hire, cave slate, role board, photo mode, Shipwreck screens); the status column's BACK TO CELL also answers to C on a keyboard. Tested on a desktop client locked in first person: Bag, confirm dialog, Shop, Vote and Mash all free the cursor and give it back when they close.</li>
+  <li><span class="when">2026-09-29 10:02</span><br>
+    <a href="2026-09-29_1002_ui-redesign-wood-neon/index.html">UI redesign: carved wood + neon rarity (Shop, Bag, status column, confirm dialog)</a>
+    &mdash; new shared <code>UIKit</code> module (native UICorner/UIStroke/UIGradient/UIShadow, no image assets); Island Shop rebuilt with side tabs and a tile grid; the Bag moved out of GearHud into <code>BagHud</code> with DALA/BODEGA tabs, search, sort, neon rarity tiles for finds and a select-then-act footer; the status column is now ring badges on the left and steps aside while a menu is open; a shared "ARE YOU SURE?" dialog on Bag DROP and Palengke SELL. Hotbar and top-bar icons unchanged.</li>
+  <li><span class="when">2026-09-28 23:39</span><br>
+    <a href="2026-09-28_2339_shipwreck-minigame/index.html">Shipwreck: a sink-or-swim minigame with a player shark</a>
+    &mdash; join circle at Looban (3&ndash;10 players, Start + 20 s countdown); a Terrain-water arena past the south edge of the ocean with players + 1 wreck planks that sink faster the more people stand on them; one random player becomes the shark (their own hidden character wearing the SharkMesh); a bite drags both to a seabed grotto for a 4 s tap race; the winner gets the Barnacle Hat (new CosmeticEquipService) and Peso. Solo-tested only.</li>
+  <li><span class="when">2026-09-27 10:30</span><br>
+    <a href="2026-09-27_1030_phaseCD-palengke-tiles-tolda-breakin/index.html">Phases C+D: Palengke and bag as picture cards everywhere; breaking into an unminded tolda</a>
+    &mdash; the card grid no longer depends on TouchEnabled and the Palengke joined it; an unminded tolda breaks in 10 axe swings with no police; fixed pitching a tolda erroring halfway (Report prompt never attached).</li>
+  <li><span class="when">2026-09-27 10:25</span><br>
+    <a href="2026-09-27_1025_phaseFG-ronda-watchtower/index.html">Phases F+G: the ronda, police that search, stars that bring more police, the Bantay Tanaw watchtower</a>
+    &mdash; two permanent ronda officers lurk behind palms, warn axe holders (3 = arrest), raid open toldas and stare back; officers search 5 spots before giving up; more and faster officers per prison star; police escort uses the ankle drag; a real watchtower on Tanaw Ridge whose spotlight tips off the police.</li>
+  <li><span class="when">2026-09-27 10:20</span><br>
+    <a href="2026-09-27_1020_phaseE-sentences-stars-prison-bars/index.html">Phase E: 10/15/20-minute sentences, prison stars over the head, barred prison walls</a>
+    &mdash; sentences by lifetime record (new Record_ key), PrisonStars and the EX-PRESO / MAPANGANIB tag, see-through bars instead of solid walls.</li>
+  <li><span class="when">2026-09-27 02:49</span><br>
+    <a href="2026-09-27_0249_phaseB-selfrevive-axe-repellent/index.html">Phase B: self-revive, anyone can carry, axe swing with momentum, knife out / Shark Repellent in</a>
+    &mdash; WAKE UP after 50 s (3 skill checks), passer-by carry fee 30 and a stalling fine; procedural axe chop drawn on every client; Dive Knife retired, Shark Repellent consumable with a HUD count.</li>
+  <li><span class="when">2026-09-27 02:24</span><br>
+    <a href="2026-09-27_0224_phaseA-drag-policestation-tolda/index.html">Phase A: dock beds out, ankle drag, old police cage and signs, tolda grip</a>
+    &mdash; the 16 mat+pillow "beds" on the Pantalan retired; patients now dragged face up by the ankles (fitted per avatar); the station's old holding cage retired and its 3 signs no longer visible map-wide; tolda held upright in the fist. First of 7 phases.</li>
+  <li><span class="when">2026-09-27 01:22</span><br>
+    <a href="2026-09-27_0122_skillcheck-healthpost-sharks-prison/index.html">Skill checks, Health Post rework, shark defense, prison</a>
+    &mdash; radial skill check system (3 kinds); dock-and-drag revive with 2 walking nurse bots, a queue, player nurses, costume and guidance arrow; Dive Knife + lunge parry (sharks never die); the Piitan ng Marahuyo compound with an 11-cell block and a quadrangle.</li>
+</ul>
+</main>
+</body>
+</html>

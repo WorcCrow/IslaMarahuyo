@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Update 2026-09-29: UI redesign — carved wood + neon rarity</title>
+<style>
+  :root { --ink:#1d2430; --dim:#5b6675; --line:#dde2e8; --bg:#fbfbf9; --accent:#c9485b; --ok:#2f8f6a; --warn:#b7791f; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width:960px; margin:0 auto; padding:32px 16px 64px; }
+  h1 { font-size:26px; margin:0 0 4px; }
+  h2 { font-size:20px; margin:40px 0 8px; padding-top:16px; border-top:1px solid var(--line); }
+  h3 { font-size:16px; margin:20px 0 4px; }
+  .meta { color:var(--dim); margin:0 0 20px; }
+  code { font:13px/1.4 ui-monospace, Consolas, monospace; background:#eef0f3; padding:1px 4px; border-radius:3px; }
+  table { border-collapse:collapse; width:100%; margin:8px 0 16px; font-size:14px; }
+  th, td { text-align:left; vertical-align:top; padding:6px 8px; border-bottom:1px solid var(--line); }
+  th { color:var(--dim); font-weight:600; }
+  .tag { display:inline-block; font-size:12px; font-weight:600; padding:0 6px; border-radius:3px; color:#fff; }
+  .new { background:var(--ok); } .mod { background:#3b6fb6; } .del { background:var(--accent); }
+  .box { border-left:3px solid var(--warn); background:#fff8ec; padding:8px 12px; margin:12px 0; }
+  ul { padding-left:22px; }
+  nav a { margin-right:12px; }
+  .pair { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:12px 0 20px; }
+  .pair figure, figure.one { margin:0; }
+  figure img { width:100%; height:auto; border:1px solid var(--line); border-radius:4px; display:block; }
+  figcaption { color:var(--dim); font-size:13px; margin-top:4px; }
+  figure.one { max-width:620px; margin:12px 0 20px; }
+  @media (max-width:640px) { .pair { grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+<main>
+<p><a href="../index.html">&larr; all updates</a></p>
+<h1>UI redesign: carved wood + neon rarity (Shop, Bag, status column, confirm dialog)</h1>
+<p class="meta">2026-09-29 &middot; place "[New Map]Isla Marahuyo" (placeId 128146022575640) &middot; approved mockups: the "Marahuyo UI Redesign" canvas (claude.ai artifact <code>RsX2NnHCf8UYhBt7MzrkLe</code>, private to the owner)</p>
+
+<nav><a href="#ask">What was asked</a><a href="#kit">1. UIKit</a><a href="#status">2. Status column</a><a href="#shop">3. Island Shop</a><a href="#bag">4. Bag</a><a href="#dialog">5. Confirm dialog</a><a href="#files">All changes</a><a href="#tests">Testing</a><a href="#gaps">Gaps</a></nav>
+
+<h2 id="ask">What was asked</h2>
+<p>A redesign of the game's UI in a "trending Roblox" style, built from reference images the owner supplied: glossy bevelled buttons, thick outlines, textured panels, and neon rarity-framed inventory tiles. The owner reviewed HTML mockups on a canvas and chose between options. The approved designs are:</p>
+<ul>
+  <li><b>Style:</b> "Wood + neon rarity". Carved-wood panels and buttons for every menu. Finds and rare items use dark tiles with a neon ring, coloured by value tier.</li>
+  <li><b>Island Shop</b> and <b>Bag</b>, as mocked up.</li>
+  <li><b>Left status column</b> as ring badges (option B of three).</li>
+  <li><b>Popup</b> as a centre "ARE YOU SURE?" dialog (option B of three).</li>
+</ul>
+<p>Constraints the owner set during review: the game is played in <b>landscape</b> on phones (736&times;414 in Studio's iPhone 6 Plus emulation). The top-left belongs to Roblox's own top bar and the TopbarPlus icons, and <b>the current hotbar and top-bar icons stay as they are</b>. Only layouts Roblox can actually build are allowed. Then: "finalize this, then apply to roblox game isla marahuyo".</p>
+
+<h2 id="kit">1. UIKit: one module for the whole look</h2>
+<p>New <code>ReplicatedStorage.UIKit</code> (client-side ModuleScript) builds every approved piece from native instances only: <code>UICorner</code>, <code>UIStroke</code>, <code>UIGradient</code> and the new <code>UIShadow</code>. No image assets are uploaded. Both fonts are built in: Fredoka (<code>Enum.Font.FredokaOne</code>) for titles and buttons, Nunito ExtraBold for body text.</p>
+<ul>
+  <li><code>K.panel</code>: a wood panel. A vertical brown gradient, a 4px dark-walnut stroke, plank seams every 46px and a light top edge, a hard 8px <code>UIShadow</code> underneath (blur 0) plus a soft wide one.</li>
+  <li><code>K.sign</code>: the raised title sign straddling a panel's top edge, with an outlined Fredoka title (<code>UIStroke</code> in Contextual mode).</li>
+  <li><code>K.button(parent, palette, text)</code>: a glossy button. Its 4-stop gradient has a hard step at 48&ndash;52%, which gives the shine. It has a coloured edge stroke, an outlined label, and a hard shadow the face sinks onto when pressed. Palettes: <code>green</code> (buy/confirm), <code>red</code> (close/decline), <code>gold</code> (Shells), <code>violet</code> (Robux), <code>teal</code> (info), <code>wood</code> (inactive tab), <code>locked</code> (flat, no shine).</li>
+  <li><code>K.inset</code> (cream) and <code>K.well</code> (dark): recessed content areas.</li>
+  <li><code>K.tile(parent, tier)</code>: a neon rarity tile (a dark card, a 2.5px ring in the tier colour, a <code>UIShadow</code> glow, a diagonal colour wash), or a steel "gear" tile. It can show a selected state.</li>
+  <li><code>K.ringBadge</code>: a ring that fills clockwise, drawn from two clipped half-circles whose stroke gradients are rotated. No ring image is needed.</li>
+  <li><code>K.gem</code>: a faceted gem in a find's own <code>ItemConfig</code> colour, because finds have no 3D model.</li>
+  <li><code>K.fitBand(frame)</code>: centres a panel in the band between the Roblox top bar (<code>GuiService:GetGuiInset()</code>) and the hotbar (80px reserved), and scales it down, never up, until the panel, its sign and its shadow fit. It re-runs when the viewport or the top-bar inset changes.</li>
+  <li><code>K.confirm{heading, message, yes, no, icon, onYes, onNo}</code>: the shared centre dialog (section 5).</li>
+  <li>Rarity tiers: <code>K.tierForValue(sell)</code> maps what the Palengke pays for a find: &ge;200 Legendary (gold), &ge;60 Rare (violet), &ge;20 Uncommon (green), otherwise Common (cyan). That gives Kabibe = Common, Bahura = Uncommon, Yungib = Rare, and Kailaliman, Kristal, Yaman and Perlas = Legendary.</li>
+</ul>
+
+<h2 id="status">2. Status column: ring badges on the left</h2>
+<figure class="one"><img src="images/01-status-ring-badges.png" alt="Three ring badges under the Roblox top bar: a red shark badge reading 183 DANGER, a violet repellent badge reading 2, a teal air badge reading 100%"><figcaption>Playtest: sharks over 100 turn the badge red with a glow ("183 DANGER"), repellent cans 2, air 100% (shown because <code>NearWater</code> was set for the shot).</figcaption></figure>
+<ul>
+  <li><code>StarterPlayer.StarterPlayerScripts.StatusHud</code> was rewritten. The data logic is unchanged: the same remotes (<code>SharkAlertUpdated</code>, <code>BreathUpdated</code>, <code>DiveFeedback</code>, <code>InventoryUpdated</code>), the same attributes, and the same rows that appear only when they apply.</li>
+  <li>It moved from the <b>right edge to the left</b>, placed under the top bar (inset + 8px). A <code>UIScale</code> shrinks it if the rows would reach 72% of the screen height, where the thumbstick corner starts.</li>
+  <li><b>Air</b> and <b>torch</b> are percentages, so their rings fill. Air turns gold at &le;55% and red (danger) at &le;25%; torch turns red at &le;20%. <b>Sharks, repellent, sack, jail minutes and jobs</b> are counts and show a full ring. Repellent turns gold at &le;1 can. The sack tab shows "pieces &bull; Palengke value". The back-to-cell button is now a small wood button.</li>
+  <li>The column <b>hides while any menu panel is open</b> (it listens to <code>PanelUtil.Changed</code>; the dialog is excluded). Otherwise it sat on top of the Shop's tabs on a phone.</li>
+  <li>The top-bar inset reads 0 when the script starts, so the column re-places itself on <code>GuiService.TopbarInset</code> changes and again after 1 s and 3 s.</li>
+</ul>
+
+<h2 id="shop">3. Island Shop</h2>
+<div class="pair">
+  <figure><img src="images/02-shop-shells.png" alt="Wood SHOP panel: left tabs PASSES, SHELLS (active), GIFT, ODDS; a 3 by 2 grid of Shells packs, Instant Restock and a neon Bilao Box, each with a violet BUY button"><figcaption>Final layout, Shells tab: six tiles fit without scrolling. Mega has a BEST VALUE ribbon and a gold glow; Bilao Box is a neon tile. The red "DO NOT SWIM" banner is the separate, unchanged SharkAlertGui.</figcaption></figure>
+  <figure><img src="images/03-shop-passes.png" alt="Passes tab with Kasama VIP, Bangkero Speed, Extra Bodega Slot and Kalangitan Isle tiles"><figcaption>Passes tab (taken before the last tile-size trim; the grid is now 96px per row).</figcaption></figure>
+</div>
+<div class="pair">
+  <figure><img src="images/04-shop-odds.png" alt="Odds tab: Bilao Box drop rates list with item name, rarity chip and percentage"><figcaption>Odds: every Bilao Box entry, sorted by chance, with a rarity chip. The old panel showed only 8 rows.</figcaption></figure>
+  <figure><img src="images/05-shop-gift.png" alt="Gift tab: username box and Gift 10, 25, 50 buttons"><figcaption>Gift tab: username box and 10/25/50 buttons (gold, with a shell).</figcaption></figure>
+</div>
+<ul>
+  <li><code>StarterGui.ShopUI.ShopController</code> was rewritten. It now <b>builds the panel at runtime</b> with UIKit (580&times;300 design size, fitted with <code>K.fitBand</code>), so the old static <code>ShopUI.Panel</code> and <code>ShopUI.OddsPanel</code> were retired (see All changes). <code>ShopUI.IgnoreGuiInset</code> is set to true at runtime.</li>
+  <li>The layout follows the approved mockup: wood tabs PASSES / SHELLS / GIFT down the left (the active one green), ODDS (teal) at the foot, and the content in a cream inset. Passes and Shells are a 3-column tile grid with one BUY each; the grid scrolls if it has to.</li>
+  <li><b>Unchanged behaviour:</b> same remotes and keys (<code>RequestGamePassPurchase</code> / <code>RequestProductPurchase</code> with <code>KasamaVIP</code>, <code>ShellsSmall</code>&hellip;, <code>RequestGift(username, amount)</code>, <code>GiftFeedback</code>), same odds source (<code>ReplicatedStorage.BilaoBoxOdds</code>), same open path (<code>PalengkeMarketDeck.ShopPrompt</code> &rarr; <code>PanelUtil</code> "islandshop", closing past 22 studs).</li>
+  <li>BUY buttons are violet with the Robux diamond and <b>no price number</b>. Real prices are set on the Creator Dashboard; the prices in <code>MonetizationConfig</code> are only suggestions. Roblox's own prompt shows the real price.</li>
+  <li>An owned pass (player attribute of the same key, e.g. <code>KasamaVIP == true</code>) shows a flat <b>OWNED</b> button and no longer fires a purchase.</li>
+  <li>Pass names follow <code>MonetizationConfig</code>. Tile 3 now reads <b>"Extra Bodega Slot"</b>, the pass's current name; the old shop still said "Extra Cabin Plot". The ribbon on Kasama VIP says "VIP", not "Most popular", because there is no data behind a popularity claim.</li>
+  <li><code>MobileUIController</code> no longer scales ShopUI; the shop fits itself.</li>
+</ul>
+
+<h2 id="bag">4. Bag (moved to its own script)</h2>
+<div class="pair">
+  <figure><img src="images/06-bag-dala.png" alt="BAG panel: DALA tab active, search box, Rarity sort; a dark well of steel gear tiles with 3D item icons; footer Kaban ng Dagat 6/20 and Tap an item"><figcaption>DALA opened with the real N key. Carried gear is bright, uncarried gear dimmed. The icons are the game's own <code>ItemIcon</code> 3D views. The status column has stepped aside.</figcaption></figure>
+  <figure><img src="images/07-bag-selected.png" alt="Lambat tile selected with a white ring; footer shows Lambat x1 and a red DROP button"><figcaption>Tap a tile to select it (white ring); the footer shows its name, blurb and actions (here DROP).</figcaption></figure>
+</div>
+<figure class="one"><img src="images/09-bag-bodega.png" alt="BODEGA tab: Bodega tile 200 selected, stored gear, footer Bodega 200/200 Solid with a green bar"><figcaption>BODEGA tab: the bodega's own tile (health), stored gear counts, and a green health bar in the footer.</figcaption></figure>
+<ul>
+  <li>New <code>StarterPlayer.StarterPlayerScripts.BagHud</code> draws the dive bag in the approved style (620&times;320 design size, fitted with <code>K.fitBand</code>): DALA / BODEGA tabs, a <b>search box</b> (filters by name), a <b>sort</b> button (Rarity: finds by value, then carried gear, then the rest; A-Z by name), a dark well with a 6-column tile grid, and one footer. The footer holds capacity or bodega health on the left, the selected item's line in the middle, and the actions on the right.</li>
+  <li><b>Interaction change:</b> every card used to carry its own USE/DROP or PACK/STOW buttons. Now you tap a tile and act in the footer, as in the mockup. The rules for which buttons show are the old ones: USE only for usable non-hotbar gear; DROP never for bound items (axe, binoculars); PACK/STOW only at your bodega; REPAIR when damaged and at the bodega; UPGRADE when not already stone.</li>
+  <li><b>New: finds appear in the bag.</b> Finds in the sack (Kabibe&hellip;Perlas, from <code>state.finds</code>) show as neon rarity tiles with a gem icon when you have any. Selecting one shows "Sells for N each at the Palengke". Finds are still not bag items and have no buttons; selling stays at the Palengke.</li>
+  <li><b>Same wiring as before:</b> <code>PanelUtil</code> name "bag" (the top-bar Menu still opens it), key <b>N</b>, the <code>BodegaOpen</code> remote opens the BODEGA tab pinned to the bodega, it opens only with <code>BodegaUp</code>, and the same remotes (<code>RequestItemUse</code>, <code>RequestItemDrop</code>, <code>RequestTransfer</code>, <code>RequestBodega</code>). Without a bodega, a cream note reads "Place your bodega first -- Bag menu, then Place bodega."</li>
+  <li><code>GearHud</code> lost the bag: its panel, cards, tabs, bodega list, refresh, <code>PanelUtil</code> registration, the <code>BodegaOpen</code> handler and the N-key binding. It keeps the Palengke, the shared toast, the dive tip and the bodega Open-prompt filter. Opening the Palengke now closes the bag through <code>PanelUtil.Close("bag")</code>.</li>
+</ul>
+
+<h2 id="dialog">5. Centre confirm dialog</h2>
+<figure class="one"><img src="images/08-dialog-drop.png" alt="ARE YOU SURE? wood dialog over the bag: Lambat tile, Drop 1 Lambat?, It leaves your bag so a teammate can pick it up., NO and DROP buttons"><figcaption>Dropping gear now asks first. Confirming dropped the Lambat (count went to 0, footer "None carried").</figcaption></figure>
+<ul>
+  <li><code>UIKit.confirm</code> builds <code>PlayerGui.KitDialog</code> (DisplayOrder 60) on first use: a dim backdrop (tapping it answers No), a wood panel with the "ARE YOU SURE?" sign, a cream inset with an optional icon, a heading and a message, and red NO / green YES buttons (the YES label is per call, e.g. DROP or SELL). It registers with <code>PanelUtil</code> as "kitdialog", so the cursor is freed in first person, and it fits itself with <code>K.fitBand</code>.</li>
+  <li>The game had <b>no confirmations anywhere</b>. It is now used in two places, both actions that cannot be undone:
+    <ul>
+      <li>Bag DROP: "Drop 1 &lt;item&gt;? It leaves your bag so a teammate can pick it up." (the game's own wording for dropping).</li>
+      <li>Palengke SELL (in <code>GearHud</code>): "Sell N finds? You get X Peso for the lot."</li>
+    </ul>
+  </li>
+</ul>
+
+<h2 id="files">All changes</h2>
+<table>
+  <tr><th></th><th>Path</th><th>What</th></tr>
+  <tr><td><span class="tag new">new</span></td><td><code>ReplicatedStorage.UIKit</code></td><td>the shared style module (section 1)</td></tr>
+  <tr><td><span class="tag new">new</span></td><td><code>StarterPlayer.StarterPlayerScripts.BagHud</code></td><td>the dive bag (section 4)</td></tr>
+  <tr><td><span class="tag mod">rewritten</span></td><td><code>StarterGui.ShopUI.ShopController</code></td><td>runtime-built Island Shop (section 3)</td></tr>
+  <tr><td><span class="tag mod">rewritten</span></td><td><code>StarterPlayer.StarterPlayerScripts.StatusHud</code></td><td>left ring-badge column (section 2)</td></tr>
+  <tr><td><span class="tag mod">edited</span></td><td><code>StarterPlayer.StarterPlayerScripts.GearHud</code></td><td>bag removed (786 &rarr; 568 lines); SELL asks for confirmation; requires UIKit</td></tr>
+  <tr><td><span class="tag mod">edited</span></td><td><code>StarterPlayer.StarterPlayerScripts.MobileUIController</code></td><td><code>ShopUI</code> removed from <code>TARGETS</code></td></tr>
+  <tr><td><span class="tag mod">edited</span></td><td><code>StarterPlayer.StarterPlayerScripts.PhotoModeController</code></td><td><code>OTHER_GUIS</code> also hides <code>BagHud</code> and <code>KitDialog</code></td></tr>
+  <tr><td><span class="tag del">retired</span></td><td><code>StarterGui.ShopUI.Panel</code> &rarr; <code>ServerStorage._Retired.StarterGui_ShopUI__Panel</code></td><td>old static shop panel</td></tr>
+  <tr><td><span class="tag del">retired</span></td><td><code>StarterGui.ShopUI.OddsPanel</code> &rarr; <code>ServerStorage._Retired.StarterGui_ShopUI__OddsPanel</code></td><td>old static odds popup</td></tr>
+  <tr><td><span class="tag new">backup</span></td><td><code>ServerStorage._Retired.StarterPlayer_StarterPlayerScripts__StatusHud_preRedesign</code>, <code>&hellip;__GearHud_preRedesign</code>, <code>StarterGui_ShopUI__ShopController_preRedesign</code></td><td>disabled copies of the three scripts as they were before this change, for rollback</td></tr>
+</table>
+<p><b>Runtime-only GUIs</b> (created by the scripts, not saved in the place): <code>PlayerGui.BagHud</code>, <code>PlayerGui.KitDialog</code>, <code>PlayerGui.ShopUI.Panel</code> (the new one), <code>PlayerGui.StatusHud</code>. <b>No new remotes, attributes or saved data.</b> New attributes read: each pass key on the player (for OWNED). <code>PanelUtil</code> gained the entry "kitdialog".</p>
+<p><b>Tunables:</b> <code>UIKit.fitBand</code> reserves 80px at the bottom for the hotbar and 26px above a panel for its sign. The Shop is 580&times;300 with 96px tiles; the Bag is 620&times;320 with 86px tiles in 6 columns; ring badges are 48px (touch) or 46px. The status column scales below 72% of screen height. Tier thresholds are 20 / 60 / 200 Peso.</p>
+
+<h2 id="tests">How it was tested</h2>
+<p>Three playtests on the iPhone 6 Plus emulation (736&times;414), each ended by kicking the player from the Server datamodel. Every new or rewritten script passed a <code>loadstring</code> compile check, and the startup log showed no errors from them.</p>
+<ul>
+  <li><b>Status column:</b> shark danger (red with glow), repellent 2 and air 100% were seen. <code>Position</code> was confirmed at (12, 66) under the 58px top bar (<code>AbsolutePosition</code> reads 8 because Roblox reports it below the inset). The column hid when the Bag and the Shop were opened through <code>PanelUtil</code>.</li>
+  <li><b>Shop:</b> opened through the real <code>ShopPrompt</code> (E held beside the stall). The status column hid, and <code>K.fitBand</code> scaled the panel to 0.80 on this screen. All four tabs worked. The first pass overflowed the bottom of the screen (image 10); after the size change, all six Shells tiles and their BUY buttons fit.</li>
+  <li><b>Bag:</b> test gear was added through <code>ServerStorage.GiveToBag</code> (lambat, glowstick &times;2, oxygen, repellent &times;2) and the bag opened with the N key. Carried and uncarried tiles, selecting Lambat, DROP &rarr; dialog &rarr; DROP all worked: the Lambat count went to 0 and the footer read "None carried". The BODEGA tab showed bodega health 200/200 "Solid" and stored gear.</li>
+  <li><b>Dialog:</b> seen and confirmed through the Bag's DROP (image 08).</li>
+</ul>
+<figure class="one"><img src="images/10-shop-first-pass-overflow.png" alt="Earlier Shop pass running off the bottom of the phone screen, with status badges over its tabs"><figcaption>First pass, before the fixes: the panel ran under the hotbar and off-screen, and the status badges sat on the tabs. Both were fixed (fitBand, hiding the column while a panel is open).</figcaption></figure>
+
+<h2 id="gaps">Not verified / known gaps</h2>
+<div class="box">
+<ul>
+  <li><b>Finds tiles and the Palengke SELL dialog were not seen live.</b> <code>GiveToBag</code> refuses loot keys, and no finds were collected in testing. The code path is the same <code>K.confirm</code> as DROP, but neither the neon find tiles in the Bag nor the SELL confirmation have been on screen yet.</li>
+  <li>A <b>partly filled ring</b> (e.g. air at 47%) was not photographed; the column was hidden by the open bag when the test value arrived. Only full rings were seen.</li>
+  <li>Not exercised: USE, PACK, STOW, REPAIR and UPGRADE from the new footer; the search box and the A-Z sort; the OWNED state on a pass; the jail, jobs and back-to-cell badges; the torch badge; the "place your bodega first" note.</li>
+  <li>For the layout re-check after the final tile trim, the Shop was opened by setting <code>Panel.Visible</code> (the E press hit a market stall's prompt that time). The real prompt path was verified in the run before.</li>
+  <li>The old <b>SharkAlertGui</b> "WARNING: DO NOT SWIM!" banner (not part of this change) shows under the top bar and overlaps the top edge of the Shop when the stall's shark count is high. Hiding it while a panel is open would be a small follow-up; it was left alone because it is safety information.</li>
+  <li>The shark badge's emoji and the item emoji are drawn by Roblox's emoji font; they look slightly different per device.</li>
+  <li>The Bangkero Speed pass still has <code>id = 0</code> in <code>MonetizationConfig</code>. Its BUY button sends the request as before, but no purchase can happen until the pass is created.</li>
+  <li>Only checked at 736&times;414. <code>K.fitBand</code> handles other sizes by scaling, but that is untested on a real phone or on desktop.</li>
+</ul>
+</div>
+<p><b>Test values to revert:</b> nothing in the place. The test account <b>MERS_Cov2</b> received real gear through <code>GiveToBag</code> (glowstick +2, oxygen +1, repellent +2; the Lambat given was dropped in the test world). This is saved in its profile and has not been removed. <code>BodegaUp</code> and <code>NearWater</code> were set on the client only for screenshots, so they were not saved.</p>
+</main>
+</body>
+</html>

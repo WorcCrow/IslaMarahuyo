@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Update 2026-09-30: Phase 6, shark bait and Galit</title>
+<style>
+  :root { --ink:#1d2430; --dim:#5b6675; --line:#dde2e8; --bg:#fbfbf9; --accent:#c9485b; --ok:#2f8f6a; --warn:#b7791f; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width:960px; margin:0 auto; padding:32px 16px 64px; }
+  h1 { font-size:26px; margin:0 0 4px; }
+  h2 { font-size:20px; margin:40px 0 8px; padding-top:16px; border-top:1px solid var(--line); }
+  h3 { font-size:16px; margin:20px 0 4px; }
+  .meta { color:var(--dim); margin:0 0 20px; }
+  code { font:13px/1.4 ui-monospace, Consolas, monospace; background:#eef0f3; padding:1px 4px; border-radius:3px; }
+  table { border-collapse:collapse; width:100%; margin:8px 0 16px; font-size:14px; }
+  th, td { text-align:left; vertical-align:top; padding:6px 8px; border-bottom:1px solid var(--line); }
+  th { color:var(--dim); font-weight:600; }
+  .tag { display:inline-block; font-size:12px; font-weight:600; padding:0 6px; border-radius:3px; color:#fff; }
+  .new { background:var(--ok); } .mod { background:#3b6fb6; }
+  .box { border-left:3px solid var(--warn); background:#fff8ec; padding:8px 12px; margin:12px 0; }
+  ul { padding-left:22px; }
+  nav a { margin-right:12px; }
+  figure.solo { margin:12px 0 20px; }
+  .pair { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:12px 0 20px; }
+  .pair figure { margin:0; }
+  @media (max-width:700px) { .pair { grid-template-columns:1fr; } }
+  figure img { width:100%; height:auto; border:1px solid var(--line); border-radius:4px; display:block; }
+  figcaption { color:var(--dim); font-size:13px; margin-top:4px; }
+</style>
+</head>
+<body>
+<main>
+<p><a href="../index.html">&larr; all updates</a></p>
+<h1>Phase 6: shark bait on the Pating's radar, and Galit</h1>
+<p class="meta">2026-09-30 &middot; place "[New Map]Isla Marahuyo" (placeId 128146022575640) &middot; follows <a href="../2026-09-30_0128_phase5-mutya/index.html">Phase 5: Mutya</a> &middot; plan: "Isla Marahuyo Roadmap" artifact (https://claude.ai/artifact/EHMUmaSk3nCsyiZbR6iLPT)</p>
+
+<nav><a href="#ask">What was asked</a><a href="#what">What changed</a><a href="#files">All changes</a><a href="#tests">Testing</a><a href="#gaps">Gaps</a></nav>
+
+<div class="box"><b>Not live yet.</b> Like Phases 1 to 5, this reaches players only when the place is published from Studio.</div>
+
+<h2 id="ask">What was asked</h2>
+<ul>
+  <li>Shark bait also works on the shark role. It shows on the Pating's radar, and eating it makes the shark angry, with a 150% boost for a short time.</li>
+  <li>Locked on 29 Sep (roadmap decision 10): "150%" means <b>1.5&times; speed for 20 s, with half cooldowns</b>. At 2.5&times; the shark would outrun the camera.</li>
+</ul>
+
+<h2 id="what">What changed</h2>
+
+<h3>1. Bait on the sense ring</h3>
+<div class="pair">
+<figure><img src="images/bait-ahead.png" alt="The shark's sense ring: a bright gold arc at the top toward bait 30 studs ahead, a faint gold arc on the right toward a swimmer holding bait 350 studs away, and a red arc on the left toward a plain swimmer 60 studs away; the card reads SCENT · 1 prey · 2 bait"><figcaption>Gold arcs sit just outside the red ones. Bright gold ahead: bait lying 30 studs away. Faint gold on the right: a swimmer holding bait 350 studs off, beyond the 300-stud prey range. Red on the left: a plain swimmer.</figcaption></figure>
+<figure><img src="images/sense-gold-arcs.png" alt="The same view a few seconds earlier: one red arc on the left and one faint gold arc on the right; the card reads SCENT · 1 prey · 1 bait"><figcaption>A few seconds earlier: an AI shark had already eaten the bait thrown 180 studs away, so only the far holder is gold.</figcaption></figure>
+</div>
+<ul>
+  <li>The Pating now smells <b>bait thrown in the water</b> and <b>anyone swimming with bait in hand</b> (or within 10 studs of the water, the same rule as prey). The range is <b>400 studs</b>, the AI sharks' lure range, where prey is only smelled from 300.</li>
+  <li>Bait is drawn as <b>gold arcs</b> (up to 4, nearest first), slightly outside the red prey arcs and brighter the closer it is. A swimmer holding bait shows gold, not red.</li>
+  <li>The scent card counts both: "SCENT &middot; 1 prey &middot; 2 bait". With no prey in range it reads "bait 120 studs" in dark gold.</li>
+  <li>This is the risk the plan described: a fisher holding bait to lure AI sharks into a lambat now draws Pating players from 400 studs as well.</li>
+</ul>
+
+<h3>2. Eating it</h3>
+<ul>
+  <li><b>Thrown bait:</b> a Pating whose body comes within 7 studs of it eats it. The thrower gets the usual "A pating took your bait." and the AI sharks stop going for it (it goes through <code>SharkLure.Consume</code>, as an AI shark's bite does). AI sharks still race for it, and whoever gets there first eats it. In testing, AI sharks ate two test baits within seconds, before the Pating got there.</li>
+  <li><b>Held bait:</b> swimming within 6 studs of a swimmer holding bait, or a <b>lunge</b> that hits one, tears one bait off their hook (their stack goes down by one, and they get "A pating tore the bait off your hook."). The same shark can't take bait off the same swimmer again for 8 s. A lunge still costs the victim 18 air and throws them as before.</li>
+  <li>A <b>strike</b> (the click or tap tail slap) doesn't take bait. It slaps; it doesn't bite.</li>
+  <li><b>Shark Poison still wins:</b> a lunge at someone holding poison is checked first, as before. They can't hold bait and poison at once (one tool in hand).</li>
+  <li>A Pating never drops anything into a lambat, so eating bait can't be used to farm a net (<code>LambatService</code> only counts AI sharks).</li>
+</ul>
+
+<h3>3. Galit (enraged)</h3>
+<figure class="solo"><img src="images/galit-hud.png" alt="The shark HUD with a red bar under the scent card reading GALIT 13s · 1.5x; the water around the shark is lit red by its bright eyes"><figcaption>A red GALIT bar under the scent card drains over 20 s and pulses. The water glows red from the shark's brighter eyes.</figcaption></figure>
+<table>
+<tr><th>While Galit (20 s)</th><th>Normal</th><th>Galit</th></tr>
+<tr><td>Swim speed</td><td>24</td><td>36</td></tr>
+<tr><td>Dash speed</td><td>42</td><td>63</td></tr>
+<tr><td>Wait between leaps</td><td>1.5 s</td><td>0.75 s</td></tr>
+<tr><td>Wait after a missed strike</td><td>4 s</td><td>2 s</td></tr>
+<tr><td>Eyes</td><td>the player's choice (R)</td><td>forced on, bigger, and much brighter (light 3.2 over 24 studs instead of 1.1 over 14)</td></tr>
+</table>
+<ul>
+  <li>Eating a toast: "GALIT! You ate the bait -- 1.5x speed, faster leaps for 20s." (or "You tore the bait off their hook"). Eating again while enraged restarts the 20 s; it doesn't add up.</li>
+  <li>Pressing EYES during Galit keeps them lit and says "GALIT -- your eyes burn red until the rage fades." When it ends ("The rage fades."), the eyes go back to what the player last chose.</li>
+  <li>Stamina costs are unchanged: a faster shark still pays 25 per leap, and dashing drains as before.</li>
+</ul>
+
+<h2 id="files">All changes</h2>
+<table>
+<tr><th>Instance</th><th></th><th>Change</th></tr>
+<tr><td><code>ServerScriptService.SharkPlayerService</code></td><td><span class="tag mod">edit</span></td><td>Requires <code>SharkLure</code>. New tuning block (below). <code>scentTick</code> also sends <code>baits</code> (thrown and held, 400 studs, max 4) and <code>baitRange</code>; bait holders move from the red list to the gold one. New <code>baitTick</code> (every 0.1 s with the stamina tick) eats thrown bait within 7 studs and held bait within 6. <code>shove</code> (a lunge hit) eats a holder's bait. New <code>enrage</code>/<code>calmDown</code>/<code>waitScale</code>/<code>eatHeld</code>/<code>holdsBait</code>. <code>setEyes</code> split into <code>paintEyes</code> so Galit can force the eyes on. The leap spacing and the missed-strike wait are scaled by <code>waitScale</code>; swim/dash speed by <code>GALIT_SPEED</code>. Header note. Studio hooks: <code>DebugPating</code> gains <code>"galit"</code> and <code>"calm"</code>; <code>DebugPatingDummy</code>'s second argument can be <code>"bait"</code>; new <code>ServerStorage.DebugPatingJob</code> <code>(player, on)</code> gives or hands back the Pating job for free.</td></tr>
+<tr><td><code>ServerScriptService.SharkBaitService</code></td><td><span class="tag mod">edit</span></td><td>Header note. New Studio-only hook <code>ServerStorage.DebugBaitDrop</code> <code>(position)</code>: an ownerless bait at that spot for 90 s.</td></tr>
+<tr><td><code>StarterPlayer.StarterPlayerScripts.SharkClient</code></td><td><span class="tag mod">edit</span></td><td>4 gold <code>BaitArc</code> images on the sense ring (the arc loop is now <code>updateArcs</code>, shared by red and gold). Bait count and "bait N studs" in the scent card. New <code>Galit</code> bar under the card (the backup ping moves down while it shows). Handles the new <code>SharkStatus "galit"</code> message with a toast.</td></tr>
+</table>
+<p><b>New attribute:</b> player <code>SharkGalitUntil</code> (server time the rage ends; cleared with the job). <b>New SharkStatus message:</b> <code>"galit", {seconds, speed, how}</code>; <code>"scent"</code> gains <code>baits</code> and <code>baitRange</code>. <b>Tuning</b> (top of SharkPlayerService): <code>BAIT_SCENT_RANGE</code> 400, <code>BAIT_MAX_TARGETS</code> 4, <code>EAT_REACH</code> 7, <code>EAT_HELD_REACH</code> 6, <code>EAT_HELD_WAIT</code> 8, <code>GALIT_SECONDS</code> 20, <code>GALIT_SPEED</code> 1.5, <code>GALIT_WAITS</code> 0.5. No new remotes, no instances created in the map, nothing removed. All three scripts were compile-checked with <code>loadstring</code>.</p>
+
+<h2 id="tests">Testing</h2>
+<p>One playtest on MERS_Cov2 (display name DARKxGRey), made a Pating for free with the new <code>DebugPatingJob</code> hook, so no fee came off the account. Bait holders were Studio stand-ins (<code>DebugPatingDummy ... "bait"</code>) and thrown bait came from <code>DebugBaitDrop</code>, so none of the account's own bait was used. The playtest ended by kicking the player from the Server after handing the job back. As in Phase 5, the kick left Studio in Play mode with nobody in it, and it was stopped after that. There were no script errors.</p>
+<ul>
+  <li><b>Sense ring:</b> a plain stand-in 60 studs off gave one red arc; bait thrown 180 studs off and a bait holder 350 studs off (beyond the 300 prey range) gave two gold arcs. Card: "SCENT &middot; 1 prey &middot; 2 bait". Screenshots above.</li>
+  <li><b>AI sharks race for it:</b> the 180-stud bait, and a second one 30 studs ahead, were both eaten by AI sharks within seconds.</li>
+  <li><b>Thrown bait eaten:</b> bait dropped at the Pating's nose was gone on the next tick; Galit 19.6 s left, swim speed 36, eye light 3.2/24, eye size 0.34.</li>
+  <li><b>Leap wait:</b> 0.75 s while enraged, 1.5 s after.</li>
+  <li><b>Missed strike:</b> with 8 stand-ins struck in turn, the first miss set the next strike 2 s out (normally 4).</li>
+  <li><b>Galit ends:</b> after 20 s the attribute cleared, speed went back to 24, and the eye light went back to 1.1/14. "The rage fades." showed and the GALIT bar hid.</li>
+  <li><b>Held bait, swimming into it:</b> a holder 4 studs away lost one bait (<code>BaitEaten</code> 1) and Galit started. 2 s later, still beside them, no second bait was taken (8 s wait).</li>
+  <li><b>Held bait, lunge:</b> a holder 7.5 studs away (outside the 6-stud swim-into reach) was hit by a lunge: 18 air lost, one shove, one bait taken, Galit on.</li>
+  <li><b>Eyes:</b> pressing EYES during Galit kept <code>SharkEyes</code> true with the toast. When the rage ended the eyes went off (the choice made during it), then back on when pressed.</li>
+</ul>
+
+<h2 id="gaps">Gaps and things to check</h2>
+<ul>
+  <li><b>Map hole found while testing (not from this phase):</b> in the open sea around x &minus;400&hellip;400, z 700&hellip;790, the water is a 32-stud sheet with <b>no seabed under it</b>. Twice, a Pating leapt near (&minus;9, 788), came down through the water and fell to y &minus;317. The character was destroyed there and respawned in the den. A diver going deep there could likely fall out too. It's now fixed: see <a href="../2026-09-30_0159_seabed-outer-sea/index.html">A seabed and walls for the outer sea</a>. Testing moved to (&minus;600, &minus;60), which has a seabed.</li>
+  <li><b>Not tested with two real players:</b> a real swimmer's bait stack going down, their "tore the bait off your hook" toast, and a real thrower's "A pating took your bait." All three are the same calls the AI sharks already make (<code>SharkLure.EatHeld</code> and <code>OnEaten</code>), and the stand-ins confirmed the Pating reaches them.</li>
+  <li><b>The GALIT toast wasn't captured.</b> It lasts 3.4 s and had gone by the time of the screenshot. Its text was read from the client for the eyes message only.</li>
+  <li><b>Dash at 63</b> under Galit wasn't driven by hand (Studio's iPhone emulation is touch-only). The number is <code>DASH_SPEED &times; 1.5</code>, set the same way as the 36 swim speed that was seen.</li>
+  <li><b>Other players seeing the eyes:</b> the brighter eyes are server-side parts and light, so every client should see them. Only one client was in the test.</li>
+  <li><b>Test account:</b> nothing was spent or lost. No job is held and no dummies or bait are left in the map. No quick-test values were added. <code>Bodega.AxeDamage = 20</code> from before is still there, to be restored in Phase 7.</li>
+</ul>
+</main>
+</body>
+</html>

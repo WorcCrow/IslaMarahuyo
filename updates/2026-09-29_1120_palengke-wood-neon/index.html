@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Update 2026-09-29: Palengke in the wood + neon style</title>
+<style>
+  :root { --ink:#1d2430; --dim:#5b6675; --line:#dde2e8; --bg:#fbfbf9; --accent:#c9485b; --ok:#2f8f6a; --warn:#b7791f; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width:960px; margin:0 auto; padding:32px 16px 64px; }
+  h1 { font-size:26px; margin:0 0 4px; }
+  h2 { font-size:20px; margin:40px 0 8px; padding-top:16px; border-top:1px solid var(--line); }
+  h3 { font-size:16px; margin:20px 0 4px; }
+  .meta { color:var(--dim); margin:0 0 20px; }
+  code { font:13px/1.4 ui-monospace, Consolas, monospace; background:#eef0f3; padding:1px 4px; border-radius:3px; }
+  table { border-collapse:collapse; width:100%; margin:8px 0 16px; font-size:14px; }
+  th, td { text-align:left; vertical-align:top; padding:6px 8px; border-bottom:1px solid var(--line); }
+  th { color:var(--dim); font-weight:600; }
+  .tag { display:inline-block; font-size:12px; font-weight:600; padding:0 6px; border-radius:3px; color:#fff; }
+  .new { background:var(--ok); } .mod { background:#3b6fb6; } .del { background:var(--accent); }
+  .box { border-left:3px solid var(--warn); background:#fff8ec; padding:8px 12px; margin:12px 0; }
+  ul { padding-left:22px; }
+  nav a { margin-right:12px; }
+  .pair { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:12px 0 20px; }
+  .pair figure { margin:0; }
+  figure img { width:100%; height:auto; border:1px solid var(--line); border-radius:4px; display:block; }
+  figcaption { color:var(--dim); font-size:13px; margin-top:4px; }
+  @media (max-width:640px) { .pair { grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+<main>
+<p><a href="../index.html">&larr; all updates</a></p>
+<h1>Palengke rebuilt in the wood + neon style</h1>
+<p class="meta">2026-09-29 &middot; place "[New Map]Isla Marahuyo" (placeId 128146022575640) &middot; completes <a href="../2026-09-29_1002_ui-redesign-wood-neon/index.html">the wood + neon UI redesign</a>, which had left the Palengke in the old dark style</p>
+
+<nav><a href="#ask">What was asked</a><a href="#what">What changed</a><a href="#files">All changes</a><a href="#tests">Testing</a><a href="#gaps">Gaps</a></nav>
+
+<h2 id="ask">What was asked</h2>
+<p>"you have to allso update palengke UI". The morning's redesign rebuilt the Island Shop, Bag, status column and confirm dialog. The Palengke (the market counter where finds are sold and gear is bought) only got the new SELL confirm. Its panel was still the old dark-navy card grid with Gotham text.</p>
+
+<h2 id="what">What changed</h2>
+<div class="pair">
+  <figure><img src="images/01-palengke-gear.png" alt="Palengke panel on a landscape phone: a cream YOUR SACK column on the left listing Perlas, Yungib, Bahura and Kabibe with counts, 787 and a gold SELL button; on the right GEAR and UPGRADES tabs, a 7/20 slots chip, and six steel tiles with item models and green price buttons"><figcaption>Phone (iPhone 6 Plus landscape, 736&times;414), GEAR tab. The sack contents were a sample snapshot sent for the shot.</figcaption></figure>
+  <figure><img src="images/02-palengke-upgrades.png" alt="The UPGRADES tab: a steel Kaban ng Dagat bag tile reading MAXED, and two violet neon pass tiles, Malakas na Sulo and Malaking Lambat, each with a violet BUY button"><figcaption>UPGRADES tab: the next bag (here already the biggest, MAXED) and the two Robux pass items in violet neon, matching the Island Shop.</figcaption></figure>
+</div>
+<p>The panel is built entirely from <code>ReplicatedStorage.UIKit</code>. It is a 600&times;320 wood panel (the Bag's height) with a "PALENGKE" sign and the round red X, fitted with <code>K.fitBand</code> between the top bar and the hotbar. On the phone it renders at about 0.75 scale.</p>
+<ul>
+  <li><b>Left: YOUR SACK</b> (cream inset). One dark row per kind of find, ringed in its rarity-tier colour (<code>K.tierForValue</code>, the same tiers as the Bag). Each row has the find's gem and a count, most valuable first, and the list scrolls if all seven kinds are carried. Below the list: the server's <code>lootValue</code> in large gold with the money-bag emoji, a caption ("8 finds, sold as one lot"), and a gold <b>SELL</b> button. It still asks through <code>K.confirm</code> first. With an empty sack the button goes flat grey. Pressing it then shows a red note ("Nothing to sell yet -- bring up finds from the sea.") instead of doing nothing. The rows show counts only, not per-kind Peso, because the server's total can include event bonuses.</li>
+  <li><b>Right: GEAR / UPGRADES tabs</b> (green active, wood inactive) and a cream chip showing bag space ("🎒 7/20 slots"). The chip shows slots only because the bag name "Kaban ng Dagat" did not fit on a phone.</li>
+  <li><b>GEAR</b>: the six <code>ItemConfig.SortedShopItems()</code> as steel gear tiles. Each has the item's 3D model (<code>ItemIcon</code>), a detail line ("pack of 10 &bull; have 9", "0.5 slot &bull; have 2") and a green button with 💰 and the price. There is still no tolda, and the server refuses it anyway.</li>
+  <li><b>UPGRADES</b>: the next bag tier as a steel tile ("Bayong &mdash; 8 slots (now 4)", green price button). At the top tier it shows "MAXED", and with the Diver Bag pass it shows "OWNED" (grey). Then each <code>ItemConfig.PassItems</code> entry as a violet <b>rare</b> neon tile with a violet BUY and the Robux diamond. An owned pass turns into a grey "OWNED" with the blurb "fitted and working".</li>
+  <li><b>Toast</b> (the server's <code>ItemFeedback</code>/<code>FlashlightFeedback</code> lines, e.g. "Repellent in your bag. -40 Peso.") is now a cream note with a dark outline, or a red outline and red text for a refusal. It sits over the foot of the open Palengke, or low-centre when it is closed.</li>
+  <li><b>First-dive tip</b> ("Going deep? Carry an O2 tank...") restyled the same way, cream with a teal outline. Its behaviour is unchanged.</li>
+</ul>
+<p>Behaviour is unchanged: the same remotes (<code>RequestItemBuy</code>, <code>RequestBagUpgrade</code>, <code>RequestSellLoot</code>, <code>RequestGamePassPurchase</code>) and the same PanelUtil entry <code>"palengke"</code>. It opens from <code>PalengkeCounter.PalengkePrompt</code> anchored to the counter (22 studs), closes when <code>AtPalengke</code> goes false, and closes the Bag on open. The cursor is still freed in first person. The bodega Open-prompt owner filter was carried over as is.</p>
+
+<div class="pair">
+  <figure><img src="images/03-desktop-buy.png" alt="Desktop view of the Palengke with an empty sack, a grey SELL button and repellent showing have 2 after a purchase"><figcaption>Desktop (Device Simulator off) right after buying a Repellent: it went from "have 1" to "have 2". The sack is empty, so SELL is grey.</figcaption></figure>
+  <figure><img src="images/04-desktop-sell-confirm.png" alt="ARE YOU SURE dialog over the Palengke: Sell 8 finds? You get 787 Peso for the lot, with NO and SELL buttons"><figcaption>SELL with finds in the sack (sample snapshot) asks first. NO was clicked, and nothing was sold.</figcaption></figure>
+</div>
+
+<h2 id="files">All changes</h2>
+<table>
+  <tr><th></th><th>DataModel path</th><th>What</th></tr>
+  <tr><td><span class="tag mod">rewritten</span></td><td><code>StarterPlayer.StarterPlayerScripts.GearHud</code></td><td>The Palengke is rebuilt on UIKit (568 &rarr; about 525 lines). The old row/card builders, <code>clampPanels</code> and the dark palette are removed; the toast and dive tip are restyled. The ScreenGui is still named <code>GearHud</code> (PhotoModeController hides it by that name), and the panel frame is now <code>GearHud.Palengke</code> (was <code>GearHud.Shop</code>; nothing else referenced it).</td></tr>
+  <tr><td><span class="tag new">backup</span></td><td><code>ServerStorage._Retired.StarterPlayer_StarterPlayerScripts__GearHud_prePalengke</code></td><td>The previous GearHud, disabled.</td></tr>
+</table>
+<p>No new remotes, attributes, server scripts or world edits. Tuning constants in GearHud: <code>PANEL_W/H 600&times;320</code>, <code>SACK_W 184</code>, <code>TILE_H 102</code>, <code>PASS_GLYPH</code> (🔦 BrightBeam, 🎣 MalakingLambat).</p>
+
+<h2 id="tests">Testing</h2>
+<ul>
+  <li><b>Phone</b> (Device Simulator, iPhone 6 Plus landscape): opened with E at the counter. A first pass at 600&times;300 rendered at 0.8 scale with unreadable 8px detail text and a truncated bag chip. It was enlarged (320 tall, bigger tile text and icons, slots-only chip) and rechecked (screenshots above). The tab switch on the phone was forced locally for the Upgrades shot, because simulated clicks do not register in touch emulation.</li>
+  <li><b>Desktop</b> (Device Simulator off), with real clicks:
+    <ul>
+      <li>Opened with E and showed live data (7/20 slots, repellent "have 1").</li>
+      <li>BUY Repellent went to "have 2", with the toast "Repellent in your bag. -40 Peso."</li>
+      <li>SELL with an empty sack showed the red "Nothing to sell yet" note.</li>
+      <li>SELL with a sample 8-find snapshot opened "Sell 8 finds? You get 787 Peso for the lot." NO closed it and nothing was sold.</li>
+      <li>The UPGRADES tab switched pages: the bag showed MAXED (the account is at Kaban ng Dagat), and both passes showed BUY.</li>
+    </ul>
+  </li>
+  <li>After each sample snapshot, <code>ServerStorage.InventoryRefresh</code> was fired so the client went back to the real inventory. Every playtest ended with a Server-side kick (then Stop, because Studio stayed in Play mode after the kick).</li>
+</ul>
+
+<h2 id="gaps">Unverified / known gaps</h2>
+<ul>
+  <li>No real sale was made: the test account had no finds. The SELL YES path sends the same <code>RequestSellLoot</code> as before but was not exercised.</li>
+  <li>Buying a bag upgrade and buying a pass were not clicked: the account is at the top bag tier, and passes would open a Robux prompt. Their buttons use the same remotes as before.</li>
+  <li>The money-bag emoji beside the sack total renders pale on the cream background (legible, low contrast).</li>
+  <li>The Palengke still calls the currency "Peso", while the top bar shows the same balance with a money bag and the server calls it Shells. This naming was not changed here.</li>
+</ul>
+<div class="box">
+  <b>Test-account state:</b> the account (<code>Player_8745800367</code>) bought 1 Shark Repellent for 40 during the desktop test, and it was saved (balance 1721 &rarr; 1681). Sample inventories were display-only and were replaced by a real refresh. The Device Simulator was turned off for the desktop test and is back on (iPhone 6 Plus landscape). No quick-test values were left in any script. The place has not been published.
+</div>
+</main>
+</body>
+</html>

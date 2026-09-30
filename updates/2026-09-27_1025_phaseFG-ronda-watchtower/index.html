@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Update 2026-09-27: Phases F+G — ronda, police search, watchtower</title>
+<style>
+  :root { --ink:#1d2430; --dim:#5b6675; --line:#dde2e8; --bg:#fbfbf9; --accent:#c9485b; --ok:#2f8f6a; --warn:#b7791f; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width:960px; margin:0 auto; padding:32px 16px 64px; }
+  h1 { font-size:26px; margin:0 0 4px; }
+  h2 { font-size:20px; margin:40px 0 8px; padding-top:16px; border-top:1px solid var(--line); }
+  .meta { color:var(--dim); margin:0 0 20px; }
+  code { font:13px/1.4 ui-monospace, Consolas, monospace; background:#eef0f3; padding:1px 4px; border-radius:3px; }
+  table { border-collapse:collapse; width:100%; margin:8px 0 16px; font-size:14px; }
+  th, td { text-align:left; vertical-align:top; padding:6px 8px; border-bottom:1px solid var(--line); }
+  th { color:var(--dim); font-weight:600; }
+  .tag { display:inline-block; font-size:12px; font-weight:600; padding:0 6px; border-radius:3px; color:#fff; }
+  .new { background:var(--ok); } .mod { background:#3b6fb6; } .del { background:var(--accent); }
+  .box { border-left:3px solid var(--warn); background:#fff8ec; padding:8px 12px; margin:12px 0; }
+  ul { padding-left:22px; }
+  nav a { margin-right:12px; }
+  .pair { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:12px 0 20px; }
+  .pair figure, figure.one { margin:0; }
+  figure img { width:100%; height:auto; border:1px solid var(--line); border-radius:4px; display:block; }
+  figcaption { color:var(--dim); font-size:13px; margin-top:4px; }
+  figure.one { max-width:620px; margin:12px 0 20px; }
+  @media (max-width:640px) { .pair { grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+<main>
+<p><a href="../index.html">&larr; all updates</a></p>
+<h1>Phases F + G: the ronda, police that search, stars that bring more police, and the Bantay Tanaw watchtower</h1>
+<p class="meta">2026-09-27 &middot; place "[New Map]Isla Marahuyo" (placeId 128146022575640) &middot; phases 6 and 7 of 7</p>
+
+<nav><a href="#ask">What was asked</a><a href="#ronda">1. Ronda</a><a href="#search">2. Search</a><a href="#stars">3. Stars</a><a href="#drag">4. Escort drag</a><a href="#tower">5. Watchtower</a><a href="#files">All changes</a><a href="#tests">Testing</a><a href="#gaps">Gaps</a></nav>
+
+<h2 id="ask">What was asked</h2>
+<ol>
+  <li><b>Item 7</b> &mdash; "ronda police 2 humanoid, checking of bad player, if you get spotted equipping an axe you get a warning, 3 warning and they will start capture you, if they saw you open a tolda stall, they will raid your post and confiscate your items". The user chose: a warning any time the axe is seen equipped, and the count resets after a while with no new warning.</li>
+  <li><b>Item 14</b> &mdash; "police to be sneaky use tree or wall so player will not notice it, or if player notice the police it will be creepy".</li>
+  <li><b>Item 16</b> &mdash; police spot at a distance with a clear line of sight, including while coming from the station, and chase. Losing the player means running around the last-seen area for 5 attempts, then going back.</li>
+  <li><b>Item 17</b> (the police half) &mdash; more stars means more police. Instead of motorcycles (dropped by the user), they run faster.</li>
+  <li><b>Item 18</b> &mdash; a police watchtower on Tanaw Ridge that players and police can use, with a spotlight that tips off other police about the last-seen location, so players must avoid its line of sight.</li>
+</ol>
+<p>All of Phase F lives in <code>ServerScriptService.PoliceUnit</code>, which already had officers walking out of the station to a crime, chasing any Wanted player they could see (taser, cuffs, escort to the Piitan gate) and giving up at the scene. The ronda reuses that machinery rather than being a second AI.</p>
+
+<h2 id="ronda">1. The ronda (items 7 and 14)</h2>
+<ul>
+  <li><b>Always two on rounds.</b> A loop keeps <code>RONDA_COUNT = 2</code> officers named <code>Ronda</code> out (they count toward <code>MAX_UNITS</code>, now 8). A ronda that books a prisoner goes home like any officer and is replaced within seconds. They have no floating name.</li>
+  <li><b>Cover.</b> At load the module collects the island's palms as cover spots: the 202 <code>IslaMarahuyo.Scatter.Palm</code> parts plus the big <code>Foliage.Palm_*</code> models, ground-checked and above water. Rounds go tree to tree at <code>RONDA_SPEED = 9</code>. 60% of the time the next tree is one about 30 studs from the nearest player, and the officer stands on the <i>far</i> side of its trunk from them, then waits there <code>LURK_MIN..LURK_MAX = 5..10</code> s facing that player. Trees are 25&ndash;130 studs apart.</li>
+  <li><b>Creepy when noticed.</b> A player within <code>STARE_RANGE = 35</code>, whom the officer can see and who is facing it (look direction within about 30&deg;), gets stared at: the officer turns to face them and stands still for <code>STARE_SECONDS = 3</code>, taking a couple of slow steps toward them at the end, then moves off to another tree. At most once per player every 20 s.</li>
+  <li><b>Axe warnings.</b> Anyone in a ronda's line of sight (<code>RONDA_SIGHT = 80</code>) with the Axe equipped gets a warning, at most one per <code>WARN_DEBOUNCE = 15</code> s: "RONDA: Ibaba mo 'yang palakol -- put the axe away. Warning N of 3." The count resets after <code>WARN_COOLDOWN = 120</code> s without a new warning. The third warning makes them Wanted (new crime <code>axe</code>: "Kept carrying an axe after three warnings from the ronda.") and that ronda officer chases them itself. <code>Player.RondaWarnings</code> shows the current count.</li>
+  <li><b>Raids.</b> An open tolda in a ronda's line of sight gets walked to (at speed 14) and raided through the new <code>ServerStorage.RondaRaid</code> BindableFunction in <code>BlackMarketService</code>. The tent and stock are confiscated, nobody gets a cut, and the owner is told "The ronda raided your tolda". If the owner is standing at it (within 26 studs), they are also reported (<code>tolda</code>) and that ronda chases them.</li>
+</ul>
+
+<h2 id="search">2. Spotting, and searching after losing sight (item 16)</h2>
+<ul>
+  <li>Already there and kept: officers walk out of the station to a report, and on the way they take on any Wanted player they can see. Line of sight is a head-to-head raycast ignoring other officers.</li>
+  <li><code>SIGHT_RANGE</code> went from 90 to <b>120</b>.</li>
+  <li><b>New search.</b> Out of sight of their target, an officer runs (<code>RESPOND_SPEED = 24</code>) to where the target was last seen, or to the crime scene if it never saw them, then to random spots within <code>SEARCH_RADIUS = 30</code> of it. Each spot counts as one try, and so does <code>SEARCH_SPOT_SECONDS = 12</code> without reaching it. After <code>SEARCH_TRIES = 5</code> it gives up on that target: a station officer goes home to the station and a ronda goes back to its rounds. "Go back to prison" was read as back to base; officers live at the station, and the Piitan is only where prisoners are delivered. Seeing the target again at any point restarts the chase.</li>
+</ul>
+
+<h2 id="stars">3. Stars bring more police, running (item 17)</h2>
+<ul>
+  <li><code>ReportCrime</code> sends <code>1 + floor(stars / 2)</code> officers for the offender (1, 1, 2, 2, 3, 3, 4 for 0&ndash;6 stars), counting any already on them, within <code>MAX_UNITS</code>.</li>
+  <li>Chase speed by the target's stars, <code>CHASE_SPEED_BY_STARS</code>: 16, 16, 18, 18, 20, 22, 24 (a player runs 16). The flat <code>CHASE_SPEED</code> constant is gone. No vehicles.</li>
+</ul>
+
+<h2 id="drag">4. Police escort: same ankle drag as the Health Post</h2>
+<p>The police escort used the same close, torso-height drag (<code>DRAG_OFFSET</code>, the body pressed behind the officer) that item 1 asked to remove from the hospital. It now uses the Phase A ankle drag: face up, feet at <code>(1.6, -1.0, 0.9)</code> by the officer's right hand, the body fitted per avatar, tilted 104&deg;. This was not in the user's list; it was changed for the same reason as item 1.</p>
+
+<h2 id="tower">5. Bantay Tanaw, the Tanaw Ridge watchtower (item 18)</h2>
+<div class="pair">
+  <figure><img src="images/tanaw-old-tower.png" alt="Red translucent cube frame on the summit"><figcaption>Before: the old <code>Watchtower_TanawRidge</code>, an AI-generated red translucent box with an "OOF!" mesh in it. Nothing in it collided, it sat half underground, and it was not climbable.</figcaption></figure>
+  <figure><img src="images/tanaw-new-tower.png" alt="Wooden watchtower with a blue roof and a truss ladder"><figcaption>After: Bantay Tanaw, north-west of the zipline launch.</figcaption></figure>
+</div>
+<ul>
+  <li><span class="tag del">retired</span> <code>Structures.Watchtower_TanawRidge</code> &rarr; <code>ServerStorage._Retired.Workspace_Structures__Watchtower_TanawRidge</code>.</li>
+  <li><span class="tag new">new</span> <code>Structures.BantayTanaw</code> (29 parts) centred on (103, 87.3, &minus;203): four braced legs, an 8.8&times;8.8 deck at y 108.6 (about 21 studs above the summit) with rails, a blue roof, and a climbable <code>TrussPart</code> ladder up the north face into a gap in the rail. Anyone can climb it. It has a "BANTAY TANAW &bull; PULIS" sign and a spotlight <code>Lamp</code> (lens facing its &minus;X side, <code>SpotLight</code> <code>Spot</code>, <code>BeamStart</code> attachment) on a mast at the south-east corner. It stands clear of the zipline station at (122, 103, &minus;227).</li>
+  <li><span class="tag new">new</span> <code>ServerScriptService.WatchtowerService</code>:
+    <ul>
+      <li><b>Idle:</b> the lamp sweeps the island (0.35 rad/s, dipped 0.3 below the horizon) with a visible light shaft (<code>Beam</code> to a hidden <code>BeamEnd</code> where the light lands).</li>
+      <li><b>Spotting:</b> every 0.25 s it looks for Wanted players whose head it can see within <code>SIGHT_RANGE = 220</code> studs, with nothing solid in between. The nearest one gets the light locked on them, brighter.</li>
+      <li><b>Tip-off:</b> every second it calls <code>PoliceUnit.TipOff(player, position)</code>. Their Wanted clock is kept at least 15 s long, and every free officer, plus any already on them, gets that spot as the last sighting and runs there; a searching officer restarts its search there. The player is told every 8 s: "The Bantay Tanaw spotlight is on you -- every pulis knows where you are. Get out of its sight."</li>
+      <li><b>Lookout:</b> an anchored pulis ("Bantay", a clone of <code>PoliceAssets.Officer</code> with its tools removed) stands on the deck and turns with the light.</li>
+    </ul>
+  </li>
+</ul>
+<figure class="one"><img src="images/tanaw-spotlight-night.png" alt="Watchtower at night with a light shaft and a lookout on the deck"><figcaption>At night in a playtest: the lookout on the deck and the light shaft sweeping the slope. Bottom left, the test character with six stars ("MAPANGANIB &#9733;&#9733;&#9733;&#9733;&#9733;&#9733;", Phase E).</figcaption></figure>
+
+<h2 id="files">All changes</h2>
+<table>
+  <tr><th></th><th>Path</th><th>What</th></tr>
+  <tr><td><span class="tag mod">edited</span></td><td><code>ServerScriptService.PoliceUnit</code></td><td>ronda (cover points, <code>nextCover</code>, <code>lookAround</code>, <code>warnAxe</code>, <code>rondaStep</code>, the keep-two loop), search state, star-scaled dispatch and chase speed, <code>SIGHT_RANGE</code> 120, <code>MAX_UNITS</code> 8, <code>canSee(unit, player, range)</code>, <code>M.TipOff</code>, ankle-drag escort, <code>REASONS.axe</code></td></tr>
+  <tr><td><span class="tag mod">edited</span></td><td><code>ServerScriptService.BlackMarketService</code></td><td><code>confiscate(nil, tent)</code> for the ronda; new <code>ServerStorage.RondaRaid</code> BindableFunction</td></tr>
+  <tr><td><span class="tag new">new</span></td><td><code>ServerScriptService.WatchtowerService</code></td><td>spotlight, tip-offs, lookout</td></tr>
+  <tr><td><span class="tag new">new</span></td><td><code>Workspace.IslaMarahuyo.Structures.BantayTanaw</code></td><td>the tower</td></tr>
+  <tr><td><span class="tag del">retired</span></td><td><code>Structures.Watchtower_TanawRidge</code></td><td>the old placeholder</td></tr>
+</table>
+<p>New attribute: <code>Player.RondaWarnings</code>. New crime kind: <code>axe</code>. New server-side bindable: <code>ServerStorage.RondaRaid</code>.</p>
+
+<h2 id="tests">How it was tested</h2>
+<ul>
+  <li><b>Ronda spawn:</b> both <code>Ronda</code> officers came out of the station a few seconds after the server started. There were no errors in the console, and the startup log reads "[WatchtowerService] Bantay Tanaw lit -- 220-stud line of sight, tips the pulis off every 1s".</li>
+  <li><b>Axe warnings &rarr; arrest:</b> standing near a ronda with the axe out gave warning 1 at 0.5 s and warning 2 at 15.9 s. At 31.2 s the player became Wanted for <code>axe</code>. With 4 prison stars, 2 more officers left the station (3 in all: <code>1 + floor(4/2)</code>) at speed 24. The ronda tased, cuffed and dragged the player (the new ankle drag) to the Piitan: a 20-minute booking, the 5th offence.</li>
+  <li><b>Raid + spotlight:</b> pitching a tolda about 20 studs from a ronda, the client saw, within 6 seconds: "Tolda pitched", then "The ronda raided your tolda -- the tent and 0 Peso of goods, all gone.", then "You were seen...", then "The Bantay Tanaw spotlight is on you...", "A pulis put you down", "You're cuffed", and the booking. So the raid, the caught-in-the-act report, the tower spotting a Wanted player and <code>TipOff</code> all fired together.</li>
+  <li><b>Bugs found and fixed while testing:</b> (1) The stall-sight ray was blocked by the owner standing on the stall, so there was no raid in 45 s. Player characters are now ignored for that ray. (2) <code>local ownerId, present = raid and raid:Invoke(model)</code> dropped the second return value, so an owner standing at the stall was never reported. It is now two statements. (3) A ronda standing where no palm was 25&ndash;130 studs away (near the station and Piitan) never left. <code>nextCover</code> now falls back to the nearest palm beyond 25 studs.</li>
+  <li><b>Rounds after fix (3):</b> a 40 s sample, one letter per second (m moving, . waiting): <code>.............................mmmmmmmm...</code> and <code>.mmmmmmm......mmmmmmmmmm................</code>. Both left their first tree, and both waited near palms between walks.</li>
+</ul>
+
+<h2 id="gaps">Not verified / known gaps</h2>
+<div class="box">
+<ul>
+  <li><b>Waits run long</b>: in the sample above one ronda stood 29 s before its first walk and another 16 s between walks, against the 5&ndash;10 s lurk. It is probably re-pathing out of tight spots (spawning inside the station, walls around the Piitan). Not investigated further.</li>
+  <li><b>The stare was not seen directly.</b> It triggers when a player within 35 studs faces the officer. Its numbers (distance, facing test, 3 s, the slow creep) are untested by eye.</li>
+  <li>The <b>5-try search</b> was not watched through to the give-up: every chase in testing ended in an arrest within seconds, because the test player stood still. Try running out of sight of an officer and watch it search 5 spots, then head home.</li>
+  <li>Officers only run at 24 while responding or searching. Chasing someone in sight uses the star table (16&ndash;24), so a 0&ndash;1 star player can still outrun them at 16.</li>
+  <li>The tower spots only <b>Wanted</b> players. Anyone else in its light is ignored, and its tip-offs keep a spotted player Wanted for at least 15 s more.</li>
+  <li>A tolda raid reads "0 Peso of goods" when the rack is empty; the stall itself is still lost.</li>
+  <li>With two ronda always out, <code>MAX_UNITS</code> leaves 6 officers for crimes, the same as before the ronda existed.</li>
+  <li>Needs 2 players: the ronda warning someone else, one player watching another get dragged, and the tower light following a second player.</li>
+</ul>
+</div>
+</main>
+</body>
+</html>

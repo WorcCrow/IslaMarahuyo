@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Update 2026-09-29: Pating (shark) job and Shark Poison</title>
+<style>
+  :root { --ink:#1d2430; --dim:#5b6675; --line:#dde2e8; --bg:#fbfbf9; --accent:#c9485b; --ok:#2f8f6a; --warn:#b7791f; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width:960px; margin:0 auto; padding:32px 16px 64px; }
+  h1 { font-size:26px; margin:0 0 4px; }
+  h2 { font-size:20px; margin:40px 0 8px; padding-top:16px; border-top:1px solid var(--line); }
+  h3 { font-size:16px; margin:20px 0 4px; }
+  .meta { color:var(--dim); margin:0 0 20px; }
+  code { font:13px/1.4 ui-monospace, Consolas, monospace; background:#eef0f3; padding:1px 4px; border-radius:3px; }
+  table { border-collapse:collapse; width:100%; margin:8px 0 16px; font-size:14px; }
+  th, td { text-align:left; vertical-align:top; padding:6px 8px; border-bottom:1px solid var(--line); }
+  th { color:var(--dim); font-weight:600; }
+  .tag { display:inline-block; font-size:12px; font-weight:600; padding:0 6px; border-radius:3px; color:#fff; }
+  .new { background:var(--ok); } .mod { background:#3b6fb6; } .del { background:var(--accent); }
+  .box { border-left:3px solid var(--warn); background:#fff8ec; padding:8px 12px; margin:12px 0; }
+  ul { padding-left:22px; }
+  nav a { margin-right:12px; }
+  .pair { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:12px 0 20px; }
+  .pair figure, figure.solo { margin:0; }
+  figure img { width:100%; height:auto; border:1px solid var(--line); border-radius:4px; display:block; }
+  figcaption { color:var(--dim); font-size:13px; margin-top:4px; }
+  @media (max-width:640px) { .pair { grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+<main>
+<p><a href="../index.html">&larr; all updates</a></p>
+<h1>Pating (shark) job and Shark Poison</h1>
+<p class="meta">2026-09-29 &middot; place "[New Map]Isla Marahuyo" (placeId 128146022575640) &middot; approved plan: <code>C:\Users\Administrator\.claude\plans\dapper-gliding-cosmos.md</code></p>
+
+<nav><a href="#ask">What was asked</a><a href="#what">What changed</a><a href="#files">All changes</a><a href="#tests">Testing</a><a href="#gaps">Gaps</a></nav>
+
+<h2 id="ask">What was asked</h2>
+<p>A new job on the Munisipyo work board: <b>Shark</b>. A player who takes it spawns in a Shark Den under the sea and messes with people on the sea: swimmers, cave divers and fishers. The shark jumps out of the water to push a player in and drain their air, so they may drown and be looted. A shark can't hurt the same player again for 10 seconds. A new Palengke item, <b>Shark Poison</b>: if it is equipped when a shark attacks, the shark job is undone, and the player must wait a minute before applying again. The job costs 100. Sharks can swim in the cave but have no flashlight, so they have a sense of smell that says whether they are getting nearer to or farther from a player, and red glowing eyes to see in the dark that other players can see. A sneaking shark leaves the eyes off and goes by scent alone.</p>
+<p>Answers settled with the owner before building: Shark Poison is <b>reusable and droppable</b> (100 Peso, 1 bag slot); the poisoned shark <b>dies, becomes human and wakes on the Health Post dock like a drowned player</b>; a shark stays a shark <b>until it quits or is poisoned</b> (no timed shift); <b>no pay</b> for sharks; the 10-second rule is <b>per shark</b> (the owner: "it can be hurt by other shark"); the shark HUD uses the existing <b>wood + neon UIKit</b> look; the board panel is <b>restyled</b> to match.</p>
+
+<h2 id="what">What changed</h2>
+
+<h3>1. The job: Pating, 100 Peso, taken at the board</h3>
+<div class="pair">
+  <figure><img src="images/board-panel.png" alt="The restyled work board on a landscape phone: five job rows in two columns (Nars, Pulis, Tindero, Mangingisda, Pating), the Pating row with a red TAKE 100 button"><figcaption>The Munisipyo board (<code>RoleGui</code>) in the wood + neon style, all five jobs visible without scrolling. Pating shows its price on a red button. The roster names in the shot were sent by a test script.</figcaption></figure>
+</div>
+<ul>
+  <li><code>RoleService.Roles.pating</code>: cap 3 sharks per server, any time of day, no NPC stand-in (<code>noBot</code>), <code>cost = 100</code>, <code>claimCooldown = 60</code>.</li>
+  <li>Claiming checks for custody first (Jailed, Reviving, Wanted, in a Shipwreck match) and then charges 100 Peso through <code>CurrencyService.TrySpend(player, 100, "SharkRole")</code>. A refused or unaffordable claim changes nothing. The ledger reads "Took the Pating (shark) job".</li>
+  <li>New <code>RoleService.Revoke(player, seconds)</code>: a forced resign that sets the wait before applying again to <code>seconds</code> (60 for a poisoned shark). A voluntary quit still waits the usual 90 s (<code>RECLAIM_COOLDOWN</code>).</li>
+  <li>New hook <code>RoleService.OnRoleChanged(player, old, new)</code>, called on every claim and resign; <code>SharkPlayerService</code> listens so RoleService does not depend on it.</li>
+  <li>The board's snapshot rows carry <code>cost</code> and <code>noBot</code>, and <code>RoleBootstrap</code> no longer assumes every role has a bot (the shark row reads "nobody yet").</li>
+</ul>
+
+<h3>2. The shark: body, den, lunge, eyes, scent</h3>
+<div class="pair">
+  <figure><img src="images/shark-eyes-on.png" alt="A dark shark seen from the front at night with two glowing red eyes"><figcaption>Eyes on: red glowing eyes on the head, visible to every player. The shark HUD is on the right (LUNGE, EYES ON, QUIT).</figcaption></figure>
+  <figure><img src="images/shark-eyes-off.png" alt="The same shark with no glowing eyes, only a dark silhouette"><figcaption>Eyes off ("sneak"): no glow and no light. The button turns wood-brown and reads EYES OFF.</figcaption></figure>
+</div>
+<ul>
+  <li><b>Body.</b> Same trick as the Shipwreck minigame: the player's own character is hidden (parts, decals, name/role tags) and <code>SharkAssets.SharkMesh</code> (9 studs long) is welded on. Its parts go into the existing collision group <code>ShipwreckShark</code> (only planks care about that group), and the mesh is tagged <code>ShipwreckShark</code> so <code>ShipwreckClient</code> animates its tail bones on every client. <code>SwimSpeedOverride = 24</code>. Reset or respawn while holding the job re-embodies and returns to the den.</li>
+  <li><b>No tools.</b> A shark cannot hold any tool (flashlight, axe, poison): anything that lands in its character is unequipped at once server-side, its flashlight is forced off, and the hotbar is hidden. Nothing is taken from the bag.</li>
+  <li><b>Air and land.</b> No air drain for a shark (<code>BreathService</code>). Out of the water it can only flop along at 5 studs/s, and after 8 s on dry ground the sea takes it back to the den.</li>
+  <li><b>Lunge.</b> LUNGE button (or F, or a click in the world on desktop) &rarr; <code>RequestSharkLunge</code> &rarr; the server checks role, water and an 8 s cooldown, then tells the shark's client to leap (the client owns its physics): 95 up and 32 forward, measured at about 17 studs of height. For 1.4 s the server checks for victims within 9 studs of the shark: swimming players, and anyone within 12 studs above the water (a fisher on a bangka, someone at a pier's edge). Not sharks, not players who are Jailed, Reviving or in a Shipwreck match, and not anyone this shark hit in the last 10 s.</li>
+  <li><b>What a hit does.</b> The victim loses 18 of their 45 base air, is unseated and shoved away from the shark, and tumbles for 1.5 s. If that empties their air it goes through the normal <code>BreathService.Drown</code> path (bag scatters where they fell, dock revive), so others can loot them. The shark's HUD says who it shoved.</li>
+  <li><b>Immunity is per shark.</b> The same shark cannot hit the same person for 10 s. A different shark can. This matches the ambient sharks' own 10 s disengage.</li>
+  <li><b>Red eyes.</b> Two small neon red balls on the head plus one red <code>PointLight</code> (range 18) so the shark can see in the cave. They are made on the server, so every player sees them. EYES button or R toggles (<code>RequestSharkEyes</code>, attribute <code>SharkEyes</code>). Lit by default.</li>
+  <li><b>Scent.</b> Every 0.25 s the server sends the nearest swimmer or waterline player within 300 studs: distance, direction, and whether it is getting warmer or colder. The scent chip on the HUD shows a needle that turns with the camera, "N studs" and "warmer / colder / steady". Smell ignores walls; there is no scent when nobody is in range.</li>
+  <li><b>Quit.</b> QUIT (or X) asks "ARE YOU SURE?", then <code>RequestRole("none")</code>; the shark is put back into its avatar and placed on dry ground by the board. Taking the job again costs 100 Peso again.</li>
+  <li>Ambient sharks never target a shark player (<code>SharkService</code>); a shark player is not counted into the Shipwreck lobby (<code>ShipwreckService</code>); the island's "DO NOT SWIM" banner is hidden on a shark's screen so it does not sit on the scent chip.</li>
+</ul>
+
+<h3>3. The Pating Den</h3>
+<figure class="solo"><img src="images/den-outside.png" alt="A dark rock mound on the seabed with a PATING DEN sign, a row of pale teeth above a dark opening, and a few boulders around it"><figcaption>The den from the sea floor, north side (the mouth that faces the island). Taken in Edit mode.</figcaption></figure>
+<p>A basalt dome on the natural basin at (80, -27, 540), about 250 studs south of Baybayon Beach, with 27 studs of water above. Outer radius 22, hollow radius 15 (about 14 studs of headroom), two mouths (north and east), a sand floor, glowing algae (teal/blue/red) for light and a row of teeth over the north mouth. New <code>SharkDen.Spawns.DenSpawn_1..3</code> are the places a fresh shark appears. The dome is outside <code>SharkService.CAVE_BOUNDS</code>, so ambient sharks' roam points are unaffected.</p>
+
+<h3>4. Shark Poison</h3>
+<figure class="solo"><img src="images/palengke-poison.png" alt="The Palengke panel scrolled to the bottom of the gear grid: Lambat, Shark Bait, Repellent, and a Shark Poison tile with a green bottle, 1 slot, price 100"><figcaption>The new tile at the Palengke: 1 slot, 100 Peso.</figcaption></figure>
+<ul>
+  <li><code>ItemConfig.Items.sharkpoison</code>: 1 slot, 100 Peso, <code>usable = false</code>, never spent. It appears in the Palengke automatically (<code>SortedShopItems</code>).</li>
+  <li>It is a hotbar tool named <code>SharkPoison</code> (<code>TOOL_FOR</code> in <code>InventoryService</code>, hotbar slot 9, <em>not</em> bodega-gated). It can be dropped and picked up like other gear.</li>
+  <li>When a shark's lunge reaches someone whose character holds a <code>SharkPoison</code> tool, the lunge does not land: the shark's job is revoked (<code>RoleService.Revoke(shark, 60)</code>), its body is removed, a green cloud puffs where it died, both sides get a message, and <code>ReviveService.Begin</code> puts it on the Health Post dock like a drowned diver. The poison is not used up, and the shark keeps its bag (the drowned stash is not fired).</li>
+</ul>
+
+<h3>5. The board panel restyled (owner's choice)</h3>
+<p><code>RoleHud</code> was still the old dark panel. It is rebuilt on UIKit: wood panel, sign, glossy buttons, cream rows on a two-column grid so all five jobs fit on a phone, and the Tindero's shift meter and toasts in the same style. Same remotes and the same <code>RoleGui.Panel</code> path, so <code>CursorGuard</code> still frees the cursor while it is open.</p>
+
+<h3>The shark's screen</h3>
+<figure class="solo"><img src="images/shark-hud.png" alt="Landscape phone view over dark open sea: a cream SCENT chip at the top reading 60 studs - steady, and LUNGE, EYES ON and QUIT buttons down the right edge"><figcaption>Scent chip (top centre), LUNGE / EYES / QUIT (right edge, clear of the top bar, the thumbstick and the jump button).</figcaption></figure>
+
+<h2 id="files">All changes</h2>
+<table>
+<tr><th></th><th>Path</th><th>What</th></tr>
+<tr><td><span class="tag new">new</span></td><td><code>ServerScriptService.SharkPlayerService</code> (ModuleScript)</td><td>body, den spawn, tools guard, lunge, poison kill, eyes, scent, land timeout, cleanup, Studio hooks</td></tr>
+<tr><td><span class="tag new">new</span></td><td><code>ServerScriptService.SharkPlayerBootstrap</code> (Script)</td><td>one line: <code>SharkPlayerService.Init()</code></td></tr>
+<tr><td><span class="tag new">new</span></td><td><code>StarterPlayer.StarterPlayerScripts.SharkClient</code> (LocalScript)</td><td>HUD, leap, keys F / R / X, hides hotbar and DO NOT SWIM banner</td></tr>
+<tr><td><span class="tag mod">edited</span></td><td><code>ServerScriptService.RoleService</code></td><td>Pating role, cost, <code>Revoke</code>, <code>OnRoleChanged</code>, snapshot fields</td></tr>
+<tr><td><span class="tag mod">edited</span></td><td><code>ServerScriptService.RoleBootstrap</code></td><td>bot-less role guard in board text and bot labels</td></tr>
+<tr><td><span class="tag mod">edited</span></td><td><code>ServerScriptService.SharkService</code></td><td>ambient sharks skip <code>SharkRole</code> players</td></tr>
+<tr><td><span class="tag mod">edited</span></td><td><code>ServerScriptService.BreathService</code></td><td>no drain for <code>SharkRole</code></td></tr>
+<tr><td><span class="tag mod">edited</span></td><td><code>ServerScriptService.InventoryService</code></td><td><code>TOOL_FOR.sharkpoison</code>, <code>HOTBAR_RANK.SharkPoison = 9</code></td></tr>
+<tr><td><span class="tag mod">edited</span></td><td><code>ServerScriptService.CurrencyService</code></td><td>ledger source <code>SharkRole</code></td></tr>
+<tr><td><span class="tag mod">edited</span></td><td><code>ServerScriptService.ShipwreckService</code></td><td>lobby ignores <code>SharkRole</code> players</td></tr>
+<tr><td><span class="tag mod">edited</span></td><td><code>ReplicatedStorage.ItemConfig</code></td><td>new item <code>sharkpoison</code></td></tr>
+<tr><td><span class="tag mod">edited</span></td><td><code>StarterPlayer.StarterPlayerScripts.Hotbar</code></td><td>order table gains <code>SharkPoison</code></td></tr>
+<tr><td><span class="tag mod">edited</span></td><td><code>StarterPlayer.StarterPlayerScripts.SprintScript</code></td><td>5 studs/s on land for a shark</td></tr>
+<tr><td><span class="tag mod">rewritten</span></td><td><code>StarterPlayer.StarterPlayerScripts.RoleHud</code></td><td>UIKit board panel, two columns, price on the button</td></tr>
+<tr><td><span class="tag new">backup</span></td><td><code>ServerStorage._Retired.StarterPlayer_StarterPlayerScripts__RoleHud_preShark</code></td><td>the previous RoleHud, disabled</td></tr>
+<tr><td><span class="tag new">new</span></td><td><code>ServerStorage.ItemAssets.SharkPoison</code> (Model), <code>SharkPoisonTool</code> (Tool)</td><td>bottle prefab for drops; the hotbar tool (Handle + welded green bottle, no scripts)</td></tr>
+<tr><td><span class="tag new">new</span></td><td><code>ReplicatedStorage.ItemIcons.sharkpoison</code></td><td>picture source for the Palengke tile and hotbar</td></tr>
+<tr><td><span class="tag new">new</span></td><td><code>Workspace.IslaMarahuyo.Activities.SharkDen</code></td><td><code>Spawns</code> (3 markers), <code>Teeth</code>, <code>Glow</code>, <code>Sign</code></td></tr>
+<tr><td><span class="tag new">terrain</span></td><td>Terrain around (80, -27, 540)</td><td>basalt dome, flooded hollow, sand floor, two mouths, 9 boulders; a 16&times;26 channel cleared in front of the north mouth</td></tr>
+</table>
+
+<p><b>New remotes</b> (in <code>ReplicatedStorage.Remotes</code>, created by <code>SharkPlayerService</code>): <code>RequestSharkLunge</code> (client&rarr;server), <code>RequestSharkEyes</code> (client&rarr;server, boolean), <code>SharkStatus</code> (server&rarr;client: <code>lungeGo</code>, <code>scent</code>, <code>hit</code>, <code>toast</code>).</p>
+<p><b>New player attributes</b> (memory only): <code>SharkRole</code>, <code>SharkEyes</code>, <code>SharkLungeReadyAt</code> (server time), and <code>SwimSpeedOverride</code> is set while a shark.</p>
+<p><b>Tuning constants</b> (top of <code>SharkPlayerService</code>): <code>SWIM_SPEED 24</code>, <code>SHARK_LENGTH 9</code>, <code>LUNGE_COOLDOWN 8</code>, <code>LUNGE_WINDOW 1.4</code>, <code>LUNGE_REACH 9</code>, <code>AIR_COST 18</code>, <code>IMMUNE_SECONDS 10</code>, <code>KNOCK_SECONDS 1.5</code>, <code>SCENT_RANGE 300</code>, <code>LAND_GRACE 8</code>, <code>POISON_WAIT 60</code>. In <code>SharkClient</code>: <code>LEAP_UP 95</code>, <code>LEAP_FORWARD 32</code>. Role cap 3, cost 100 and wait 60 are in <code>RoleService.Roles.pating</code>.</p>
+<p><b>Studio-only test hooks</b> (only created when <code>RunService:IsStudio()</code>, in <code>ServerStorage</code>): <code>DebugPatingLunge:Fire(player, ignoreCooldown)</code>, <code>DebugPatingDummy:Fire(cframe, holdsPoison, name)</code> (a stand-in victim in <code>workspace.PatingTestDummies</code>, which also gets <code>ShoveCount</code> and <code>AirLost</code> attributes), <code>DebugPatingClear:Fire()</code>.</p>
+
+<h2 id="tests">Testing</h2>
+<p>Every new and edited script passed a <code>loadstring</code> compile check in Edit. Solo playtests on the iPhone 6 Plus emulation, each ended by kicking the player from the Server datamodel. Startup log: "[SharkPlayerService] Pating job online", no errors.</p>
+<ul>
+  <li><b>Claim:</b> real path (<code>RequestRole("pating")</code> from the client). 100 Peso charged (balance shown by <code>RequestShells</code> fell by exactly 100), <code>SharkRole</code> and <code>SwimSpeedOverride</code> set, avatar hidden (Head transparency 1), mesh and 2 eyes present, collision group <code>ShipwreckShark</code>, spawned inside the den, Humanoid state Swimming, SharkGui on and Hotbar off.</li>
+  <li><b>Lunge and immunity</b> (against a stand-in dummy in the water): first lunge shoved it once and cost 18 air; a second lunge within 10 s did nothing; the cooldown was enforced when not bypassed. A real client press (<code>RequestSharkLunge</code>) also worked and hit a dummy about 6 studs away.</li>
+  <li><b>Leap height:</b> measured on the client: 46 up gave 3.3 studs above the surface, 70 gave 8.6, 90 gave 15.3, 120 gave 33.9. That is why it is 95.</li>
+  <li><b>Poison:</b> a lunge at a dummy holding a <code>SharkPoison</code> tool: the dummy was not shoved, the shark's role and <code>SharkRole</code> were cleared, the mesh was gone, the head visible again, the collision group restored, and the player was <code>Reviving</code> on the Health Post dock, then walked out after a bot revive (28 s). Applying again straight away was refused; applying again later was accepted (and charged).</li>
+  <li><b>Item:</b> bought at the Palengke (balance 1628 &rarr; 1528), the tool appeared in the backpack, was held in the character when equipped, was dropped as <code>Dropped_sharkpoison</code> (the tool left the backpack) and shows in the Palengke with its icon.</li>
+  <li><b>Eyes:</b> toggled over the remote: attribute, eye transparency and light all followed (screenshots above).</li>
+  <li><b>No tools:</b> equipping a tool while a shark left the character holding nothing.</li>
+  <li><b>Quit:</b> <code>RequestRole("none")</code> returned the player to the plaza by the board with the avatar visible, no mesh, group restored, SharkGui off, Hotbar on.</li>
+  <li><b>Water test:</b> the first version raycast down from above, which the den roof blocks, and never saw a victim at depth. Replaced by a terrain voxel read (works under roofs and at any depth); the lunge tests above ran on it.</li>
+  <li><b>Board panel:</b> phone layout; the first version showed three rows and needed scrolling, so it was widened to two columns (all five jobs visible in the screenshot).</li>
+</ul>
+
+<h2 id="gaps">Not verified / known gaps</h2>
+<div class="box">
+  <ul>
+    <li><b>No real multiplayer test.</b> Every victim in testing was a stand-in dummy or the player themself. The real-player path (a swimming Humanoid state, a fisher on a bangka, a seated player being unseated, a real drowning through <code>BreathService.Drown</code> and looting) was not exercised. Needs 2+ accounts (Test &rarr; Clients and Servers, or a published test server).</li>
+    <li><b>A real player holding poison</b> was checked only as "a tool named SharkPoison in the character" (a dummy, and a real equip on the test avatar). The full lunge-at-a-real-player-holding-it case has not run.</li>
+    <li>Shoving a real victim uses a server-side velocity on their root plus 1.5 s of <code>PlatformStand</code>; the ambient sharks' bite does the same, but the feel on a real client is unseen.</li>
+    <li>Not tested: cave swimming as a shark (the water test is a voxel read and the state check is Swimming, so it should hold under cave roofs), the F/R/X keys and the click-to-lunge on a real keyboard, the 8 s land timeout, shark reset/respawn while holding the job, a shark leaving the game, taking the job with three sharks already up (FULL), and refusal messages when Jailed or Wanted.</li>
+    <li>The den's north mouth still has one boulder near it (the channel was cleared, but not re-verified in a playtest after the last terrain change other than one Edit-mode picture). The teeth are flat grey wedges and read as plain slabs.</li>
+    <li>The island's first-dive tip ("Going deep? Carry an O2 tank...") can still pop up over a shark's scent chip for the first time it enters the water. The left status column still shows the ambient shark count ("177 DANGER") for a shark.</li>
+    <li>Numbers are first pass: cap 3 sharks, 18 air, 8 s cooldown, 300 stud scent, 24 swim speed, 100 Peso role and 100 Peso poison.</li>
+    <li>A shark's held-in-the-bag Flashlight is left in the backpack, unequipped; it is not removed from the bag.</li>
+    <li>Old <code>RoleHud</code> behaviour kept: the board panel does not close when you walk away from it.</li>
+  </ul>
+</div>
+<p><b>Test-account state:</b> MERS_Cov2 spent about 900 Peso during testing (the 100 Peso role fee on every claim, plus 100 for one Shark Poison, which was then dropped and expired). Nothing else was changed on the account. No values need reverting; the test hooks exist only in Studio, and the test dummies were cleared.</p>
+</main>
+</body>
+</html>

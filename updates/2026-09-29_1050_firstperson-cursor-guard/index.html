@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Update 2026-09-29: first-person desktop players can always use the UI</title>
+<style>
+  :root { --ink:#1d2430; --dim:#5b6675; --line:#dde2e8; --bg:#fbfbf9; --accent:#c9485b; --ok:#2f8f6a; --warn:#b7791f; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width:960px; margin:0 auto; padding:32px 16px 64px; }
+  h1 { font-size:26px; margin:0 0 4px; }
+  h2 { font-size:20px; margin:40px 0 8px; padding-top:16px; border-top:1px solid var(--line); }
+  h3 { font-size:16px; margin:20px 0 4px; }
+  .meta { color:var(--dim); margin:0 0 20px; }
+  code { font:13px/1.4 ui-monospace, Consolas, monospace; background:#eef0f3; padding:1px 4px; border-radius:3px; }
+  table { border-collapse:collapse; width:100%; margin:8px 0 16px; font-size:14px; }
+  th, td { text-align:left; vertical-align:top; padding:6px 8px; border-bottom:1px solid var(--line); }
+  th { color:var(--dim); font-weight:600; }
+  .tag { display:inline-block; font-size:12px; font-weight:600; padding:0 6px; border-radius:3px; color:#fff; }
+  .new { background:var(--ok); } .mod { background:#3b6fb6; } .del { background:var(--accent); }
+  .box { border-left:3px solid var(--warn); background:#fff8ec; padding:8px 12px; margin:12px 0; }
+  ul { padding-left:22px; }
+  nav a { margin-right:12px; }
+  figure.one { margin:12px 0 20px; max-width:620px; }
+  figure img { width:100%; height:auto; border:1px solid var(--line); border-radius:4px; display:block; }
+  figcaption { color:var(--dim); font-size:13px; margin-top:4px; }
+</style>
+</head>
+<body>
+<main>
+<p><a href="../index.html">&larr; all updates</a></p>
+<h1>First-person desktop players can always use the UI (CursorGuard, BACK TO CELL [C])</h1>
+<p class="meta">2026-09-29 &middot; place "[New Map]Isla Marahuyo" (placeId 128146022575640) &middot; follows <a href="../2026-09-29_1002_ui-redesign-wood-neon/index.html">the wood + neon UI redesign</a> earlier the same day</p>
+
+<nav><a href="#ask">What was asked</a><a href="#why">The problem</a><a href="#fix">What changed</a><a href="#files">All changes</a><a href="#tests">Testing</a><a href="#gaps">Gaps</a></nav>
+
+<h2 id="ask">What was asked</h2>
+<p>The owner asked: if a player on desktop is in first person and opens a bodega (the Bag) or any other UI, will they get stuck? They then said to confirm it and make sure no player can get stuck.</p>
+
+<h2 id="why">The problem</h2>
+<p>On a computer, in first person or with shift lock on, the Roblox camera sets <code>UserInputService.MouseBehavior = LockCenter</code> every frame. The cursor stays pinned to the middle of the screen and is hidden, so a button on screen cannot be clicked. The player can still walk and can always scroll out of first person (unless a script forces <code>LockFirstPerson</code>). Even so, a menu whose only way out is a button would feel stuck.</p>
+<p>Menus that go through <code>ReplicatedStorage.PanelUtil</code> were already safe. While any registered panel is open, PanelUtil shows a <code>Modal</code> button and binds a render step at <code>Camera + 10</code> that sets <code>MouseBehavior = Default</code> every frame, which wins over the camera. Registered panels: help, admin, tasks, palengke, tolda, music, dance, cavemap, account, bag, visitors, roster, settings, islandshop, and the redesign's "ARE YOU SURE?" dialog (<code>kitdialog</code>).</p>
+<p>An audit of every ScreenGui turned up screens that <b>show themselves</b> (pushed by the server or opened by a prompt) without going through PanelUtil. For a first-person desktop player their buttons were unreachable:</p>
+<ul>
+  <li><code>BoatGui.HirePanel</code> (boat hire), <code>CaveSignGui</code> (write on a cave slate), <code>JusticeGui.Vote</code> and <code>JusticeGui.ServiceChoice</code> (jail vote and the service choice), <code>ReviveGui</code>'s WAKE UP button, <code>RoleGui.Panel</code> (the work board), <code>PhotoGui</code> (photo mode).</li>
+  <li>The Shipwreck minigame screens: <code>Lobby</code>, <code>Mash</code> (the 4-second tap race), <code>Eliminated</code>, <code>Spectate</code>, <code>Result</code>.</li>
+  <li>The status column's <b>BACK TO CELL</b> button, which is shown for the whole community-service sentence.</li>
+</ul>
+
+<h2 id="fix">What changed</h2>
+<h3>1. <code>PanelUtil.Watch</code>: free the cursor for a screen PanelUtil does not own</h3>
+<p><code>PanelUtil.Watch(name, isOpenFn)</code> registers a <b>passive</b> entry with no-op open and close. The existing 0.25 s heartbeat <code>sync()</code> polls <code>isOpenFn</code>. While it returns true, the cursor is freed exactly as for a real panel, and it is handed back to the camera when the screen goes. <code>PanelUtil.Changed</code> still fires for these entries. <code>PanelUtil.IsPassive(name)</code> lets a listener tell a watched screen from a real menu.</p>
+
+<h3>2. New <code>CursorGuard</code> LocalScript</h3>
+<p><code>StarterPlayer.StarterPlayerScripts.CursorGuard</code> hands each self-showing screen above to <code>PanelUtil.Watch</code> as <code>watch:boathire</code>, <code>watch:cavesign</code>, <code>watch:vote</code>, <code>watch:servicechoice</code>, <code>watch:revivewake</code>, <code>watch:roleboard</code>, <code>watch:photomode</code>, <code>watch:shipwrecklobby</code>, <code>watch:shipwreckmash</code>, <code>watch:shipwreckout</code>, <code>watch:shipwreckspectate</code> and <code>watch:shipwreckresult</code>. A screen counts as up when its ScreenGui is enabled and every frame on the path is visible (for ReviveGui, when the <code>WakeButton</code> descendant is visible). Each check is wrapped in <code>pcall</code>. None of the owning scripts were touched.</p>
+<p>Persistent HUDs (status column, hotbar, top bar, shark alert, timers) are deliberately <b>not</b> watched. Freeing the cursor for a whole sentence or match would break first-person mouse-look.</p>
+
+<h3>3. The status column ignores watched screens</h3>
+<p><code>StatusHud</code> hides its left column while a menu is open so it does not overlap it. It now skips passive entries too (<code>if name == "kitdialog" or PanelUtil.IsPassive(name) then return end</code>). This keeps the jail timer and jobs visible during a vote or the service choice.</p>
+
+<h3>4. BACK TO CELL answers to the C key</h3>
+<figure class="one"><img src="images/03-back-to-cell-c.png" alt="Status column with a lock badge reading 8m, a crate badge reading 3 jobs, and a wood button reading BACK TO CELL [C]"><figcaption>Desktop, first person: on a keyboard the button reads "BACK TO CELL&nbsp;&nbsp;[C]" and is 32px wider to fit. (Jail attributes set locally on the client for the shot.)</figcaption></figure>
+<ul>
+  <li><code>KEY_BACK = Enum.KeyCode.C</code>. When <code>UserInputService.KeyboardEnabled</code>, the label gains "&nbsp;&nbsp;[C]" and the button widens from <code>BADGE + 70</code> to <code>BADGE + 102</code>.</li>
+  <li><code>InputBegan</code> fires <code>Remotes.RequestJailAction:FireServer("backToCell")</code> only while the button is visible and only when the key was not already processed by the game. Typing "c" in chat does not trigger it.</li>
+  <li>C was free. The only other uses in the place are Roblox's own admin freecam (Shift+P, then C/Z for up/down). No game script binds C.</li>
+  <li>Touch players are unaffected: the label and size are unchanged when there is no keyboard.</li>
+</ul>
+
+<h2 id="files">All changes</h2>
+<table>
+  <tr><th></th><th>DataModel path</th><th>What</th></tr>
+  <tr><td><span class="tag mod">edited</span></td><td><code>ReplicatedStorage.PanelUtil</code></td><td>Added <code>PanelUtil.Watch(name, isOpenFn)</code> and <code>PanelUtil.IsPassive(name)</code>. Nothing else changed.</td></tr>
+  <tr><td><span class="tag new">new</span></td><td><code>StarterPlayer.StarterPlayerScripts.CursorGuard</code></td><td>LocalScript, 12 watched screens (listed above).</td></tr>
+  <tr><td><span class="tag mod">edited</span></td><td><code>StarterPlayer.StarterPlayerScripts.StatusHud</code></td><td>Skips passive PanelUtil entries when hiding the column; BACK TO CELL shows "[C]" on a keyboard and the C key fires <code>backToCell</code>.</td></tr>
+</table>
+<p>No new remotes and no new attributes (the existing <code>RequestJailAction</code> remote is reused). No world, terrain or server-script changes.</p>
+
+<h2 id="tests">Testing</h2>
+<p>One playtest with Studio's Device Simulator <b>off</b> (a desktop client: <code>TouchEnabled=false</code>, <code>MouseEnabled=true</code>). <code>Player.CameraMode = LockFirstPerson</code> was set on the client so the camera could not be zoomed out. <code>MouseBehavior</code> was sampled 4&ndash;6 times at 0.1 s intervals after each step:</p>
+<table>
+  <tr><th>Step</th><th>MouseBehavior</th></tr>
+  <tr><td>Baseline, first person, nothing open</td><td>LockCenter</td></tr>
+  <tr><td>Bag opened with the <b>N</b> key (<code>BodegaUp</code> set locally)</td><td>Default &times;6, <code>MouseIconEnabled</code> true</td></tr>
+  <tr><td>Lambat selected &rarr; DROP &rarr; "ARE YOU SURE?" dialog; Bag closed with N, dialog alone still open</td><td>Default</td></tr>
+  <tr><td>Clicked NO</td><td>LockCenter; dialog closed; the Lambat was still in the bag</td></tr>
+  <tr><td>Island Shop opened with <b>E</b> at the Palengke Market stall</td><td>Default &times;4</td></tr>
+  <tr><td>Shop closed with its X button (real mouse click through the MCP)</td><td>LockCenter</td></tr>
+  <tr><td><code>JusticeGui.Vote</code> made visible locally</td><td>Default &times;4</td></tr>
+  <tr><td>Vote hidden</td><td>LockCenter &times;4</td></tr>
+  <tr><td><code>ShipwreckGui.Mash</code> made visible locally</td><td>Default &times;4</td></tr>
+  <tr><td>Mash hidden</td><td>LockCenter &times;4</td></tr>
+  <tr><td>Jail attributes set locally (<code>Jailed</code>, <code>JailDays 0.3</code>, <code>ServiceJobsLeft 3</code>, <code>ServiceTrack vendor</code>)</td><td>Button visible, label "BACK TO CELL&nbsp;&nbsp;[C]", 148&times;32</td></tr>
+  <tr><td>Pressed C with a server-side probe on <code>RequestJailAction.OnServerEvent</code></td><td>Server received <code>"backToCell"</code>; no errors in the output (the player was not really jailed, so the server ignored it)</td></tr>
+</table>
+<figure class="one"><img src="images/01-fp-drop-dialog.png" alt="Bag open in first person with the ARE YOU SURE dialog asking Drop 1 Lambat, NO and DROP buttons, and a visible mouse pointer"><figcaption>First person on desktop: Bag &rarr; DROP opens the confirm dialog and the pointer is free to click NO or DROP.</figcaption></figure>
+<figure class="one"><img src="images/02-fp-shop-open.png" alt="Island Shop open over the Palengke deck in first person, with the mouse pointer visible over the grid"><figcaption>First person on desktop: the Island Shop opened with E at the stall; the pointer is free and the X closed it.</figcaption></figure>
+<p>The playtest ended by kicking the player from the Server datamodel, which saves and releases the session lock. The client-side test attributes were cleared first, and <code>CameraMode</code> was set back to Classic.</p>
+
+<h2 id="gaps">Unverified / known gaps</h2>
+<ul>
+  <li>Of the 12 watched screens, only <code>Vote</code> and <code>Mash</code> were exercised live, by toggling visibility locally. The other ten use the same code path, so they are checked by that path only. Nobody played a real boat hire, cave slate, service choice, revive, role board, photo spot or full Shipwreck round in first person.</li>
+  <li>The watch is polled every 0.25 s, so a screen that pops up can take up to a quarter of a second to free the cursor.</li>
+  <li>Screens that show only information with no button (zone info, shark alert, timers) are intentionally not watched.</li>
+  <li>If a future screen shows itself without going through PanelUtil, add it to the <code>WATCH</code> list in <code>CursorGuard</code>, or register it with PanelUtil.</li>
+</ul>
+<div class="box">
+  <b>Test-account state and housekeeping.</b>
+  <ul style="margin:4px 0">
+    <li>The test account (<code>Player_8745800367</code>) received one extra Lambat through <code>ServerStorage.GiveToBag</code> for the DROP test, and it was saved. Nothing else in the saved data changed.</li>
+    <li>At the start, a stale DataStore session lock (left by a playtest stopped without a kick) was cleared, at the owner's request, by setting <code>Meta.ActiveSession=false</code>.</li>
+    <li>Studio's Device Simulator was turned off for the desktop test and has been turned back on (iPhone 6 Plus, 736&times;414 landscape).</li>
+    <li>No quick-test values were left in any script. Nothing needs reverting.</li>
+    <li>The place has not been published; the owner saves and publishes.</li>
+  </ul>
+</div>
+</main>
+</body>
+</html>

@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Update 2026-09-27: skill checks, Health Post, sharks, prison</title>
+<style>
+  :root { --ink:#1d2430; --dim:#5b6675; --line:#dde2e8; --bg:#fbfbf9; --accent:#c9485b; --ok:#2f8f6a; --warn:#b7791f; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width:960px; margin:0 auto; padding:32px 16px 64px; }
+  h1 { font-size:26px; margin:0 0 4px; }
+  h2 { font-size:20px; margin:40px 0 8px; padding-top:16px; border-top:1px solid var(--line); }
+  h3 { font-size:16px; margin:24px 0 6px; }
+  .meta { color:var(--dim); margin:0 0 20px; }
+  code { font:13px/1.4 ui-monospace, Consolas, monospace; background:#eef0f3; padding:1px 4px; border-radius:3px; }
+  table { border-collapse:collapse; width:100%; margin:8px 0 16px; font-size:14px; }
+  th, td { text-align:left; vertical-align:top; padding:6px 8px; border-bottom:1px solid var(--line); }
+  th { color:var(--dim); font-weight:600; }
+  .tag { display:inline-block; font-size:12px; font-weight:600; padding:0 6px; border-radius:3px; color:#fff; }
+  .new { background:var(--ok); } .mod { background:#3b6fb6; } .del { background:var(--accent); }
+  .box { border-left:3px solid var(--warn); background:#fff8ec; padding:8px 12px; margin:12px 0; }
+  ul { padding-left:22px; }
+  nav a { margin-right:12px; }
+</style>
+</head>
+<body>
+<main>
+<p><a href="../index.html">&larr; all updates</a></p>
+<h1>Skill checks, Health Post rework, shark defense, prison</h1>
+<p class="meta">2026-09-27 01:22 &middot; place "[New Map]Isla Marahuyo" (placeId 128146022575640) &middot; edited live in Studio through the Roblox_Studio MCP tools &middot; no screenshots in this update (they start with the next one)</p>
+
+<nav><a href="#ask">What was asked</a><a href="#skill">1. Skill checks</a><a href="#health">2. Health Post</a><a href="#shark">3. Sharks</a><a href="#prison">4. Prison</a><a href="#files">All files</a><a href="#tests">Testing</a><a href="#gaps">Gaps</a></nav>
+
+<h2 id="ask">What was asked</h2>
+<ol>
+  <li>A way to fight back against sharks that is fair to the player without breaking the shark mechanics.</li>
+  <li>The Health Post cut from 5 box nurses to 2 humanoid nurse avatars that walk around (counter, supplies, medicine) to look busy. It changed during planning into a <b>dock-and-drag revive</b>: a drowned diver lands on a dock about 20 seconds from the hospital, a nurse (bot or player) walks out and drags them in, and laying them on the scanner revives them. With only 2 bots, a rush queues; player nurses add capacity.</li>
+  <li>A much bigger prison, "like Bilibid", where detainees can roam and run in a quadrangle.</li>
+  <li>A modular <b>radial skill check</b> system with at least 3 kinds, reusable for the nurse job now and the market later. The user supplied a reference screenshot of a dark ring with a "Click" pill in the middle.</li>
+</ol>
+<p>Follow-ups added along the way: a guidance arrow for player nurses that only appears when they get stuck; player nurses wear a nurse costume; the automatic place backups were dropped (see <code>D:\Claude\CLAUDE.md</code>); every change now gets an update page like this one.</p>
+
+<h2 id="skill">1. Radial skill check system</h2>
+<p>Three kinds, one look (dark ring, warm lit zone, pill label in the centre, title above, hint below), built from Frames only &mdash; no image assets.</p>
+<table>
+  <tr><th>Kind</th><th>How it plays</th><th>Scored on</th></tr>
+  <tr><td><code>SweepNeedle</code></td><td>A marker circles the ring; press as it crosses the lit arc. Repeats for 3 revolutions.</td><td>press</td></tr>
+  <tr><td><code>HoldFill</code></td><td>Hold to drive the marker round (a trail fills behind it); let go inside the lit arc. Auto-releases once past the arc.</td><td>release</td></tr>
+  <tr><td><code>ShrinkingRing</code></td><td>A bright ring closes onto a lit band whose thickness <i>is</i> the hit window; press as they meet.</td><td>press</td></tr>
+</table>
+<ul>
+  <li><b>Server decides.</b> <code>SkillCheckPhase</code> holds the maths used by both sides. A phase is plain data (<code>id, kind, difficulty, startAt, target, period|duration, tolerance, title, subtitle, action</code>) timed with <code>workspace:GetServerTimeNow()</code>. The client reports when it pressed; <code>ClampClaim</code> only believes that within <code>MAX_LAG = 0.3</code>s of when the server heard it.</li>
+  <li>Difficulty is <code>easy|medium|hard</code>; each kind maps it to its own speed and tolerance (table <code>TUNING</code> in <code>SkillCheckPhase</code>). <code>LEAD = 0.55</code>s before the marker moves. HoldFill allows 6s before the first press.</li>
+  <li>Input: click or tap anywhere on the dial, or Space / E / gamepad A / R2 (bound with ContextActionService and sunk, so Space does not also jump).</li>
+  <li>API &mdash; server: <code>local hit, quality = SkillCheckServer.Run(player, kind, {difficulty, title, subtitle, action})</code> (yields; one check per player; <code>Cancel(player)</code>). Client-only, pays nothing: <code>RadialSkillCheck.Play(kind, config)</code>.</li>
+  <li>Used by: Health Post lay-down (<code>HoldFill</code>), shark lunge parry (<code>ShrinkingRing</code>), and a cosmetic "Stay with us" check for divers waiting on the dock (random kind, easy, local only).</li>
+</ul>
+
+<h2 id="health">2. Health Post: dock-and-drag revive</h2>
+<h3>Flow</h3>
+<ol>
+  <li><code>BreathService</code> drowns the diver as before and calls <code>ReviveService.Begin(player, onComplete)</code>. <code>drowning</code> stays set until the revive completes, so nobody waiting can drown again or lose anything more.</li>
+  <li>The diver is laid on their back on a free mat on the <b>Pantalan</b> dock (16 mats; past 16 they stack on existing mats) and joins a FIFO queue.</li>
+  <li>Dispatcher (every 0.4s): if a free player nurse is on duty, a new patient is left for players for <code>PLAYER_FIRST_SECONDS = 12</code>; otherwise the nearest free bot is sent at once.</li>
+  <li>Bot: walks down at 14, takes them by the shoulders (weld plus non-colliding <code>NurseCarry</code> collision group &mdash; the same technique as <code>PoliceUnit</code>'s escort), drags them at <code>BOT_DRAG_SPEED = 9</code> (~20s) to a free scanner bay, and a 4s scan revives them.</li>
+  <li>Player nurse: presses <i>Carry to the Health Post</i> on any mat that is still waiting (this overrides a bot on its way), drags them (SprintScript: walking 11, sprinting 15), presses <i>Lay them in the scanner</i> at a free bay, and plays a <code>HoldFill</code> check. A hit bills <code>NURSE_FEE = 60</code>; a miss bills 60% (capped at what the patient has). The patient is revived either way. Carries time out after 100s and go back to the front of the queue. Prisoners serving a nurse sentence do the same work for service credit.</li>
+</ol>
+<h3>Other pieces</h3>
+<ul>
+  <li><b>Bots</b> Nurse Fely and Nurse Luz are R15 humanoids spawned by <code>ReviveService</code> into <code>MedicalDock.Nurses</code> from <code>ServerStorage.NurseAssets.Nurse</code>. That rig is built from the <code>PoliceAssets.Officer</code> body: teal scrubs (shirt <code>rbxassetid://6199496858</code>, pants <code>rbxassetid://6199490570</code>), a nurse cap and hair taken from a Creator Store model <b>with every script stripped</b> (the free nurse models carried hidden, obfuscated scripts, so none were used whole), a clipboard, and walk/idle/look-around animations. When idle they loop between <code>NurseStations</code> (counter, supply shelf, medicine cabinet, oxygen crates, scanner check). A nametag status line shows what each one is doing.</li>
+  <li><b>Patient UI</b> (<code>ReviveController</code>, rewritten): phases wait/carry/treat, place in line ("#3 in line", "Nurse Luz is coming"), ETA while carried, orbit/trailing/front cameras.</li>
+  <li><b>Nurse UI</b> (<code>NurseController</code>, rewritten): call-out strip ("N divers waiting at the Pantalan dock"). The <b>guidance arrow</b> (a local chevron plus a "Pantalan 48m" marker) only appears after 6.5s with no progress toward the target, and stays until they arrive.</li>
+  <li><b>Costume</b> (<code>NurseDressingService</code>): holding the <code>nurse</code> role swaps in the scrubs and cap, and sets aside layered clothing and T-shirt graphics; everything is restored on resign or respawn. Jailed players are skipped (the orange jumpsuit wins).</li>
+  <li>The bots keep working when players hold the job (<code>RoleService</code> <code>botManaged = true</code>; <code>RoleBootstrap</code> no longer rewrites their nametags).</li>
+  <li><code>PoliceService</code>'s nurse service area is now <code>MedicalDock.ServiceArea</code> (clinic + trail + dock), and service nurses arrive in the lobby (<code>track.arrive</code>).</li>
+</ul>
+<h3>World changes in <code>Workspace.IslaMarahuyo.Activities.MedicalDock</code></h3>
+<ul>
+  <li><span class="tag del">removed</span> box nurses <code>NurseFely/Bituin/Luz/Rosa/Inday</code>, <code>MedScanner_3..5</code>, <code>RecoverySpot_3..5</code>. Bays 1&ndash;2 are the drop-off spots.</li>
+  <li><span class="tag new">new</span> <code>Rooms</code>: a partition for the scanner ward, a Supplies &amp; Medicine room with a doorway, a medicine cabinet with bottles, shelf stock, a reception screen and clipboard, a hanging "TANGGAPAN - RECEPTION" sign, and a lobby bench.</li>
+  <li><span class="tag mod">moved</span> the supply shelf to the new room's east wall; crates and O2 tanks against the ward partition; the reception desk 1.5 studs south so a nurse fits behind it.</li>
+  <li><span class="tag new">new</span> <code>NurseStations</code> (5 invisible parts; <code>-Z</code> faces the job; attribute <code>Label</code>), <code>Nurses</code> (runtime), <code>ServiceArea</code> (invisible 60&times;60&times;230 at y 10).</li>
+  <li><span class="tag new">new</span> <code>Pantalan</code> dock at the peninsula's south tip (deck x &minus;501..&minus;483, z 208..250, top y 4.2): posts, rope rails, 4 lanterns, 16 mats + pillows, <code>Slots/Slot_1..16</code> (the slot's <code>+Z</code> points at the aisle, where the head goes), a ramp, and the sign "PANTALAN NG HEALTH POST".</li>
+  <li>Terrain: a ground-material trail was painted from the clinic steps (&minus;500, 90) to the dock (&minus;492, 203). A bush and a palm that stood on the trail were nudged aside.</li>
+</ul>
+
+<h2 id="shark">3. Shark defense (non-lethal)</h2>
+<ul>
+  <li><b>Lunge + parry.</b> A shark in bite range no longer bites on the spot: <code>startLunge</code> holds it coiled and thrashing just out of reach (<code>holdLunge</code>) while the diver gets a <code>ShrinkingRing</code> check "Shark! Fend it off". Hit: <code>driveOff</code> (knocked back, flees for <code>FLEE_SECONDS = 18</code>, ignores every diver, health reset). Miss: the original <code>bite()</code> (breath cost, ragdoll launch), unchanged. Difficulty is easy with the knife in hand and medium without; night is one step harder. There is one lunge per diver at a time.</li>
+  <li><b>Dive Knife</b> (<code>StarterPack.DiveKnife</code>, a free tool everyone always has, never lost on drowning). Stabs are validated by the server (<code>RequestSharkHit</code>: knife in hand, reach 10, 0.5s cooldown). <code>SHARK_HEALTH = 3</code> hits drive a shark off. Each hit shoves it back 3 studs and makes it leave that diver alone for 2.5s. A stab that drives off a shark lunging at someone else cancels that diver's check, and no bite follows.</li>
+  <li>Sharks are never destroyed. The day/night population logic is untouched and there is nothing to farm.</li>
+  <li>Hotbar order: <code>DiveKnife = 2.5</code> (after the O2 tank) in both <code>InventoryService.HOTBAR_RANK</code> and <code>Hotbar.ORDER</code>.</li>
+</ul>
+
+<h2 id="prison">4. Prison: Piitan ng Marahuyo</h2>
+<ul>
+  <li><span class="tag new">new</span> <code>Workspace.IslaMarahuyo.Prison</code>, south of the police station. Walls x &minus;196..&minus;84, z &minus;124..&minus;194, ground y 18. <b>Terrain was levelled</b> there (a <code>FillBlock</code> of air above, ground below, a sand wedge down to the beach on the south side).</li>
+  <li>Contents: 14-stud concrete walls with a cap, foot stripe and barbed wire; 4 corner guard towers with searchlights (SpotLight); a closed barred gate on the north wall (x &minus;98..&minus;88) under a "PIITAN NG MARAHUYO" name board; an 11-cell block along the north wall (<code>Cells/Selda_1..11</code>, open doorways, double bunks, bench, number plate, a <code>HoldSpot</code> each) under a tin roof with a walkway; the quadrangle with a basketball court (lines, 2 hoops), a covered mess area (3 tables), wall benches, pull-up bars, and a flagpole with a Philippine flag; a community-service desk (<code>ServiceDesk</code>) under an awning inside the gate.</li>
+  <li>Invisible markers: <code>PrisonBounds</code> (the area detainees are held in), <code>Gate/BookingPoint</code> (where escorts end), <code>Gate/ReleasePoint</code> (outside the gate).</li>
+  <li><code>PoliceService</code>: each detainee is assigned a cell (<code>cellOf</code>, the least-occupied first) and may roam the whole compound. Leaving <code>PrisonBounds</code> puts them back in their cell. The desk prompt is on <code>Prison.ServiceDesk</code>. <code>release()</code> teleports them to <code>ReleasePoint</code> if they are inside.</li>
+  <li><code>PoliceUnit</code>: a new <code>M.BOOKING_AT</code> (set by PoliceService to the gate). Cuffed suspects are dragged there instead of to the station door. Officers still spawn from, and return to, the station.</li>
+  <li>Five palms/Palm_5 were moved out of the footprint, and bushes/tufts inside it were removed. The station's old holding cell is left as decoration and is no longer used.</li>
+</ul>
+
+<h2 id="files">All scripts and instances touched</h2>
+<table>
+  <tr><th></th><th>Path</th><th>What</th></tr>
+  <tr><td><span class="tag new">new</span></td><td><code>ReplicatedStorage.SkillCheckPhase</code></td><td>shared timing/scoring maths</td></tr>
+  <tr><td><span class="tag new">new</span></td><td><code>ReplicatedStorage.RadialSkillCheck</code></td><td>client ring UI + input; <code>Show</code>, <code>Play</code></td></tr>
+  <tr><td><span class="tag new">new</span></td><td><code>ServerScriptService.SkillCheckServer</code></td><td>server <code>Run</code>/<code>Cancel</code>; creates <code>Remotes.SkillCheck</code></td></tr>
+  <tr><td><span class="tag new">new</span></td><td><code>StarterPlayerScripts.SkillCheckClient</code></td><td>draws server-started checks</td></tr>
+  <tr><td><span class="tag new">new</span></td><td><code>ServerScriptService.NpcWalker</code></td><td>blocking path-walk for NPCs (<code>WalkTo</code>, <code>Face</code>)</td></tr>
+  <tr><td><span class="tag new">new</span></td><td><code>ServerScriptService.NurseDressingService</code></td><td>nurse costume on/off</td></tr>
+  <tr><td><span class="tag new">new</span></td><td><code>ServerStorage.NurseAssets</code> (<code>Nurse</code>, <code>NurseCap</code>)</td><td>bot rig template + cap for players</td></tr>
+  <tr><td><span class="tag new">new</span></td><td><code>StarterPack.DiveKnife</code> (+ <code>Stab</code> LocalScript)</td><td>shark knife</td></tr>
+  <tr><td><span class="tag mod">rewritten</span></td><td><code>ServerScriptService.ReviveService</code></td><td>queue, dock, carry, bots, prompts, payments</td></tr>
+  <tr><td><span class="tag mod">rewritten</span></td><td><code>StarterPlayerScripts.ReviveController</code></td><td>patient UI and camera</td></tr>
+  <tr><td><span class="tag mod">rewritten</span></td><td><code>StarterPlayerScripts.NurseController</code></td><td>nurse strip + guidance arrow</td></tr>
+  <tr><td><span class="tag mod">edited</span></td><td><code>ServerScriptService.BreathService</code></td><td>comment/message; Studio-only <code>DebugDrown</code></td></tr>
+  <tr><td><span class="tag mod">edited</span></td><td><code>ServerScriptService.SharkService</code></td><td>lunge/parry, knife hits, flee state</td></tr>
+  <tr><td><span class="tag mod">edited</span></td><td><code>ServerScriptService.PoliceService</code></td><td>prison cells/bounds/desk/release; nurse service area; Studio-only <code>DebugJail</code>/<code>DebugRelease</code></td></tr>
+  <tr><td><span class="tag mod">edited</span></td><td><code>ServerScriptService.PoliceUnit</code></td><td><code>BOOKING_AT</code> escort target</td></tr>
+  <tr><td><span class="tag mod">edited</span></td><td><code>ServerScriptService.RoleService</code></td><td>nurse <code>botManaged</code>, new blurb</td></tr>
+  <tr><td><span class="tag mod">edited</span></td><td><code>ServerScriptService.RoleBootstrap</code></td><td>skips bot-managed roles' nametags</td></tr>
+  <tr><td><span class="tag mod">edited</span></td><td><code>ServerScriptService.InventoryService</code></td><td>hotbar rank for DiveKnife</td></tr>
+  <tr><td><span class="tag mod">edited</span></td><td><code>StarterPlayerScripts.Hotbar</code></td><td>order for DiveKnife</td></tr>
+  <tr><td><span class="tag mod">edited</span></td><td><code>StarterPlayerScripts.SprintScript</code></td><td>carry speeds (<code>CarryingPatient</code> attribute)</td></tr>
+  <tr><td><span class="tag new">new</span></td><td><code>MedicalDock.Rooms / NurseStations / Nurses / Pantalan / ServiceArea</code></td><td>see section 2</td></tr>
+  <tr><td><span class="tag new">new</span></td><td><code>IslaMarahuyo.Prison</code></td><td>see section 4</td></tr>
+</table>
+<p>New attributes: <code>Player.CarryingPatient</code> (the patient's name while carrying), <code>Character.NurseDressed</code>. New remotes: <code>SkillCheck</code>, <code>RequestSharkHit</code>. <code>NurseStatus</code> now carries the kinds <code>callout/clear/carry/treat/done/lost/info</code> (with target position and label); <code>ReviveStatus</code> carries <code>begin/stage(text, phase)/progress(fraction, label)/done</code>.</p>
+
+<h2 id="tests">How it was tested (Studio playtests)</h2>
+<ul>
+  <li>Skill checks: all 3 kinds scored hits with honestly timed presses (quality 0.87&ndash;0.94). A late press claiming perfect timing was rejected. The real key-press path (CAS press and release) reached the server.</li>
+  <li>Health Post: a full bot revive took 15s fetch + 21s drag + 4s scan; the idle loop ran; the costume applied on claiming the role; the call-out and the arrow appeared after the idle timeout.</li>
+  <li>Sharks: a lunge showed the hard check at night without the knife, and a miss bit as before. With the knife equipped: a medium check, and a hit led to "Parried!" and the shark fleeing. Three stabs (the real tool click included) drove a shark off.</li>
+  <li>Prison: booked into Selda 1; standing mid-court was not pulled back; standing outside the wall was put back in the cell; release put them outside the gate; the desk prompt exists.</li>
+  <li>Studio-only test hooks (inert on live servers): <code>ServerStorage.DebugDrown:Fire(player)</code>, <code>DebugJail:Fire(player, days)</code>, <code>DebugRelease:Fire(player)</code>. Call them from the Server datamodel. Note: <code>require()</code> in an <code>execute_luau</code> context gives a <i>separate</i> module instance, so fire these hooks instead of calling module functions.</li>
+</ul>
+
+<h2 id="gaps">Not verified / known gaps</h2>
+<div class="box">
+<ul>
+  <li>Needs 2 players (Studio Test &rarr; Clients and Servers): a player nurse carrying a patient, the lay-down check and payment; an NPC officer escorting a real suspect to the prison gate.</li>
+  <li>The costume's layered-clothing removal was written after the last costume playtest and has not been re-checked visually.</li>
+  <li>The prisoner jumpsuit (body colour) is still hidden under layered clothing &mdash; the same issue the nurse costume had; not fixed yet.</li>
+  <li>The EKG and pulse sound IDs (<code>9114233513</code>, <code>9114223178</code>) fail with "Asset type does not match" (this predates the update).</li>
+  <li>The old quick-test values from the previous update are still in place: <code>ItemConfig.Bodega.AxeDamage = 20</code> (real 1) and the vendor service credit <code>0.4</code> (real 0.1).</li>
+</ul>
+</div>
+</main>
+</body>
+</html>

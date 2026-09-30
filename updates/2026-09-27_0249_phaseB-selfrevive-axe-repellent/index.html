@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Update 2026-09-27: Phase B — self-revive, axe swing, shark repellent</title>
+<style>
+  :root { --ink:#1d2430; --dim:#5b6675; --line:#dde2e8; --bg:#fbfbf9; --accent:#c9485b; --ok:#2f8f6a; --warn:#b7791f; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width:960px; margin:0 auto; padding:32px 16px 64px; }
+  h1 { font-size:26px; margin:0 0 4px; }
+  h2 { font-size:20px; margin:40px 0 8px; padding-top:16px; border-top:1px solid var(--line); }
+  h3 { font-size:16px; margin:24px 0 6px; }
+  .meta { color:var(--dim); margin:0 0 20px; }
+  code { font:13px/1.4 ui-monospace, Consolas, monospace; background:#eef0f3; padding:1px 4px; border-radius:3px; }
+  table { border-collapse:collapse; width:100%; margin:8px 0 16px; font-size:14px; }
+  th, td { text-align:left; vertical-align:top; padding:6px 8px; border-bottom:1px solid var(--line); }
+  th { color:var(--dim); font-weight:600; }
+  .tag { display:inline-block; font-size:12px; font-weight:600; padding:0 6px; border-radius:3px; color:#fff; }
+  .new { background:var(--ok); } .mod { background:#3b6fb6; } .del { background:var(--accent); }
+  .box { border-left:3px solid var(--warn); background:#fff8ec; padding:8px 12px; margin:12px 0; }
+  ul { padding-left:22px; }
+  nav a { margin-right:12px; }
+  .pair { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:12px 0 20px; }
+  .pair figure, figure.one { margin:0; }
+  figure img { width:100%; height:auto; border:1px solid var(--line); border-radius:4px; display:block; }
+  figcaption { color:var(--dim); font-size:13px; margin-top:4px; }
+  figure.one { max-width:620px; margin:12px 0 20px; }
+  @media (max-width:640px) { .pair { grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+<main>
+<p><a href="../index.html">&larr; all updates</a></p>
+<h1>Phase B: self-revive, anyone can carry, axe swing with momentum, knife out / Shark Repellent in</h1>
+<p class="meta">2026-09-27 &middot; place "[New Map]Isla Marahuyo" (placeId 128146022575640) &middot; edited live in Studio through the Roblox_Studio MCP tools &middot; phase 2 of 7</p>
+
+<nav><a href="#ask">What was asked</a><a href="#revive">1. Self-revive</a><a href="#axe">2. Axe swing</a><a href="#repel">3. Shark Repellent</a><a href="#files">All changes</a><a href="#tests">Testing</a><a href="#gaps">Gaps</a></nav>
+
+<h2 id="ask">What was asked</h2>
+<ol>
+  <li><b>Item 2</b> &mdash; "the player can revive themself longer than nurse or player, by solving actions, so if a player decided not to bring the patient in the hospital to waste time, the patient can still revive on its own and might cost nurse for intentional sabotage. patient pays both nurse and player cheaper on player".</li>
+  <li><b>Item 4</b> &mdash; "update the animated action for axe and knife, it is too simple, make it look like having momentum when strike".</li>
+  <li><b>Item 5</b> &mdash; drop the knife. A shark-defence consumable bought at the market, never in a starter pack, shown as a count with an icon on the right side, droppable, and taking bag space. The user chose: the existing "Fend it off!" check stays but is <i>easier</i> while carrying one, and one is used up on every lunge, win or lose.</li>
+</ol>
+
+<h2 id="revive">1. Self-revive, player carriers, and stalling (item 2)</h2>
+<p>How the request was read: coming round alone must be slower than being carried in, and must take skill ("solving actions"). It is the fallback when nobody helps or the carrier stalls. Anyone, not just a nurse, can now carry a patient, and a passer-by bills less than a nurse. A carrier who holds a patient for a long time without reaching a bay is fined when the patient wakes up on their own.</p>
+<ul>
+  <li><b>Anyone can carry.</b> The <i>Carry to the Health Post</i> prompt on the dock no longer answers "Only a nurse can carry patients". A patient cannot carry themselves, and nobody who is a patient themselves can carry.</li>
+  <li><b>Fees</b> (<code>payNurse</code>): a nurse (job holder) bills <code>M.NURSE_FEE = 60</code>; anyone else bills <code>M.PLAYER_CARRY_FEE = 30</code>. A fumbled lay-down still bills 60% of either, and it is still capped at what the patient has. Jailed service nurses still work for service credit.</li>
+  <li><b>Wake up alone.</b> <code>SELF_REVIVE_DELAY = 50</code> s after blacking out, a <b>WAKE UP (0/3)</b> button appears under the revive card; until then it counts down ("Wake up alone in 23s"). Pressing it runs server-scored radial checks in turn (<code>SweepNeedle</code>, <code>ShrinkingRing</code>, <code>HoldFill</code>, medium). <code>SELF_REVIVE_HITS = 3</code> passed checks, not necessarily in a row, bring the diver round where they lie, standing up and facing where their head pointed. A miss pauses <code>SELF_RETRY_SECONDS = 4</code>. It works on the dock and while being carried, not once laid in a scanner. The cosmetic "Stay with us" checks stop once waking up is possible, so the two never overlap. A bot revive takes about 40 s, so waking alone is always slower than an honest carry.</li>
+  <li><b>Stalling.</b> If the patient comes round alone while carried and the carry has lasted <code>SABOTAGE_GRACE = 45</code> s or more, the carrier pays <code>SABOTAGE_FINE = 25</code> Peso (capped at their balance) to the patient, and both are told why. A shorter carry just ends with "came round on their own. No fee." Bots are never fined. The old <code>PLAYER_CARRY_TIMEOUT = 100</code> s (back on the dock, no fee) is unchanged.</li>
+  <li>New remote <code>Remotes.RequestSelfRevive</code> (client &rarr; server, no arguments). <code>ReviveStatus</code> gained the kind <code>"self"</code> <code>(label, enabled)</code>; an empty label hides the button.</li>
+</ul>
+
+<h2 id="axe">2. Axe swing with momentum (item 4)</h2>
+<p>The knife is gone (item 5), so only the axe needed it. Both tools used to play Roblox's built-in "Slash" (a <code>toolanim</code> StringValue): the same limp one-arm flick for everything. An uploaded or Creator Store animation will not play here, because Roblox only plays animation assets owned by the place's owner or by Roblox, and publishing one needs the owner's account. So the chop is <b>procedural</b>, in the new module <code>ReplicatedStorage.AxeSwing</code>:</p>
+<ul>
+  <li>Four key poses over 0.66 s on the right shoulder, elbow, waist, neck and left shoulder. <b>Wind-up</b> at 0.2 s: axe cocked back over the head, shoulders turned away. <b>Impact</b> at 0.3 s: arm driven through and body turned and leaning into it, eased with a cubic ease-in so the blade keeps accelerating until it lands, which is where the momentum reads. <b>Follow-through</b> at 0.4 s, past the target. Then it eases back into the carry pose.</li>
+  <li>It is written into each joint's <code>Transform</code> in <code>RunService.PreSimulation</code>, which runs after the Animator, so it sits on top of whatever the character is doing and blends in and out. It works on <code>Motor6D</code> joints and on the newer <code>AnimationConstraint</code> joints; the test avatar uses the latter (see Testing). R6 falls back to the shoulder alone.</li>
+  <li>A white <code>Trail</code> (<code>Axe.Handle.SwingTrail</code>, between the new attachments <code>TrailInner</code>/<code>TrailEdge</code>) streaks behind the blade from 0.16 to 0.46 s. A whoosh plays at 0.2 s (<code>rbxasset://sounds/swordslash.wav</code>, which ships with every client, pitched down to 0.78).</li>
+  <li>Joint poses do not replicate, so <b>every client draws it</b>. The swinger's own <code>Axe.Swing</code> plays it on click. The server's <code>Axe.SlashAnim</code> (rewritten) relays each swing on the new remote <code>Remotes.AxeSwing</code> to every other client, where the new <code>StarterPlayerScripts.AxeSwingClient</code> plays it on the swinger's character. The relay is limited to one per <code>ItemConfig.Bodega.HitCooldown</code>.</li>
+  <li>The hit is sent when the blade lands (<code>AxeSwing.IMPACT = 0.3</code> s after the click), not on the click. If the axe is put away mid-swing, nothing is sent. <code>ItemConfig.Bodega.AxeDamage</code> was not touched.</li>
+  <li><code>AxeSwing.Hold(character, t)</code> freezes the pose at time <code>t</code>, for tuning and screenshots.</li>
+</ul>
+<div class="pair">
+  <figure><img src="images/axe-windup.png" alt="Axe cocked over the shoulder behind the head"><figcaption>Wind-up (held at t = 0.2 s): axe over the shoulder. By chance the shot also caught a ronda warning (Phase F) for holding the axe.</figcaption></figure>
+  <figure><img src="images/axe-impact.png" alt="Axe driven down in front at waist height"><figcaption>Impact (held at t = 0.3 s): axe head driven down in front, body leaning in.</figcaption></figure>
+</div>
+
+<h2 id="repel">3. The knife is out; Shark Repellent is in (item 5)</h2>
+<ul>
+  <li><span class="tag del">retired</span> <code>StarterPack.DiveKnife</code> &rarr; <code>ServerStorage._Retired.StarterPack__DiveKnife</code>. <code>SharkService</code> lost the stab handler, <code>RequestSharkHit</code>, <code>KNIFE_*</code>, <code>SHARK_HEALTH</code>, <code>sharkByModel</code> and <code>lastStabAt</code>. <code>DiveKnife</code> is out of the hotbar order in <code>InventoryService.HOTBAR_RANK</code> and <code>Hotbar.ORDER</code>. Sharks are still driven off by a successful parry (<code>driveOff</code>), so nothing about shark fleeing depended on the knife.</li>
+  <li><span class="tag new">new</span> item <code>ItemConfig.Items.repellent</code>, "Shark Repellent": <code>slots = 0.5</code> (it uses bag space), <code>price = 40</code>, <code>usable = false</code> (it goes off by itself), <code>order = 7</code>. It is sold at the Palengke like any gear, never in a starter kit, and is droppable and pick-up-able like other gear.</li>
+  <li><span class="tag new">new</span> model <code>ServerStorage.ItemAssets.SharkRepellent</code> (an orange spray can with a label band, red stripe, shark-fin mark and black cap, 7 parts, pivot kept upright) and its icon copy <code>ReplicatedStorage.ItemIcons.repellent</code>.</li>
+  <li><b>How it works</b> (<code>SharkService.startLunge</code> &rarr; <code>spendRepellent</code>): when a shark lunges, one can is taken from the carried bag if there is one (<code>profile.Gear.repellent</code>, then <code>InventoryRefresh</code>). That makes the check one step easier: easy instead of medium by day, medium instead of hard at night. The subtitle says how many are left. It is spent whether the parry lands or not.</li>
+  <li><b>Right-side count:</b> <code>StatusHud</code> has a new row, a shield icon and the number of cans carried, just under the shark count. It shows only while you carry any, and turns amber at 1.</li>
+</ul>
+<figure class="one"><img src="images/repellent-model.png" alt="Orange spray can with a shark fin mark"><figcaption>The Shark Repellent can (edit-mode preview).</figcaption></figure>
+<div class="pair">
+  <figure><img src="images/repellent-hud.png" alt="Right-side HUD with a shield row showing 3"><figcaption>Carrying 3 cans: the shield row sits under the shark count.</figcaption></figure>
+  <figure><img src="images/wake-up-button.png" alt="Revive card with an orange WAKE UP (0/3) button"><figcaption>50 s after blacking out: WAKE UP (0/3) under the revive card.</figcaption></figure>
+</div>
+
+<h2 id="files">All changes</h2>
+<table>
+  <tr><th></th><th>Path</th><th>What</th></tr>
+  <tr><td><span class="tag mod">edited</span></td><td><code>ServerScriptService.ReviveService</code></td><td>self-revive (<code>canSelfRevive</code>, <code>selfRevive</code>, <code>RequestSelfRevive</code> handler, <code>"self"</code> status in the dispatcher tick), <code>PLAYER_CARRY_FEE</code>, stalling fine, <code>carryStartedAt</code>, anyone can carry, <code>finish(t, message)</code></td></tr>
+  <tr><td><span class="tag mod">edited</span></td><td><code>StarterPlayerScripts.ReviveController</code></td><td>WAKE UP button, <code>"self"</code> status, cosmetic checks stop once unlocked, new wait hint</td></tr>
+  <tr><td><span class="tag new">new</span></td><td><code>ReplicatedStorage.AxeSwing</code></td><td>procedural chop: <code>Play</code>, <code>Hold</code>, <code>IMPACT</code></td></tr>
+  <tr><td><span class="tag new">new</span></td><td><code>StarterPlayerScripts.AxeSwingClient</code></td><td>draws other players' swings</td></tr>
+  <tr><td><span class="tag mod">rewritten</span></td><td><code>StarterPack.Axe.SlashAnim</code></td><td>relays swings to other clients instead of <code>toolanim</code></td></tr>
+  <tr><td><span class="tag mod">edited</span></td><td><code>StarterPack.Axe.Swing</code></td><td>plays the chop, sends the hit at impact (Phase D also added tolda targets)</td></tr>
+  <tr><td><span class="tag new">new</span></td><td><code>StarterPack.Axe.Handle.{TrailInner, TrailEdge, SwingTrail}</code></td><td>blade trail</td></tr>
+  <tr><td><span class="tag new">new</span></td><td><code>ReplicatedStorage.Remotes.{RequestSelfRevive, AxeSwing}</code></td><td>RemoteEvents</td></tr>
+  <tr><td><span class="tag mod">edited</span></td><td><code>ServerScriptService.SharkService</code></td><td>knife removed; repellent spent per lunge</td></tr>
+  <tr><td><span class="tag mod">edited</span></td><td><code>ReplicatedStorage.ItemConfig</code></td><td><code>Items.repellent</code></td></tr>
+  <tr><td><span class="tag new">new</span></td><td><code>ServerStorage.ItemAssets.SharkRepellent</code>, <code>ReplicatedStorage.ItemIcons.repellent</code></td><td>model + icon</td></tr>
+  <tr><td><span class="tag mod">edited</span></td><td><code>StarterPlayerScripts.StatusHud</code></td><td>repellent row (column now 8 rows tall)</td></tr>
+  <tr><td><span class="tag mod">edited</span></td><td><code>ServerScriptService.InventoryService</code>, <code>StarterPlayerScripts.Hotbar</code></td><td>DiveKnife removed from the hotbar order</td></tr>
+  <tr><td><span class="tag del">retired</span></td><td><code>StarterPack.DiveKnife</code></td><td>now <code>ServerStorage._Retired.StarterPack__DiveKnife</code></td></tr>
+</table>
+
+<h2 id="tests">How it was tested</h2>
+<ul>
+  <li><b>Self-revive</b> (Studio playtest; both bot nurses removed so nobody would carry the patient): <code>DebugDrown</code>, and the button read "Wake up alone in 45s" and counted down. At 50 s it turned orange: "WAKE UP (0/3)". Firing <code>RequestSelfRevive</code> with a scripted client pressing at the right moments gave <code>SweepNeedle</code> &rarr; <code>ShrinkingRing</code> &rarr; <code>HoldFill</code>, all hits. 6.2 s after pressing: "You came round on your own.", <code>Reviving</code> cleared, the root upright (UpVector.Y = 1.00) and unanchored.</li>
+  <li><b>Shark Repellent</b>: 3 cans via the real <code>ServerStorage.GiveToBag</code> hook, and the new StatusHud row showed "3". Placed next to a shark in open water, the player met five lunges (all parried by the scripted client). The count went 3 &rarr; 0 and the row hid itself, so the first three lunges each spent a can and the last two found none. The Palengke lists "Shark Repellent &mdash; 40 Peso &bull; 0.5 slot" (see Phase C/D).</li>
+  <li><b>Axe swing</b>: sampling the shoulder joint every frame during <code>AxeSwing.Play</code>: 82&deg; &rarr; 205&deg; by 0.2 s (wind-up), accelerating back through 171 &rarr; 145 &rarr; 90 &rarr; 50&deg; between 0.26 and 0.31 s (the strike), 28&deg; at 0.4 s, and back to the Animator's 79&deg; by 0.65 s. The poses were then retuned from screenshots (wind-up 175&deg;/35&deg;, impact 35&deg;/5&deg;, follow-through 5&deg;/10&deg; shoulder/elbow), and the images above show the retuned wind-up and impact.</li>
+  <li><b>Bug found and fixed while testing:</b> the test avatar's joints are <code>AnimationConstraint</code>s, not <code>Motor6D</code>s, so the first version found no shoulder and silently did nothing. It now accepts either.</li>
+  <li>Knife removal: a full source scan found no remaining <code>DiveKnife</code> / <code>KNIFE_</code> / <code>RequestSharkHit</code> references outside the retired tool. Sharks still flee after a parry.</li>
+</ul>
+
+<h2 id="gaps">Not verified / known gaps</h2>
+<div class="box">
+<ul>
+  <li><b>Needs 2 players</b> (Studio Test &rarr; Clients and Servers): a player without the nurse job carrying a patient and being paid 30; the 45-second stalling fine; other players seeing a swing through <code>AxeSwingClient</code>.</li>
+  <li>The axe was never swung by a real click in these tests. Studio's iPhone emulation is touch-only (<code>MouseEnabled = false</code>), so simulated mouse clicks do not activate tools. <code>Play</code> was driven directly, and the hit-at-impact timing in <code>Axe.Swing</code> is unverified against a live bodega.</li>
+  <li>The swing poses are hand-tuned numbers. If they look wrong on some avatars (very long arms, R6), adjust <code>KEYS</code> in <code>AxeSwing</code>; <code>Hold(character, t)</code> makes that quick.</li>
+  <li>Drowning scatters the bag, repellent included. That is intended (it is gear), but worth knowing: a diver who drowns loses their cans.</li>
+  <li><code>MonetizationConfig</code> still says a "Shark Repellent" game pass is deliberately not sold. That pass is unrelated to this Peso consumable, but the name now overlaps.</li>
+  <li>Unchanged from before: the revive card's status text overlaps the "Next in line" label, and the EKG/pulse sound ids fail to load.</li>
+</ul>
+</div>
+</main>
+</body>
+</html>

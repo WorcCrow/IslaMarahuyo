@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Isla Marahuyo — Dive the island. 0 m to 67 m.</title>
-<meta name="description" content="Isla Marahuyo is a Filipino island hangout on Roblox. Dive four ocean zones from the Kabibe shallows to the 67-metre Kailaliman abyss, build a bahay kubo, and trade shells at the palengke.">
+<title>Isla Marahuyo — Dive for pearls. Dodge the sharks. Or become one.</title>
+<meta name="description" content="Isla Marahuyo is a Filipino island on Roblox. Dive the reef and a flooded cave maze for pearls, sell them at the palengke, take a barangay job, stay out of the Piitan, or take the Pating job and hunt everyone else as the shark.">
 <link rel="icon" type="image/jpeg" href="assets/icon.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -28,11 +28,12 @@
   </a>
 
   <nav class="nav" id="nav">
-    <a href="#dive">Dive zones</a>
-    <a href="#secrets">Secrets</a>
-    <a href="#weather">Weather</a>
+    <a href="#dive">Dive</a>
+    <a href="#pating">Be the shark</a>
+    <a href="#shipwreck">Shipwreck</a>
+    <a href="#jobs">Jobs</a>
+    <a href="#law">The law</a>
     <a href="#passes">Passes</a>
-    <a href="#gallery">Gallery</a>
   </nav>
 
   <div class="topbar-actions">
@@ -55,18 +56,16 @@
       <div class="hud-marker" id="hud-marker"></div>
     </div>
     <ul class="hud-ticks">
-      <li style="--p:0%"><span>0 m</span></li>
-      <li style="--p:21%"><span>14 m</span></li>
-      <li style="--p:30%"><span>20 m</span></li>
-      <li style="--p:49%"><span>33 m</span></li>
-      <li style="--p:100%"><span>67 m</span></li>
+      <li style="--p:0%"><span>Ibabaw</span></li>
+      <li style="--p:22%"><span>Bahura</span></li>
+      <li style="--p:31%"><span>Yungib</span></li>
+      <li style="--p:60%"><span>Kailaliman</span></li>
     </ul>
   </div>
   <div class="hud-read">
-    <div class="hud-depth"><b id="hud-num">0</b><i>m</i></div>
     <div class="hud-zone" id="hud-zone">Ibabaw · Surface</div>
     <div class="hud-risk" id="hud-risk" data-risk="safe">Safe</div>
-    <div class="hud-earn" id="hud-earn">Boats, market, kubo plots</div>
+    <div class="hud-earn" id="hud-earn">Palengke, bangka, job board</div>
   </div>
 </aside>
 
@@ -75,21 +74,21 @@
   <!-- ============ HERO ============ -->
   <section class="sec hero" data-depth="-16" data-night="0">
     <div class="wrap hero-wrap">
-      <p class="eyebrow reveal">🌴 A Filipino island hangout on Roblox</p>
+      <p class="eyebrow reveal">🌴 A Filipino island on Roblox</p>
       <h1 class="reveal" style="--i:1">ISLA<br>MARAHUYO</h1>
       <p class="lede reveal" style="--i:2">
-        Dive the reef, raid the abyss, out-swim the sharks, then come back up and
-        sell your shells at the palengke. Scroll to descend.
+        Dive for pearls. Dodge the sharks. Or become one. Work the reef and a flooded
+        cave maze, swim your haul home alive, and sell it at the palengke. Scroll to descend.
       </p>
       <div class="cta-row reveal" style="--i:3">
         <a class="btn btn-big" href="https://www.roblox.com/games/128146022575640/Isla-Marahuyo" target="_blank" rel="noopener">▶ Play free on Roblox</a>
         <a class="btn btn-ghost" href="#dive">Take the dive ↓</a>
       </div>
       <ul class="chips reveal" style="--i:4">
-        <li><b>67 m</b><span>max depth</span></li>
-        <li><b>4</b><span>dive zones</span></li>
-        <li><b>30+</b><span>gamepasses</span></li>
-        <li><b>6</b><span>kubo plots</span></li>
+        <li><b>90 s</b><span>air, earned not sold</span></li>
+        <li><b>6</b><span>barangay jobs</span></li>
+        <li><b>600</b><span>Peso · rarest pearl</span></li>
+        <li><b>3–10</b><span>players · Shipwreck</span></li>
       </ul>
     </div>
     <div class="scroll-hint" aria-hidden="true"><span></span>scroll to dive</div>
@@ -99,17 +98,18 @@
   <section class="sec" id="surface" data-depth="-4" data-night="0">
     <div class="wrap">
       <div class="card card-warm reveal">
-        <p class="kicker">0 m · Ibabaw</p>
-        <h2>Mabuhay. This is the surface.</h2>
+        <p class="kicker">Ibabaw · the surface</p>
+        <h2>Mabuhay. Your sack is only worth something once you're home.</h2>
         <p class="body">
-          Stilt houses on the water, outrigger bangka tied to the piers, and a mountain
-          behind it all. Everything on Isla Marahuyo starts here — you pick a boat, you pick
-          a direction, and the island decides how deep you are willing to go.
+          Stilt houses over the water, bangka at the pier, and a ridge with a zipline and a
+          watchtower. Everything you gather under the sea rides in your sack until you sell it.
+          Run out of air on the way back and the whole haul scatters on the seabed for anyone
+          to pick up. The Peso already in your pocket is safe.
         </p>
         <div class="mini-grid">
-          <div class="mini"><b>🛶 Bangka runs</b><span>Race the outriggers out to the reef band and the far island.</span></div>
-          <div class="mini"><b>🐚 Palengke market</b><span>Aling Nena buys every shell you bring up. Chain deliveries for bonuses.</span></div>
-          <div class="mini"><b>🏡 Bahay kubo plots</b><span>Claim 1 of 6 waterfront plots and furnish it with banig, lanterns and trophies.</span></div>
+          <div class="mini"><b>🐚 Palengke</b><span>Sell your finds for Peso, then gear up for your job: batteries, O2 tanks, glowsticks by the piece, lambat nets.</span></div>
+          <div class="mini"><b>📋 Trabaho sa Barangay</b><span>Take a job at the board: nurse, pulis, tindero, fisher, diver or shark. Your first one is free.</span></div>
+          <div class="mini"><b>🛶 Bangka &amp; zipline</b><span>Rent a bangka from 15 Peso, or fly four zipline towers across Tanaw Ridge.</span></div>
         </div>
       </div>
     </div>
@@ -119,19 +119,18 @@
   <section class="sec sec-tall" id="dive" data-depth="9" data-night="0">
     <div class="wrap">
       <div class="zone reveal">
-        <div class="zone-num"><b>04</b><em>–14 m</em></div>
+        <div class="zone-num"><b>10</b><em>Peso a find</em></div>
         <div class="zone-body">
           <p class="kicker">Zone 01</p>
           <h2>Kabibe <span>· the shallows</span></h2>
           <p class="body">
-            Sunlit coral beds a short swim from the village piers. Nothing down here
-            wants to eat you. Learn the air bar, learn the shell spawns, come up rich enough
-            to buy fins.
+            Sunlit seabed a short swim from the piers, scattered with kabibe, sigay and talaba.
+            This is where you learn the air bar: 45 seconds a breath, refilled fast at the surface.
           </p>
           <ul class="stats">
-            <li><b>6–7</b><span>shells / item</span></li>
             <li><b>45 s</b><span>starting air</span></li>
-            <li class="risk safe"><b>Safe</b><span>risk level</span></li>
+            <li><b>Kabibe</b><span>shell find</span></li>
+            <li class="risk safe"><b>Low</b><span>risk level</span></li>
           </ul>
         </div>
       </div>
@@ -141,19 +140,20 @@
   <section class="sec sec-tall" data-depth="18" data-night="0">
     <div class="wrap">
       <div class="zone zone-flip reveal">
-        <div class="zone-num"><b>16</b><em>–20 m</em></div>
+        <div class="zone-num"><b>26</b><em>Peso a find</em></div>
         <div class="zone-body">
           <p class="kicker">Zone 02</p>
           <h2>Bahura <span>· the reef band</span></h2>
           <p class="body">
-            The drop-off. Colour everywhere, fish schools thick enough to lose a friend in,
-            and the first honest paycheck of the dive. Sonar owners see the good spawns from
-            the boat.
+            Coral, urchins and tahong further out, and the first real money. It's shark water
+            too: they patrol the whole sea, more of them after dark. When one lunges, time the
+            parry to fend it off, or lose air and go flying. Fishers stake lambat nets out here,
+            and every shark that swims through one shakes loose a find for anyone to grab.
           </p>
           <ul class="stats">
-            <li><b>17</b><span>shells / item</span></li>
-            <li><b>📡</b><span>sonar shines here</span></li>
-            <li class="risk low"><b>Low</b><span>risk level</span></li>
+            <li><b>Parry</b><span>fend off a lunge</span></li>
+            <li><b>Lambat</b><span>nets catch drops</span></li>
+            <li class="risk mid"><b>Moderate · sharks</b><span>risk level</span></li>
           </ul>
         </div>
       </div>
@@ -163,19 +163,20 @@
   <section class="sec sec-tall" data-depth="27" data-night="0">
     <div class="wrap">
       <div class="zone reveal">
-        <div class="zone-num"><b>20</b><em>–33 m</em></div>
+        <div class="zone-num"><b>95</b><em>Peso a pearl</em></div>
         <div class="zone-body">
           <p class="kicker">Zone 03</p>
-          <h2>Yungib <span>· the cave systems</span></h2>
+          <h2>Yungib <span>· the Perlas ng Dagat cave</span></h2>
           <p class="body">
-            Submerged limestone. The walls close in, the light goes green, and the only
-            way to stay down is to find the air pockets. Three <strong>Lung Corals</strong> are hidden in
-            here — all three push your natural air from 45 s to 90 s, free, forever.
+            A flooded maze under the island. Air pockets let you breathe on the way in, and
+            three hidden <strong>Lung Corals</strong> each add 15 seconds to every breath for good,
+            taking you from 45 to 90, once you carry them home and let them cure. Air is earned
+            down here. It is never for sale.
           </p>
           <ul class="stats">
-            <li><b>36–39</b><span>shells / item</span></li>
-            <li><b>90 s</b><span>air, fully upgraded</span></li>
-            <li class="risk mid"><b>Moderate</b><span>risk level</span></li>
+            <li><b>90 s</b><span>air, fully earned</span></li>
+            <li><b>3</b><span>Lung Corals</span></li>
+            <li class="risk high"><b>High · air</b><span>risk level</span></li>
           </ul>
         </div>
       </div>
@@ -185,87 +186,276 @@
   <section class="sec sec-tall" data-depth="65" data-night="0">
     <div class="wrap">
       <div class="zone zone-flip reveal">
-        <div class="zone-num danger"><b>63</b><em>–67 m</em></div>
+        <div class="zone-num danger"><b>600</b><em>Peso · Perlas Hollow</em></div>
         <div class="zone-body">
           <p class="kicker">Zone 04</p>
-          <h2>Kailaliman <span>· the abyss</span></h2>
+          <h2>Kailaliman <span>· past the last air pocket</span></h2>
           <p class="body">
-            Bottom of the map. Three to six sharks patrol it on any given day, the fog eats
-            your torch at ten metres, and a single relic off the temple floor is worth more
-            than an afternoon in the shallows. Repellent halves their nose. It does not
-            make you invisible.
+            The deep half of the cave. Perlas ng Kailaliman pay 200 each, the rotating Kristal
+            pays 280, and the hoards at the end of airless dead-end crawls pay 230 a piece.
+            Getting in is easy. Getting back out with enough air is the game.
           </p>
           <ul class="stats">
-            <li><b>81–82</b><span>shells / item</span></li>
-            <li><b>12×</b><span>payout multiplier</span></li>
-            <li class="risk high"><b>High · sharks</b><span>risk level</span></li>
+            <li><b>200–600</b><span>Peso a find</span></li>
+            <li><b>14</b><span>dead-end crawls</span></li>
+            <li class="risk high"><b>Extreme</b><span>risk level</span></li>
           </ul>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- ============ SECRETS ============ -->
+  <!-- ============ CAVE SECRETS ============ -->
   <section class="sec" id="secrets" data-depth="55" data-night="0">
     <div class="wrap">
       <header class="sec-head reveal">
         <p class="kicker">Down here somewhere</p>
-        <h2>Quests, ruins and things nobody wrote down</h2>
+        <h2>Things the cave won't tell you</h2>
       </header>
       <div class="grid-3">
         <article class="card reveal" style="--i:1">
-          <h3>🫁 Yungib ng Perlas</h3>
-          <p>Three ancient Lung Corals in one cavern system. Find all three and your air
-             bar doubles permanently — 45 s to 90 s, no Robux involved.</p>
+          <h3>🫁 Three Lung Corals</h3>
+          <p>Hidden in the maze. Carry one home alive, cure it for an island day in the banga
+             beside your bodega, and it adds 15 seconds to every breath for good. Drown on the
+             way up and it's gone.</p>
         </article>
         <article class="card reveal" style="--i:2">
-          <h3>🏛️ Sunken temple ruins</h3>
-          <p>Deepest pocket of Kailaliman, 67 m down. Get past the patrol, get out with
-             Golden Relics worth 100+ shells each.</p>
+          <h3>🪨 Five to ten cave-ins a day</h3>
+          <p>Dead-end passages collapse all day long, so yesterday's map lies. You get four
+             seconds of rumble first, and if you're shut in you can dig your way out.</p>
         </article>
         <article class="card reveal" style="--i:3">
-          <h3>📸 Isla Ningning postcards</h3>
-          <p>Sail 1,269 studs southeast to the companion island. Three camera pads, three
-             custom postcard frames, exclusive chat badges.</p>
+          <h3>🪧 Slates that can lie</h3>
+          <p>Any diver can rewrite the sign at a fork. An honest one points to air; a
+             dishonest one points to a dead end. Every slate carries its author's name.</p>
         </article>
         <article class="card reveal" style="--i:4">
-          <h3>⚓ Aling Nena's deliveries</h3>
-          <p>Timed supply runs along the palengke stilt decks, strictly 1 → 2 → 3. Five
-             clean deliveries in a row unlocks a +50 shell bonus multiplier.</p>
+          <h3>🔮 Mutya</h3>
+          <p>Every 20 to 35 minutes a charm of power surfaces deep in the cave. Everyone gets a
+             riddle and a rough area, then six minutes to grab it: shark immunity, breath that
+             doesn't drain, a 1,500 Peso pearl and more.</p>
         </article>
         <article class="card reveal" style="--i:5">
-          <h3>🪵 Build your kubo</h3>
-          <p>One of six stilted waterfront plots. Bamboo furniture, woven banig, shell
-             lanterns, and whatever you dragged up from the deep on the wall.</p>
+          <h3>⚠️ Six deep runs</h3>
+          <p>A stone marker at the mouth of each long tunnel says how much air the round trip
+             needs, green if your lungs can make it and red if they can't.</p>
         </article>
         <article class="card card-accent reveal" style="--i:6">
-          <h3>📦 Sunken cargo</h3>
-          <p>Merchant crates drop at random across the seafloor. Pry them open for air
-             refills, shell multipliers and cosmetics you cannot buy.</p>
+          <h3>🏅 Map it, wear it</h3>
+          <p>Visit a quarter, half, three quarters and all of the chambers to earn the titles
+             Bagong Maninisid up to Scuba Diving Professional, shown over your head.</p>
         </article>
       </div>
     </div>
   </section>
 
-  <!-- ============ WEATHER / NIGHT ============ -->
-  <section class="sec" id="weather" data-depth="20" data-night="1">
+  <!-- ============ PATING ============ -->
+  <section class="sec" id="pating" data-depth="42" data-night="1">
     <div class="wrap">
       <header class="sec-head reveal">
-        <p class="kicker">The island changes on you</p>
-        <h2>Weather, tides and the night shift</h2>
+        <p class="kicker">New · the Pating job</p>
+        <h2>Or be the shark.</h2>
+        <p class="sub">Pay 100 Peso at the job board and you spawn in the Pating Den, a glowing
+          dome on the seabed. Up to three players per server can hunt as sharks. You can't see
+          finds, lights or signs in the cave, and you earn nothing there. You hunt by scent.</p>
+      </header>
+
+      <div class="banner feature reveal">
+        <img src="assets/shots/shark-sense.jpg" alt="Shark player's view at sea: red scent arcs on a ring around the centre of the screen, a scent and stamina card top left, CALL, DEN, EYES and QUIT buttons top right" loading="lazy">
+        <div class="banner-body">
+          <h3>The scent ring</h3>
+          <p>Red arcs on your screen point at every swimmer and shore-walker within range, and
+             burn brighter as you close in. The screen edge glows when prey is right beside you.</p>
+        </div>
+      </div>
+
+      <div class="grid-3 feature-cards">
+        <article class="card reveal" style="--i:1">
+          <h3>🦈 Leap and tail-slap</h3>
+          <p>The jump button launches you out of the water. Tap a player on a beach, dock or boat
+             and you leap past them for a 49% chance to slap them into the sea.</p>
+        </article>
+        <article class="card reveal" style="--i:2">
+          <h3>⚡ Dash and call</h3>
+          <p>Sprint to dash on one stamina bar, or call nearby shark players and up to six of
+             the island's own sharks to your side.</p>
+        </article>
+        <article class="card reveal" style="--i:3">
+          <h3>🐟 Galit on bait</h3>
+          <p>Shark Bait shows gold on your scent ring from 400 studs. Eat it and you're GALIT for
+             20 seconds: 1.5× speed and dash, and eyes that burn red.</p>
+        </article>
+        <article class="card reveal" style="--i:4">
+          <h3>🔴 Red eyes</h3>
+          <p>Glowing eyes let you see in the dark, and everyone else can see them too. Switch
+             them off to sneak.</p>
+        </article>
+        <article class="card reveal" style="--i:5">
+          <h3>🌊 Air is your weapon</h3>
+          <p>Land a leap on a swimmer and they lose air. Run someone dry and they drown, and
+             their sack spills for the taking.</p>
+        </article>
+        <article class="card card-glow reveal" style="--i:6">
+          <h3>🧪 Shark Poison</h3>
+          <p>The divers' answer, 250 Peso at the palengke. Strike someone holding it and you die,
+             turn human again and wake up at the Health Post.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SHIPWRECK ============ -->
+  <section class="sec" id="shipwreck" data-depth="-2" data-night="0.25">
+    <div class="wrap">
+      <header class="sec-head reveal">
+        <p class="kicker">Minigame · 3 to 10 players</p>
+        <h2>Shipwreck: last one afloat wins</h2>
+      </header>
+      <div class="banner feature reveal">
+        <img src="assets/shots/shipwreck-planks.jpg" alt="Shipwreck planks floating at sea with capacity signs reading 0/2, 0/4 and 0/8" loading="lazy">
+        <div class="banner-body">
+          <p>Stand in the circle at Looban with your friends. You wake up on sinking shipwreck
+             planks far out at sea, and one of you is the shark. The more people on a plank, the
+             faster it sinks.</p>
+          <p>Get bitten and you're dragged to a seabed grotto for a four-second tap race. Win and
+             swim free. Lose and you're eaten.</p>
+          <ul class="stats">
+            <li><b>Barnacle Hat</b><span>+ 100 Peso to the winner</span></li>
+            <li><b>5 min</b><span>match limit</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ JOBS ============ -->
+  <section class="sec" id="jobs" data-depth="-4" data-night="0">
+    <div class="wrap">
+      <header class="sec-head reveal">
+        <p class="kicker">Trabaho sa Barangay</p>
+        <h2>Six jobs. Pick one at the Munisipyo board.</h2>
+        <p class="sub">A job is a shift on this server, bought with a barangay clearance of 60 to 120 Peso.
+          Your first one is free. Each job carries only its own gear, and no job at all makes you a
+          Tambay: the one who carries the axe and the tolda.</p>
+      </header>
+      <div class="grid-3">
+        <article class="card reveal" style="--i:1">
+          <h3>🩺 Nars</h3>
+          <p>Drowned divers wait on the Pantalan dock. Drag them by the ankles to the Health Post
+             scanner and the patient's bill, 15% of their wallet, is yours.</p>
+        </article>
+        <article class="card reveal" style="--i:2">
+          <h3>👮 Pulis</h3>
+          <p>Seize illegal stalls, tase and cuff thieves, and keep a cut of what you confiscate.</p>
+        </article>
+        <article class="card reveal" style="--i:3">
+          <h3>🧺 Tindero</h3>
+          <p>The only one who restocks the palengke crates, from morning to night. Up to 450 Peso
+             at closing.</p>
+        </article>
+        <article class="card reveal" style="--i:4">
+          <h3>🎣 Mangingisda</h3>
+          <p>Stake a lambat at sea. Sharks crossing it shake loose finds anyone can grab.</p>
+        </article>
+        <article class="card reveal" style="--i:5">
+          <h3>🤿 Maninisid</h3>
+          <p>The cave diver, and the only job that carries oxygen tanks. Cave finds sell for 10%
+             more.</p>
+        </article>
+        <article class="card reveal" style="--i:6">
+          <h3>🦈 Pating</h3>
+          <p>Become the shark. You stay a shark until you quit or someone poisons you.</p>
+        </article>
+      </div>
+      <p class="sub reveal">Out of air? A drowning costs 15% of your wallet. You're laid on the
+        dock until someone drags you in, and if nobody comes, after 50 seconds you can pass three
+        quick checks and wake up on your own.</p>
+    </div>
+  </section>
+
+  <!-- ============ THE LAW ============ -->
+  <section class="sec" id="law" data-depth="-4" data-night="1">
+    <div class="wrap">
+      <header class="sec-head reveal">
+        <p class="kicker">After dark</p>
+        <h2>The ronda is watching</h2>
+        <p class="sub">The palengke is the only legal market. Every other deal is a crime, and the barangay pulis know it.</p>
+      </header>
+      <div class="grid-3">
+        <article class="card reveal" style="--i:1">
+          <h3>🎪 The tolda</h3>
+          <p>Pitch an illegal stall anywhere and sell your finds straight for Peso at your own
+             price. Packing it up takes twelve loud seconds.</p>
+        </article>
+        <article class="card reveal" style="--i:2">
+          <h3>🪓 Bodegas and axes</h3>
+          <p>Keep your haul in a chest you place yourself: Kahon, Bato, Bakal or Ginto, each
+             tougher and roomier. A Tambay with an axe can chop one open, and anyone caught
+             doing it is Wanted.</p>
+        </article>
+        <article class="card reveal" style="--i:3">
+          <h3>🌴 The ronda</h3>
+          <p>Two officers lurk behind the palms. Carry an axe where they can see it and you get
+             three warnings. Notice one staring at you and it stares back.</p>
+        </article>
+        <article class="card reveal" style="--i:4">
+          <h3>🔦 Bantay Tanaw</h3>
+          <p>The watchtower on Tanaw Ridge sweeps a spotlight over the island and tells every
+             pulis where a Wanted player is standing.</p>
+        </article>
+        <article class="card reveal" style="--i:5">
+          <h3>⛓️ Piitan ng Marahuyo</h3>
+          <p>10 minutes, then 15, then 20, behind barred walls everyone outside can see through.
+             Work it off at the duty desk.</p>
+        </article>
+        <article class="card card-accent reveal" style="--i:6">
+          <h3>⭐ Stars on your name</h3>
+          <p>Every jailing adds a star over your head. Six reads MAPANGANIB, and more stars send
+             more police, running faster.</p>
+        </article>
+      </div>
+      <div class="shots shots-pair">
+        <figure class="shot shot-wide reveal" style="--i:1">
+          <img src="assets/shots/watchtower-night.jpg" alt="The Bantay Tanaw watchtower at night with its spotlight beam; a player tagged MAPANGANIB with six stars stands below" loading="lazy">
+          <figcaption><b>Bantay Tanaw</b>The spotlight finds a six-star player.</figcaption>
+        </figure>
+        <figure class="shot shot-wide reveal" style="--i:2">
+          <img src="assets/shots/prison-stars.jpg" alt="A player at night with EX-PRESO and four stars floating above their head" loading="lazy">
+          <figcaption><b>Ex-preso</b>Four jailings, four stars.</figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ ISLAND RHYTHM ============ -->
+  <section class="sec" id="rhythm" data-depth="-6" data-night="0.4">
+    <div class="wrap">
+      <header class="sec-head reveal">
+        <p class="kicker">The island keeps time</p>
+        <h2>Every day, every Saturday, every month</h2>
       </header>
       <div class="grid-2">
         <article class="card reveal">
-          <h3>🌧️ High-tide storms</h3>
-          <p>Heavy rain lifts the whole ocean by three metres. Shallow reefs briefly become
-             deep zones, and high-tier shell spawns drift close enough to the shore that you
-             can work them from the pier.</p>
+          <h3>📋 Gabay and island tasks</h3>
+          <p>New here? Open GABAY from the menu: nine guided tracks with a gold trail on the
+             ground, each paying Peso once. Then four tasks a day, 30 to 80 Peso each, and a login
+             streak that climbs from 10 to 50 Peso.</p>
         </article>
         <article class="card card-glow reveal" style="--i:1">
-          <h3>🌙 Bioluminescent night shift</h3>
-          <p>After dark the floor lights up. Glow Coral and drifting jellyfish turn the reef
-             into a lantern, and anything glowing you hand to the market between midnight and
-             dawn pays <strong>1.5×</strong>.</p>
+          <h3>🎉 Pista sa Barangay</h3>
+          <p>Every Saturday, Philippine time, everything you earn pays <strong>1.5×</strong> and
+             the plaza lights come on. Each month brings its own festival bonus on top, from
+             Sinulog in January to Pasko sa Barangay in December.</p>
+        </article>
+        <article class="card reveal" style="--i:2">
+          <h3>🌙 Night falls every 24 minutes</h3>
+          <p>A full island day takes 24 real minutes. After dark more sharks come out, and the
+             watchtower's light is easier to see and harder to escape.</p>
+        </article>
+        <article class="card reveal" style="--i:3">
+          <h3>💃 Plaza life</h3>
+          <p>Dance on the Sayawan stage, dig for treasure on Baybayon Beach, send Peso to friends,
+             and pose at the Isla Ningning photo spots.</p>
         </article>
       </div>
     </div>
@@ -275,50 +465,52 @@
   <section class="sec" id="passes" data-depth="-3" data-night="0">
     <div class="wrap">
       <header class="sec-head reveal">
-        <p class="kicker">Back at the surface · 0 m</p>
+        <p class="kicker">Back at the surface</p>
         <h2>Pick a pass, keep it forever</h2>
-        <p class="sub">Every pass is permanent and stacks with everything you earn in-game.</p>
+        <p class="sub">Passes sell looks, time and bragging rights. Air, safety and the cave are never for sale.</p>
       </header>
 
       <div class="pass-grid">
         <article class="pass featured reveal" style="--i:1">
           <span class="tag">Best value</span>
-          <h3>👑 Island VIP</h3>
-          <p>Free bangka rentals, golden chat tag, VIP title, and double daily streak rewards.</p>
+          <h3>👑 Kasama VIP</h3>
+          <p>1.5× Peso on everything you earn, one free job clearance every day, a gold nametag,
+             free zipline rides and the VIP bangka.</p>
           <a class="btn btn-buy" href="https://www.roblox.com/games/128146022575640/Isla-Marahuyo" target="_blank" rel="noopener">Get VIP</a>
         </article>
         <article class="pass reveal" style="--i:2">
-          <h3>🤿 Pro Scuba Gear</h3>
-          <p>+30 s of base air from your first dive. Stacks on top of the Lung Corals.</p>
-          <a class="btn btn-buy" href="https://www.roblox.com/games/128146022575640/Isla-Marahuyo" target="_blank" rel="noopener">Buy dive gear</a>
+          <h3>🏆 Island Legend</h3>
+          <p>A gold nameplate and the Island Legend title. Pure prestige.</p>
+          <a class="btn btn-buy" href="https://www.roblox.com/games/128146022575640/Isla-Marahuyo" target="_blank" rel="noopener">Become a legend</a>
         </article>
         <article class="pass reveal" style="--i:3">
-          <h3>📡 Fishing Sonar</h3>
-          <p>High-value fish schools and Net Buoy refresh timers, straight on your minimap.</p>
-          <a class="btn btn-buy" href="https://www.roblox.com/games/128146022575640/Isla-Marahuyo" target="_blank" rel="noopener">Unlock sonar</a>
+          <h3>⛴️ Kalangitan Isle Access</h3>
+          <p>Ride the bangkero ferry to the private offshore isle.</p>
+          <a class="btn btn-buy" href="https://www.roblox.com/games/128146022575640/Isla-Marahuyo" target="_blank" rel="noopener">Unlock the ferry</a>
         </article>
         <article class="pass reveal" style="--i:4">
-          <h3>⚡ Zipline Express</h3>
-          <p>Unlimited rides on all four Tanaw Ridge zipline legs. No shell tolls, ever.</p>
+          <h3>⚡ Zipline Pass</h3>
+          <p>Every zipline leg across Tanaw Ridge free, forever. Everyone else pays 25 Peso a leg.</p>
           <a class="btn btn-buy" href="https://www.roblox.com/games/128146022575640/Isla-Marahuyo" target="_blank" rel="noopener">Get zipline pass</a>
         </article>
         <article class="pass reveal" style="--i:5">
-          <h3>🦈 Shark Repellent</h3>
-          <p>Cuts shark detection range by 50% in the Kailaliman deep caves.</p>
-          <a class="btn btn-buy" href="https://www.roblox.com/games/128146022575640/Isla-Marahuyo" target="_blank" rel="noopener">Buy repellent</a>
+          <h3>🏚️ Extra Bodega Slot</h3>
+          <p>Place a second bodega anywhere on the island.</p>
+          <a class="btn btn-buy" href="https://www.roblox.com/games/128146022575640/Isla-Marahuyo" target="_blank" rel="noopener">Add a bodega</a>
         </article>
         <article class="pass reveal" style="--i:6">
-          <h3>🏡 Extra Cabin Plot</h3>
-          <p>Hold two bahay kubo plots at once and build a proper beachfront compound.</p>
-          <a class="btn btn-buy" href="https://www.roblox.com/games/128146022575640/Isla-Marahuyo" target="_blank" rel="noopener">Claim extra plot</a>
+          <h3>🔒 Bakal na Bodega</h3>
+          <p>The riveted steel chest for free: 350 health and 120 slots, where the free Kahon has 100 and 30.</p>
+          <a class="btn btn-buy" href="https://www.roblox.com/games/128146022575640/Isla-Marahuyo" target="_blank" rel="noopener">Build in steel</a>
         </article>
       </div>
 
       <div class="banner reveal">
         <img src="assets/islamarahuyowallpaper.jpg" alt="Painted map of Isla Marahuyo at sunset, with stilt villages, bangka boats and the mountain">
         <div class="banner-body">
-          <h3>30+ passes live in-game</h3>
-          <p>Cosmetics, tools, boats and titles — the full shelf is inside the experience.</p>
+          <h3>12 passes live in-game</h3>
+          <p>Also on the shelf: Bangka Customs, Custom Title, Sayawan Emote Pack, Broadcast License,
+             Audio Customizer and Photo FX, plus Peso packs, a Task Reroll and a Streak Saver.</p>
           <a class="btn btn-big" href="https://www.roblox.com/games/128146022575640/Isla-Marahuyo" target="_blank" rel="noopener">🛒 Open the shop</a>
         </div>
       </div>
@@ -329,25 +521,33 @@
   <section class="sec" id="gallery" data-depth="-8" data-night="0">
     <div class="wrap">
       <header class="sec-head reveal">
-        <p class="kicker">From the deep</p>
-        <h2>What you actually come back with</h2>
+        <p class="kicker">Straight from the island</p>
+        <h2>What it actually looks like</h2>
       </header>
       <div class="shots">
-        <figure class="shot reveal" style="--i:1">
-          <img src="assets/4.jpg" alt="Diver in full scuba gear beside an open treasure chest" loading="lazy">
-          <figcaption><b>Pro scuba gear</b>Longer dives, deeper zones, better shells.</figcaption>
+        <figure class="shot shot-wide reveal" style="--i:1">
+          <img src="assets/shots/palengke.jpg" alt="The Palengke shop panel: a sack of finds on the left with a SELL button, gear cards with prices on the right" loading="lazy">
+          <figcaption><b>The palengke</b>Sell the sack, buy the gear.</figcaption>
         </figure>
-        <figure class="shot reveal" style="--i:2">
-          <img src="assets/1.jpg" alt="Sunken cargo crates on a coral seafloor" loading="lazy">
-          <figcaption><b>Sunken cargo crates</b>Air refills, multipliers, cosmetics.</figcaption>
+        <figure class="shot shot-wide reveal" style="--i:2">
+          <img src="assets/shots/shark-swim.jpg" alt="A player shark with a small red eye swimming over the sandy seabed among other sharks" loading="lazy">
+          <figcaption><b>The Pating</b>A player shark on the hunt.</figcaption>
         </figure>
-        <figure class="shot reveal" style="--i:3">
-          <img src="assets/2.jpg" alt="Shark patrolling the deep water" loading="lazy">
-          <figcaption><b>Patrolling sharks</b>Three to six a day, guarding the caves.</figcaption>
+        <figure class="shot shot-wide reveal" style="--i:3">
+          <img src="assets/shots/shark-strike.jpg" alt="A shark leaping out of the sea beside a player standing on a rocky shore" loading="lazy">
+          <figcaption><b>Tail-slap</b>Nobody on the shore is safe.</figcaption>
         </figure>
-        <figure class="shot reveal" style="--i:4">
-          <img src="assets/3.jpg" alt="Deep abyss caverns" loading="lazy">
-          <figcaption><b>Abyss caverns</b>67 m down, 12× payouts, golden relics.</figcaption>
+        <figure class="shot shot-wide reveal" style="--i:4">
+          <img src="assets/shots/shipwreck-race.jpg" alt="Shipwreck tap race screen reading The shark has you, fight, with a BREAK FREE button and the score You 26, 17 shark" loading="lazy">
+          <figcaption><b>Break free</b>The Shipwreck tap race.</figcaption>
+        </figure>
+        <figure class="shot shot-wide reveal" style="--i:5">
+          <img src="assets/shots/nurse-drag.jpg" alt="Nurse Fely dragging a drowned diver by the ankles along a grassy trail" loading="lazy">
+          <figcaption><b>Health Post</b>Nurse Fely brings you in by the ankles.</figcaption>
+        </figure>
+        <figure class="shot shot-wide reveal" style="--i:6">
+          <img src="assets/shots/job-board.jpg" alt="The Trabaho sa Barangay job board listing Nars, Pulis, Tindero, Mangingisda and Pating" loading="lazy">
+          <figcaption><b>The job board</b>Five ways to spend a shift.</figcaption>
         </figure>
       </div>
     </div>
@@ -359,14 +559,13 @@
       <div class="closer reveal">
         <p class="kicker">Surfaced. Sun's still up.</p>
         <h2>The boat is waiting.</h2>
-        <p class="lede">Free to play. No download. Bring friends — the sharks are more
-          interesting with an audience.</p>
+        <p class="lede">Free to play. No download. Bring friends: somebody has to be the shark.</p>
         <a class="btn btn-big" href="https://www.roblox.com/games/128146022575640/Isla-Marahuyo" target="_blank" rel="noopener">▶ Play Isla Marahuyo</a>
       </div>
     </div>
 
     <footer class="foot">
-      <p><b>Isla Marahuyo</b> · Roblox Experience · Version 2.0</p>
+      <p><b>Isla Marahuyo</b> · Roblox Experience · Updated September 2026</p>
       <p><a href="https://www.roblox.com/games/128146022575640/Isla-Marahuyo" target="_blank" rel="noopener">roblox.com/games/128146022575640</a></p>
     </footer>
   </section>

@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Update 2026-09-27: Phase A — dock beds, ankle drag, police station, tolda grip</title>
+<style>
+  :root { --ink:#1d2430; --dim:#5b6675; --line:#dde2e8; --bg:#fbfbf9; --accent:#c9485b; --ok:#2f8f6a; --warn:#b7791f; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width:960px; margin:0 auto; padding:32px 16px 64px; }
+  h1 { font-size:26px; margin:0 0 4px; }
+  h2 { font-size:20px; margin:40px 0 8px; padding-top:16px; border-top:1px solid var(--line); }
+  h3 { font-size:16px; margin:24px 0 6px; }
+  .meta { color:var(--dim); margin:0 0 20px; }
+  code { font:13px/1.4 ui-monospace, Consolas, monospace; background:#eef0f3; padding:1px 4px; border-radius:3px; }
+  table { border-collapse:collapse; width:100%; margin:8px 0 16px; font-size:14px; }
+  th, td { text-align:left; vertical-align:top; padding:6px 8px; border-bottom:1px solid var(--line); }
+  th { color:var(--dim); font-weight:600; }
+  .tag { display:inline-block; font-size:12px; font-weight:600; padding:0 6px; border-radius:3px; color:#fff; }
+  .new { background:var(--ok); } .mod { background:#3b6fb6; } .del { background:var(--accent); }
+  .box { border-left:3px solid var(--warn); background:#fff8ec; padding:8px 12px; margin:12px 0; }
+  ul { padding-left:22px; }
+  nav a { margin-right:12px; }
+  .pair { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:12px 0 20px; }
+  .pair figure, figure.one { margin:0; }
+  figure img { width:100%; height:auto; border:1px solid var(--line); border-radius:4px; display:block; }
+  figcaption { color:var(--dim); font-size:13px; margin-top:4px; }
+  figure.one { max-width:620px; margin:12px 0 20px; }
+  @media (max-width:640px) { .pair { grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+<main>
+<p><a href="../index.html">&larr; all updates</a></p>
+<h1>Phase A: dock beds out, ankle drag, old police cage and signs, tolda grip</h1>
+<p class="meta">2026-09-27 02:24 &middot; place "[New Map]Isla Marahuyo" (placeId 128146022575640) &middot; edited live in Studio through the Roblox_Studio MCP tools &middot; first of 7 planned phases (A&ndash;G)</p>
+
+<nav><a href="#ask">What was asked</a><a href="#beds">1. Beds + drag</a><a href="#station">2. Police station</a><a href="#tolda">3. Tolda grip</a><a href="#files">All changes</a><a href="#tests">Testing</a><a href="#gaps">Gaps</a><a href="#plan">Remaining phases</a><a href="#tools">Tooling notes</a></nav>
+
+<h2 id="ask">What was asked</h2>
+<p>The user pasted an 18-item list. Item 12 (a suggestion wall) was cancelled. The other 17 are planned as seven phases, each built, tested and written up on its own page. This page is <b>Phase A</b>, the quick low-risk fixes:</p>
+<ol>
+  <li><b>Item 1</b> &mdash; "remove bed on hospital flow, avoid any sexual content flag".</li>
+  <li><b>Item 3</b> &mdash; "should drag on patient feet to make it look funny".</li>
+  <li><b>Item 15</b> &mdash; "remove the first police structure, it have some UI bug showing all the way in the map". The user confirmed this means the old holding cage inside <code>PoliceStation</code> and the station signs that are visible from anywhere.</li>
+  <li><b>Item 6</b> &mdash; "equip/holding tolda look like not aligned on hand".</li>
+</ol>
+
+<h2 id="beds">1. Hospital flow: dock beds removed, patients dragged by the ankles (items 1 + 3)</h2>
+<p>A search found no part named Bed or Cot. But the Pantalan dock had <b>16 mats, each with a pillow</b>, in two rows, and a drowned diver was laid on one on their back until a nurse came. These read as beds. The old carry also welded the patient's root part directly behind the nurse's torso: 3 studs back, tilted &minus;55&deg;, with collisions off, so the two bodies overlapped at torso height. Both were changed.</p>
+<div class="pair">
+  <figure><img src="images/dock-with-mats-before.png" alt="Pantalan dock with two rows of mats and pillows"><figcaption>Before: 16 mat + pillow "beds" on the Pantalan.</figcaption></figure>
+  <figure><img src="images/dock-without-mats.png" alt="Pantalan dock with bare planks"><figcaption>After: bare planks. Patients lie on the dock itself.</figcaption></figure>
+</div>
+<ul>
+  <li><span class="tag del">retired</span> the <code>Mats</code> folder (16 <code>Mat</code> + 16 <code>Pillow</code> parts) moved to <code>ServerStorage._Retired.Workspace_MedicalDock_Pantalan__Mats</code>. No script references them (full source scan). The invisible <code>Slots/Slot_1..16</code> anchors and their <code>CarryPrompt</code>s are unchanged.</li>
+  <li><b>Lying pose</b> (<code>layOnMat</code>): still face up on the slot, but turned 180&deg; so the <b>feet</b> point at the aisle where the nurse stands (it used to be the head). <code>pickupPoint</code> is unchanged; its comment now says "at their feet".</li>
+  <li><b>Ankle drag</b> (<code>attachCarry</code>): the fixed <code>DRAG_OFFSET</code> is gone. The patient's feet are measured in their own root space (<code>feetInRootSpace</code>: the midpoint of <code>LeftFoot</code>/<code>RightFoot</code>; R6 falls back to the bottom of each leg). The body is then placed so the feet land at <code>ANKLE_GRIP = (1.6, -1.0, 0.9)</code> in the carrier's root space, just behind and beside the right hand. The body is tipped by <code>DRAG_TILT = 104&deg;</code>: face up, head trailing a body-length behind and just above the ground.
+    <br>Fitting per avatar was needed: with a fixed offset, a tall avatar's legs (HipHeight 3.21) reached 0.45 studs <i>in front of</i> the nurse, through her legs. The weld, the <code>NurseCarry</code> collision group, <code>Massless</code> and the network owner are unchanged. The same function serves bot and player nurses.</li>
+  <li>Header and inline comments now say "flat out on the planks" and "grabs them by the ankles".</li>
+</ul>
+<figure class="one"><img src="images/drag-by-ankles.png" alt="Nurse Fely dragging a patient by the ankles"><figcaption>Nurse Fely dragging the test avatar up the trail: face up, feet in her right hand, head on the ground behind. Revive overlay and blur hidden for the shot.</figcaption></figure>
+
+<h2 id="station">2. Old police structure: holding cage retired, signs no longer map-wide (item 15)</h2>
+<p><code>Workspace.IslaMarahuyo.PoliceStation</code> still contained the first holding cell. It has been unused since the Piitan ng Marahuyo compound took over jailing. Three of the station's BillboardGuis had <code>MaxDistance = inf</code>, so the "BARANGAY PULIS" entrance sign, the rules plaque and the WANTED poster showed full-size from anywhere on the island, even through walls.</p>
+<div class="pair">
+  <figure><img src="images/station-signs-far-before.png" alt="Station signs floating over the island from 326 studs away"><figcaption>Before, 326 studs away: the station's signs float over the map.</figcaption></figure>
+  <figure><img src="images/station-signs-far-after.png" alt="Same view, station signs gone"><figcaption>After: the station signs are gone at that range. The labels still visible are zone names and job-NPC nametags (see Gaps).</figcaption></figure>
+</div>
+<div class="pair">
+  <figure><img src="images/station-cage-before.png" alt="Old holding cell bars inside the station"><figcaption>Before: the old cell's bars (centre) inside the station.</figcaption></figure>
+  <figure><img src="images/station-cage-after.png" alt="Same room without the cage"><figcaption>After: the cage is gone. The room's partition walls (<code>Partition_KH_*</code>) belong to the building and stay.</figcaption></figure>
+</div>
+<ul>
+  <li><span class="tag del">retired</span> 27 parts moved to <code>ServerStorage._Retired.Workspace_PoliceStation__KulunganCage</code>: <code>CellWall</code>, <code>CellBench</code>, <code>HoldingSpot</code>, <code>Kulungan_CellWall2</code>, <code>Kulungan_CellBench2</code>, <code>Kulungan_Bar2_1..11</code>, and 11 parts simply named <code>Bar</code> (the first cell's bars, in a row at z &minus;100.8 between the two cell walls). No script references any of them (full source scan).</li>
+  <li><span class="tag mod">edited</span> <code>MaxDistance</code> from <code>inf</code> to <code>140</code> (the same as the station's <code>Floor.Sign</code>) on <code>Harapan_EntranceSign.BillboardGui</code>, <code>Harapan_RulesPlaque.BillboardGui</code> and <code>Armas_WantedPoster.BillboardGui</code>.</li>
+</ul>
+
+<h2 id="tolda">3. Tolda held upright in the fist (item 6)</h2>
+<p>The tolda tool has no custom weld: the hand position comes only from <code>Tool.Grip</code>. Measured in a playtest, the old grip laid the 3.2-stud roll <b>along the forearm, centred on the hand</b>, so half of it pushed back into the chest. The new grip stands it upright in the fist, gripped just above centre, with the top leaning 12&deg; back toward the shoulder. It no longer clips the body and stays below the face from the front.</p>
+<div class="pair">
+  <figure><img src="images/tolda-grip-before.png" alt="Tolda roll held sideways through the chest"><figcaption>Before: the roll runs along the arm into the chest.</figcaption></figure>
+  <figure><img src="images/tolda-grip-after.png" alt="Tolda roll held upright in the right hand"><figcaption>After: upright in the right hand, clear of the body.</figcaption></figure>
+</div>
+<ul>
+  <li><span class="tag mod">edited</span> <code>ServerStorage.ItemAssets.ToldaTool.Grip</code>: from rotation-only (90&deg; about Y, position 0) to <code>CFrame.new(-0.7, 0, 0) * CFrame.Angles(0, 0, rad 90) * CFrame.Angles(rad -12, 0, 0)</code>. This is the only tolda tool in the place, and <code>InventoryService</code> clones it fresh on each grant.</li>
+</ul>
+
+<h2 id="files">All changes</h2>
+<table>
+  <tr><th></th><th>Path</th><th>What</th></tr>
+  <tr><td><span class="tag mod">edited</span></td><td><code>ServerScriptService.ReviveService</code></td><td><code>DRAG_OFFSET</code> replaced by <code>ANKLE_GRIP</code> + <code>DRAG_TILT</code>; new <code>feetInRootSpace</code>; <code>attachCarry</code> fits the body to the grip; <code>layOnMat</code> turns the patient feet-to-aisle; comments</td></tr>
+  <tr><td><span class="tag del">retired</span></td><td><code>Workspace.IslaMarahuyo.Activities.MedicalDock.Pantalan.Mats</code></td><td>now <code>ServerStorage._Retired.Workspace_MedicalDock_Pantalan__Mats</code></td></tr>
+  <tr><td><span class="tag del">retired</span></td><td>27 cage parts in <code>Workspace.IslaMarahuyo.PoliceStation</code></td><td>now in <code>ServerStorage._Retired.Workspace_PoliceStation__KulunganCage</code></td></tr>
+  <tr><td><span class="tag mod">edited</span></td><td><code>PoliceStation.{Harapan_EntranceSign, Harapan_RulesPlaque, Armas_WantedPoster}.BillboardGui</code></td><td><code>MaxDistance</code> inf &rarr; 140</td></tr>
+  <tr><td><span class="tag mod">edited</span></td><td><code>ServerStorage.ItemAssets.ToldaTool</code></td><td><code>Grip</code></td></tr>
+  <tr><td><span class="tag new">new</span></td><td><code>ServerStorage._Retired</code> (Folder)</td><td>holds world pieces taken out of the map, named <code>Service_Parent__Name</code> like <code>_RetiredUI</code>. To restore one: rename it and parent it back.</td></tr>
+  <tr><td><span class="tag mod">edited</span></td><td><code>D:\GitHubRepo\IslaMarahuyo\updates\_tools\Capture-Studio.ps1</code></td><td>restores a minimized Studio without focus and re-minimizes it afterwards; fixed the crop (see Tooling notes)</td></tr>
+</table>
+<p>No new remotes or attributes. Lighting <code>ClockTime</code> was set to 13 for the edit-mode screenshots and restored to 0 afterwards.</p>
+
+<h2 id="tests">How it was tested</h2>
+<ul>
+  <li>Studio playtest, R15 test avatar: <code>ReviveService.Begin</code> laid the avatar face up on Slot 1 with its head toward the outer edge (root up vector &minus;X) and its feet toward the aisle. Nurse Fely came in about 16 s and dragged it. The measured feet midpoint in her root space was exactly <code>(1.6, &minus;1.0, 0.9)</code>, clear of her legs, and the head rode on the ground. The revive completed (<code>onComplete</code> fired).</li>
+  <li>Tolda: equipped in a playtest. The roll's axis was measured in root space for several grips, and the chosen one was checked from the front and the side (screenshots above).</li>
+  <li>Station signs: compared from 326 studs before and after (screenshots above).</li>
+  <li>All 280 scripts' <code>Source</code> were scanned for the names of the retired parts: no hits.</li>
+</ul>
+
+<h2 id="gaps">Not verified / known gaps</h2>
+<div class="box">
+<ul>
+  <li>A <b>player</b> nurse dragging a patient has not been seen (it needs 2 clients). It uses the same <code>attachCarry</code>. The ankle grip is tuned to a bot nurse's right hand, and a standard R15 hand sits a little further in. Worth a look with two players.</li>
+  <li>The nurse's arm is not animated: her right hand swings normally while the feet stay at the grip point, about a stud behind it. An arm-back pose would sell it better.</li>
+  <li>More infinite-distance labels exist that are <i>not</i> part of the police station and were left alone: the 7 zone labels (<code>Zones.*.Label</code>) and the 4 job-NPC nametags (<code>RoleBots.PulisBoy/MangTasyo/AlingNena/SukiTheFixer.Torso.NameTag</code>). They show from everywhere, including indoors. The "Pulis Bayani &mdash; Barangay Outpost" tag is one of them. If the user still sees a map-wide police label, that tag is the next candidate.</li>
+  <li>The rules plaque still quotes sentences in days. It will be rewritten in Phase E (10/15/20-minute sentences).</li>
+  <li>Unchanged from before: the EKG and pulse sound IDs fail to load ("Asset type does not match"), and the quick-test <code>ItemConfig.Bodega.AxeDamage = 20</code> (real value 1) is still in place.</li>
+</ul>
+</div>
+
+<h2 id="plan">Remaining phases</h2>
+<ul>
+  <li><b>B</b> &mdash; self-revive with a sabotage penalty and a cheaper fee for player carriers (2); axe swing with momentum (4); knife removed, shark-defence consumable with a HUD count (5).</li>
+  <li><b>C</b> &mdash; Palengke tile view on mobile (8).</li>
+  <li><b>D</b> &mdash; tolda break-in (about 10 axe hits, only while the owner is away, no police) (9); the tolda asset is future work (10).</li>
+  <li><b>E</b> &mdash; 10/15/20-minute sentences (13); barred prison walls (11); saved stars and an overhead "came from prison" tag (17).</li>
+  <li><b>F</b> &mdash; ronda patrol with warnings, capture and raids (7); sneaky, creepy patrols (14); en-route spotting and a 5-attempt search (16); more officers running at high stars (17).</li>
+  <li><b>G</b> &mdash; Tanaw Ridge watchtower with a spotlight and tip-offs (18).</li>
+</ul>
+
+<h2 id="tools">Tooling notes for the next session</h2>
+<ul>
+  <li><code>Capture-Studio.ps1</code>: the crop path had never worked. PowerShell names are case-insensitive, so the window handle <code>$h</code> overwrote the <code>-H</code> crop height and the crop bitmap came out 263,774 px tall (a GDI+ "generic error" on save). The handle is now <code>$hwnd</code>. The script also restores a minimized Studio with <code>SW_SHOWNOACTIVATE</code>, waits 1.5 s and re-minimizes it. The crop <code>-X 550 -Y 358 -W 828 -H 465</code> was checked against a full capture and is correct for the iPhone 6 Plus emulation in a 1938&times;1048 window.</li>
+  <li>The MCP <code>screen_capture</code> tool returns a blank image while Studio is minimized. Use the script.</li>
+  <li>In a playtest the MCP resets the camera to Custom after each <code>execute_luau</code>. To hold a shot, bind a <code>RenderStep</code> at <code>Enum.RenderPriority.Last.Value + 1</code> on the Client that sets a Scriptable camera every frame.</li>
+  <li><code>script_grep</code> is <b>not exhaustive</b>. It missed <code>DebugDrown</code> in <code>BreathService</code>. Before removing anything, scan <code>Source</code> of every <code>LuaSourceContainer</code> with <code>execute_luau</code>.</li>
+  <li>Patients were started with <code>require(ReviveService).Begin(player)</code> from the Server datamodel, and the live bots served them. The previous page recommends <code>ServerStorage.DebugDrown:Fire(player)</code> instead (it also sets BreathService's drowning lock). Prefer the hook.</li>
+</ul>
+</main>
+</body>
+</html>

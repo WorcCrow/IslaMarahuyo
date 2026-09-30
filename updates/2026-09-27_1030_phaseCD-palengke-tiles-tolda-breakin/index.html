@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Update 2026-09-27: Phases C+D — Palengke cards, tolda break-in</title>
+<style>
+  :root { --ink:#1d2430; --dim:#5b6675; --line:#dde2e8; --bg:#fbfbf9; --accent:#c9485b; --ok:#2f8f6a; --warn:#b7791f; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width:960px; margin:0 auto; padding:32px 16px 64px; }
+  h1 { font-size:26px; margin:0 0 4px; }
+  h2 { font-size:20px; margin:40px 0 8px; padding-top:16px; border-top:1px solid var(--line); }
+  .meta { color:var(--dim); margin:0 0 20px; }
+  code { font:13px/1.4 ui-monospace, Consolas, monospace; background:#eef0f3; padding:1px 4px; border-radius:3px; }
+  table { border-collapse:collapse; width:100%; margin:8px 0 16px; font-size:14px; }
+  th, td { text-align:left; vertical-align:top; padding:6px 8px; border-bottom:1px solid var(--line); }
+  th { color:var(--dim); font-weight:600; }
+  .tag { display:inline-block; font-size:12px; font-weight:600; padding:0 6px; border-radius:3px; color:#fff; }
+  .new { background:var(--ok); } .mod { background:#3b6fb6; } .del { background:var(--accent); }
+  .box { border-left:3px solid var(--warn); background:#fff8ec; padding:8px 12px; margin:12px 0; }
+  ul { padding-left:22px; }
+  nav a { margin-right:12px; }
+  .pair { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:12px 0 20px; }
+  .pair figure, figure.one { margin:0; }
+  figure img { width:100%; height:auto; border:1px solid var(--line); border-radius:4px; display:block; }
+  figcaption { color:var(--dim); font-size:13px; margin-top:4px; }
+  figure.one { max-width:620px; margin:12px 0 20px; }
+  @media (max-width:640px) { .pair { grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+<main>
+<p><a href="../index.html">&larr; all updates</a></p>
+<h1>Phases C + D: Palengke and bag as picture cards everywhere; breaking into an unminded tolda</h1>
+<p class="meta">2026-09-27 &middot; place "[New Map]Isla Marahuyo" (placeId 128146022575640) &middot; phases 3 and 4 of 7</p>
+
+<nav><a href="#ask">What was asked</a><a href="#ui">1. Cards</a><a href="#tolda">2. Tolda break-in</a><a href="#bug">3. Bug fixed</a><a href="#files">All changes</a><a href="#tests">Testing</a><a href="#gaps">Gaps</a></nav>
+
+<h2 id="ask">What was asked</h2>
+<ol>
+  <li><b>Item 8</b> &mdash; "the bag and palengke item UI update is not applied, wider and change from list view to tile view so it will be mobile friendly".</li>
+  <li><b>Item 9</b> &mdash; "a tolda is same as bodega, player can break and steal it, but no police will arrive since it is not allowed to sell to player, but other player can only break it when the seller is not around or forget to close it, it have like 10 hit to break".</li>
+  <li><b>Item 10</b> &mdash; a better tolda asset "in future", with more assets payable by gamepass. That is future work and nothing was built for it. The current tent is procedural primitives in <code>BlackMarketService.buildTent</code> and the tool is <code>ServerStorage.ItemAssets.ToldaTool</code>. A premium variant could follow the bodega's tier pattern (<code>ItemConfig.BodegaTiers</code>).</li>
+</ol>
+
+<h2 id="ui">1. Picture cards, on every device (item 8)</h2>
+<p>Why it looked "not applied": the bag already had a card grid, but only when <code>UserInputService.TouchEnabled</code> was true, so anyone looking on a PC saw the old list. The Palengke was always a list. Now both are cards everywhere, and wide.</p>
+<ul>
+  <li><code>GearHud</code>: <code>TILE = true</code> (it was <code>TOUCH</code>). The bag, bodega and Palengke panels are all card grids up to 640 studs wide (or the screen width minus 40), fitting 2&ndash;6 cards to a row. The Close button sits in the header as an X.</li>
+  <li>Palengke cards: each shop item shows its model (from <code>ItemIcons</code>), its name, "price &bull; slots", and one full-width BUY. The sell counter, bag upgrade and the two pass items have no model, so they show a big symbol instead (&#x1F41A;, &#x1F392;, &#x2B50;) through the new <code>glyph</code> argument of <code>makeCard</code>/<code>cell</code>. The new helper <code>soleButton</code> gives a card with one action a full-width button.</li>
+  <li>Small fix on the way: half-slot items were listed as "0 slot" (<code>%d</code> of 0.5). Shark Bait and Shark Repellent now read "0.5 slot" (<code>%g</code>).</li>
+</ul>
+<ul>
+  <li>The card panel now keeps clear of StatusHud's column on the right, and the same width on the left so it stays centred (<code>SIDE_RESERVE</code> = row width + 18). On the 736&times;414 test screen that gives 4 cards to a row, 121 wide. The first version, 640 wide, ran under the counter column.</li>
+</ul>
+<figure class="one"><img src="images/palengke-cards.png" alt="Palengke panel as a grid of picture cards with BUY buttons"><figcaption>The Palengke at the counter in iPhone emulation: sell card, then gear cards with models and full-width BUY buttons. The bag card and pass cards follow when you scroll.</figcaption></figure>
+
+<h2 id="tolda">2. Breaking into an unminded tolda (item 9)</h2>
+<ul>
+  <li>The axe's <code>Swing</code> now looks for the nearest bodega <i>or</i> tolda that is not yours (<code>Toldas</code> models carry a new <code>OwnerId</code> attribute) and sends the hit on the matching remote. <span class="tag new">new</span> <code>Remotes.RequestToldaHit</code>.</li>
+  <li><code>BlackMarketService</code> decides everything. The attacker must have the Axe equipped, be alive, and be within <code>ItemConfig.Bodega.AxeReach</code> of the stall's edge, with one hit per <code>ItemConfig.Bodega.HitCooldown</code>. The stall is only breakable while <b>the owner is not minding it</b>: more than 26 studs away (<code>WANTED_RANGE</code>) or offline. Otherwise: "The owner is right there. Wait till they wander off."</li>
+  <li><code>ItemConfig.ToldaBreakHits = 10</code> hits. Each hit updates the sign ("BEING BROKEN INTO 3/10") and interrupts a pack-up, and the owner is warned at most every 10 s. On the tenth, every listing spills on the ground as pickups (the same <code>ScatterItems</code> the bodega uses: gear and finds), the tent is gone, and both sides are told.</li>
+  <li><b>No police</b>: unlike a bodega hit, a tolda hit never calls <code>ReportCrime</code>. (The ronda in Phase F still warns anyone it sees holding an axe, whatever they are doing with it.)</li>
+</ul>
+
+<h2 id="bug">3. Bug fixed: pitching a tolda stopped half way</h2>
+<p><code>attachReportPrompt</code> was declared <code>local function</code> <i>after</i> the pitch handler that calls it, and unlike <code>attachSeizePrompt</code> it was not forward-declared. So the call resolved to a nil global and errored every time a stall was pitched: no Report prompt, no "Tolda pitched" message, and no stock panel. It is now forward-declared with the others.</p>
+
+<h2 id="files">All changes</h2>
+<table>
+  <tr><th></th><th>Path</th><th>What</th></tr>
+  <tr><td><span class="tag mod">edited</span></td><td><code>StarterPlayerScripts.GearHud</code></td><td><code>TILE = true</code>; Palengke built as cards; <code>makeCard</code>/<code>cell</code> glyph; <code>soleButton</code>; <code>%g</code> slots</td></tr>
+  <tr><td><span class="tag mod">edited</span></td><td><code>ServerScriptService.BlackMarketService</code></td><td>break-in (<code>ownerMinding</code>, <code>breakOpen</code>, <code>RequestToldaHit</code> handler), sign state, <code>OwnerId</code> on the model, report-prompt fix</td></tr>
+  <tr><td><span class="tag mod">edited</span></td><td><code>StarterPack.Axe.Swing</code></td><td>targets toldas as well as bodegas</td></tr>
+  <tr><td><span class="tag mod">edited</span></td><td><code>ReplicatedStorage.ItemConfig</code></td><td><code>ToldaBreakHits = 10</code></td></tr>
+  <tr><td><span class="tag new">new</span></td><td><code>ReplicatedStorage.Remotes.RequestToldaHit</code></td><td>RemoteEvent</td></tr>
+</table>
+
+<h2 id="tests">How it was tested</h2>
+<ul>
+  <li><b>Palengke</b> (playtest, iPhone emulation, standing at the counter): the Shop frame has a <code>UIGridLayout</code> and 10 cards: sell, battery, glowstick, O2 tank, lambat, shark bait, shark repellent, bag upgrade, and 2 passes. The panel spans x 96&ndash;639 against the counter column's 647&ndash;725. Screenshot above.</li>
+  <li><b>Pitch fix</b>: after the fix, pitching from the client produced "Tolda pitched. Put things out -- and watch who is watching you." and the stall got its <code>Report</code>, <code>Browse</code> and <code>Seize</code> prompts. Before, the handler errored at <code>attachReportPrompt</code>.</li>
+  <li>All edited scripts compile (a <code>loadstring</code> check in Edit).</li>
+</ul>
+
+<h2 id="gaps">Not verified / known gaps</h2>
+<div class="box">
+<ul>
+  <li><b>The tolda break-in itself is untested</b>: it needs a second player (you cannot hit your own stall). Try it with Test &rarr; Clients and Servers: player 1 pitches and walks 27+ studs away, player 2 swings 10 times. Expect "Crack. N more", the sign counting, the owner warned, and stock on the ground on the 10th, with no <code>Wanted</code> on player 2. Then player 1 comes back mid-way, and the next swing should be refused.</li>
+  <li>The bag's DALA/BODEGA tabs on desktop now use cards too. They were only glanced at on the phone layout.</li>
+  <li>Item 10 (a better tolda asset, gamepass variants) is not started.</li>
+</ul>
+</div>
+</main>
+</body>
+</html>

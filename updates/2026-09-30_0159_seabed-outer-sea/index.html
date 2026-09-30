@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Update 2026-09-30: a seabed and walls for the outer sea</title>
+<style>
+  :root { --ink:#1d2430; --dim:#5b6675; --line:#dde2e8; --bg:#fbfbf9; --accent:#c9485b; --ok:#2f8f6a; --warn:#b7791f; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width:960px; margin:0 auto; padding:32px 16px 64px; }
+  h1 { font-size:26px; margin:0 0 4px; }
+  h2 { font-size:20px; margin:40px 0 8px; padding-top:16px; border-top:1px solid var(--line); }
+  h3 { font-size:16px; margin:20px 0 4px; }
+  .meta { color:var(--dim); margin:0 0 20px; }
+  code { font:13px/1.4 ui-monospace, Consolas, monospace; background:#eef0f3; padding:1px 4px; border-radius:3px; }
+  table { border-collapse:collapse; width:100%; margin:8px 0 16px; font-size:14px; }
+  th, td { text-align:left; vertical-align:top; padding:6px 8px; border-bottom:1px solid var(--line); }
+  th { color:var(--dim); font-weight:600; }
+  .tag { display:inline-block; font-size:12px; font-weight:600; padding:0 6px; border-radius:3px; color:#fff; }
+  .new { background:var(--ok); } .mod { background:#3b6fb6; }
+  .box { border-left:3px solid var(--warn); background:#fff8ec; padding:8px 12px; margin:12px 0; }
+  ul { padding-left:22px; }
+  nav a { margin-right:12px; }
+  figure.solo { margin:12px 0 20px; }
+  .pair { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:12px 0 20px; }
+  .pair figure { margin:0; }
+  @media (max-width:700px) { .pair { grid-template-columns:1fr; } }
+  figure img { width:100%; height:auto; border:1px solid var(--line); border-radius:4px; display:block; }
+  figcaption { color:var(--dim); font-size:13px; margin-top:4px; }
+</style>
+</head>
+<body>
+<main>
+<p><a href="../index.html">&larr; all updates</a></p>
+<h1>A seabed and walls for the outer sea</h1>
+<p class="meta">2026-09-30 &middot; place "[New Map]Isla Marahuyo" (placeId 128146022575640) &middot; found while testing <a href="../2026-09-30_0146_phase6-shark-bait-galit/index.html">Phase 6</a></p>
+
+<nav><a href="#ask">What was asked</a><a href="#found">What was wrong</a><a href="#what">What changed</a><a href="#files">All changes</a><a href="#tests">Testing</a><a href="#gaps">Gaps</a></nav>
+
+<div class="box"><b>Not live yet.</b> This reaches players only when the place is published from Studio. Players on the live game can still fall out of the outer sea until then.</div>
+
+<h2 id="ask">What was asked</h2>
+<ul>
+  <li>Fix the bottomless sea found during the Phase 6 playtest, where a Pating leapt near (&minus;9, 788), went through the water and fell out of the map.</li>
+</ul>
+
+<h2 id="found">What was wrong</h2>
+<p>A column-by-column terrain scan of the whole sea (every 4-stud column where water starts at the surface) found two problems.</p>
+<h3>1. No seabed under a third of the sea</h3>
+<p>99,553 of the sea's 322,109 columns (31%) had water with empty air under it:</p>
+<ul>
+  <li><b>An outer ring</b> round the island's sea, from about &plusmn;830 studs out to the edge (x &minus;1200&hellip;1200, z &minus;800&hellip;800). The water is 32 studs deep and has nothing under it. The inner sea has a sand bottom about 12 studs down.</li>
+  <li><b>The Shipwreck arena's outer water</b> (x &minus;390&hellip;390, z &minus;2060&hellip;&minus;1290): 40 studs deep over air. The arena floor itself (&plusmn;150 around (0, &minus;1700)) did have sand, and its own collision walls keep players inside, so this part was out of reach.</li>
+</ul>
+<p>Anything that went through the bottom fell to y &minus;500, where Roblox destroys fallen parts, and died. A Pating's leap came down hard enough to punch through. A diver swimming down would have done the same.</p>
+<h3>2. Nothing stopped anyone leaving the sea</h3>
+<p>Every edge of the main sea (x &plusmn;1200, z &minus;800 and +800, and a north-east arm out to x 2060, z 1360) was open water next to air. In a test, a swimmer who kept swimming north left the water at z 800 and fell out of the world. There were no boundary parts anywhere.</p>
+
+<h2 id="what">What changed</h2>
+<h3>1. A sand seabed under every bottomless column</h3>
+<div class="pair">
+<figure><img src="images/before-edge.png" alt="From below and outside the north edge: the checkered underside of the water sheet overhead with nothing under it"><figcaption><b>Before:</b> looking up from under the north band, all you see is the checkered underside of the water. There's nothing beneath it.</figcaption></figure>
+<figure><img src="images/after-edge.png" alt="The same view: the overhead is now a solid dark sand floor"><figcaption><b>After:</b> the same camera. The underside is solid sand now.</figcaption></figure>
+</div>
+<figure class="solo"><img src="images/after-underwater.png" alt="Inside the water at (-9, -14, 760) looking down and north: a flat sand seabed"><figcaption>From inside the water near where the Pating fell through: a sand floor 32 studs down.</figcaption></figure>
+<ul>
+  <li>Directly below the water in each of the 99,553 columns, 4 cells (16 studs) of <b>Sand</b> were written, the same material as the existing seabed. It runs y &minus;48&hellip;&minus;32 under the outer ring and y &minus;56&hellip;&minus;40 under the arena's outer water. Only air cells were changed; no water, rock or existing sand was touched.</li>
+  <li>The ring stays 32 studs deep, so there's now a 20-stud drop-off where the inner sea's 12-stud sand shelf meets it.</li>
+  <li>AI sharks roam the same water as before. <code>SharkService</code> already picked roam points out there, treating the missing floor as 100 deep.</li>
+</ul>
+<h3>2. Invisible walls round the main sea</h3>
+<ul>
+  <li><b>14 walls</b> in the new model <code>Workspace.IslaMarahuyo.SeaBounds</code>, generated from the exact cells where water meets air sideways and merged into runs. Together they cover 10,840 studs of edge: west x &minus;1202, south z &minus;802, north z 802 (x &minus;1200&hellip;180), east x 1202 (z &minus;800&hellip;180), and the north-east arm (z 178, x 2062, z 1362, x 178).</li>
+  <li>Each wall is 4 studs thick, sits just outside the water, and runs from <b>y &minus;56 up to y 520</b>. That's tall enough because a shark bite or Pating hit throws a player at 400 studs/s upward, and on a deck with no water drag that tops out around y 410. The first try at y 60 was too low. In testing, an AI shark bit the swimmer near the edge and threw them 340 up and over it.</li>
+  <li>Walls are <code>Transparency 1</code>, <code>CanCollide</code> on, <code>CanQuery</code> off (so the camera, bait throws and shark raycasts ignore them) and <code>CanTouch</code> off. The model is <code>ModelStreamingMode = Persistent</code> so a client always has the walls, since the client owns its character's physics.</li>
+  <li>The Shipwreck arena got no walls: its own 48 collision walls (y &minus;50&hellip;50) already enclose the playable area.</li>
+</ul>
+
+<h2 id="files">All changes</h2>
+<table>
+<tr><th>Instance</th><th></th><th>Change</th></tr>
+<tr><td><code>Workspace.Terrain</code></td><td><span class="tag mod">edit</span></td><td>Sand, 4 cells deep, under 99,553 bottomless water columns (57 regions of 256&times;256 studs written with <code>WriteVoxels</code>). No scripts changed.</td></tr>
+<tr><td><code>Workspace.IslaMarahuyo.SeaBounds</code></td><td><span class="tag new">new</span></td><td>Model (Persistent streaming) with 14 <code>SeaWall</code> parts, as above. The runs are capped at 1024 studs each, because Roblox limits a part to 2048 studs per side. The first build lost 352 studs of the south wall to that limit.</td></tr>
+</table>
+<p><b>No undo point:</b> Studio refused a change-history recording from the MCP context, so Ctrl+Z won't reverse the terrain edit. To undo it, rerun the same scan and turn the Sand cells directly under water in those columns back to Air. To remove the walls, move <code>SeaBounds</code> to <code>ServerStorage._Retired</code>.</p>
+
+<h2 id="tests">Testing</h2>
+<p>Three playtests on MERS_Cov2, each ended by kicking the player from the Server, and each time Studio was then stopped from Play mode with nobody in it. There were no script errors.</p>
+<ul>
+  <li><b>Rescan after the fill:</b> 322,109 sea columns, the same count as before, so the sea surface is unchanged. 0 have water over air (was 99,553).</li>
+  <li><b>Swimming off the north edge, before the walls:</b> the swimmer left the water at z 800 and fell to y &minus;373 and died. <b>After:</b> they stop at z 798.4, and jumping doesn't get them out.</li>
+  <li><b>A bite-style throw</b> (400 up, 150 toward the wall) from z 790: they rose to y 252, got no further than z 799.2, and fell back into the water alive.</li>
+  <li><b>The Pating leap at (&minus;9, &minus;1, 788)</b> that used to fall to y &minus;317: it peaked at y 18, came down no lower than y &minus;2.5 and stayed in the water.</li>
+  <li><b>Pushing down onto the floor</b> at (&minus;9, 788) from y &minus;27 for 2 s: the character held at y &minus;26.5, resting on the sand (top at &minus;32).</li>
+  <li>The test account took the Pating job for free through <code>DebugPatingJob</code> and handed it back before the kick. Nothing was spent or lost.</li>
+</ul>
+
+<h2 id="gaps">Gaps and things to check</h2>
+<ul>
+  <li><b>Boats weren't driven into a wall.</b> A bangka is an unanchored physics model, so it should simply stop, but nobody sailed one there.</li>
+  <li><b>Only the north and west edges were tested by swimming or throwing.</b> The other walls come from the same generated outline and the same code.</li>
+  <li><b>The drop-off</b> from the 12-stud inner shelf to the 32-stud ring floor wasn't looked at from inside the water. It may look like a sudden step.</li>
+  <li><b>The north-east arm</b> (x 180&hellip;2060, z 180&hellip;1360) already had a floor. It got walls only; what's out there wasn't checked.</li>
+  <li>No quick-test values were added. <code>Bodega.AxeDamage = 20</code> from before is still there, to be restored in Phase 7.</li>
+</ul>
+</main>
+</body>
+</html>

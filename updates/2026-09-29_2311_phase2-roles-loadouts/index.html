@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Update 2026-09-29: Phase 2, roles and loadouts</title>
+<style>
+  :root { --ink:#1d2430; --dim:#5b6675; --line:#dde2e8; --bg:#fbfbf9; --accent:#c9485b; --ok:#2f8f6a; --warn:#b7791f; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width:960px; margin:0 auto; padding:32px 16px 64px; }
+  h1 { font-size:26px; margin:0 0 4px; }
+  h2 { font-size:20px; margin:40px 0 8px; padding-top:16px; border-top:1px solid var(--line); }
+  h3 { font-size:16px; margin:20px 0 4px; }
+  .meta { color:var(--dim); margin:0 0 20px; }
+  code { font:13px/1.4 ui-monospace, Consolas, monospace; background:#eef0f3; padding:1px 4px; border-radius:3px; }
+  table { border-collapse:collapse; width:100%; margin:8px 0 16px; font-size:14px; }
+  th, td { text-align:left; vertical-align:top; padding:6px 8px; border-bottom:1px solid var(--line); }
+  th { color:var(--dim); font-weight:600; }
+  td.c, th.c { text-align:center; }
+  .tag { display:inline-block; font-size:12px; font-weight:600; padding:0 6px; border-radius:3px; color:#fff; }
+  .new { background:var(--ok); } .mod { background:#3b6fb6; }
+  .box { border-left:3px solid var(--warn); background:#fff8ec; padding:8px 12px; margin:12px 0; }
+  ul { padding-left:22px; }
+  nav a { margin-right:12px; }
+  figure.solo { margin:12px 0 20px; }
+  figure img { width:100%; height:auto; border:1px solid var(--line); border-radius:4px; display:block; }
+  figcaption { color:var(--dim); font-size:13px; margin-top:4px; }
+</style>
+</head>
+<body>
+<main>
+<p><a href="../index.html">&larr; all updates</a></p>
+<h1>Phase 2: the Maninisid job, and gear that belongs to a job</h1>
+<p class="meta">2026-09-29 &middot; place "[New Map]Isla Marahuyo" (placeId 128146022575640) &middot; follows <a href="../2026-09-29_2242_economy-phase1/index.html">Economy Phase 1: the money rules</a> &middot; plan: "Isla Marahuyo Roadmap" artifact (https://claude.ai/artifact/EHMUmaSk3nCsyiZbR6iLPT)</p>
+
+<nav><a href="#ask">What was asked</a><a href="#what">What changed</a><a href="#files">All changes</a><a href="#tests">Testing</a><a href="#gaps">Gaps</a></nav>
+
+<div class="box"><b>Not live yet.</b> Like Phase 1 and today's shark updates, this reaches players only when the place is published from Studio.</div>
+
+<h2 id="ask">What was asked</h2>
+<ul>
+  <li>"Add another role which is a diver."</li>
+  <li>"Hotbar item should only show to those having the role. Lambat can only be used by mangingisda; glowstick, oxygen, etc. for diver; mangingisda can also have some items diver have; police cannot have sea items because they don't need them on the job; nurse don't need to have any ... so player cannot just switch role."</li>
+  <li>The owner accepted the plan's recommendations: no job makes a player a <b>Tambay</b>, the outlaw path, and only a Tambay carries the axe and the tolda. Players can't buy gear their job can't use. The Diver cap is 6, and divers get +10% on cave finds.</li>
+</ul>
+
+<h2 id="what">What changed</h2>
+
+<h3>1. New job: Maninisid (Diver)</h3>
+<figure class="solo"><img src="images/job-board.png" alt="The TRABAHO SA BARANGAY board with six jobs in two columns: Nars TAKE 80, Pulis TAKE 120, Tindero TAKE 60, Mangingisda TAKE 100, Maninisid (Diver) with a LEAVE button and 1/6 on duty, Pating TAKE 100 in red"><figcaption>All six jobs fit on the board without scrolling. The test player is on duty as the Maninisid.</figcaption></figure>
+<ul>
+  <li><code>RoleService.Roles.maninisid</code>: cap 6, any time of day, fee 100 like the other jobs (Phase 1). It has no NPC stand-in (<code>noBot</code>, <code>botManaged</code>, like the Pating), board order 5. The Pating moved to order 6.</li>
+  <li>It is the only job that carries <b>Oxygen Tanks</b>.</li>
+  <li><b>Diver's rate:</b> when a Maninisid sells at the Palengke, <code>InventoryService</code> adds 10% (<code>DIVER_RATE</code>) of the sell price of every cave find. That is everything except Kabibe and Bahura (<code>SHALLOW_FINDS</code>). The sale message adds "(+N diver's rate)".</li>
+  <li>The board subtitle for someone with no job now reads "No job makes you a Tambay: you carry the axe and the tolda. Take a job, or hand one back."</li>
+</ul>
+
+<h3>2. Each job carries only its own gear</h3>
+<table>
+<tr><th>Item</th><th class="c">Tambay</th><th class="c">Maninisid</th><th class="c">Mangingisda</th><th class="c">Pulis</th><th class="c">Nars</th><th class="c">Tindero</th><th class="c">Pating</th></tr>
+<tr><td>Flashlight, battery</td><td class="c">&#10003;</td><td class="c">&#10003;</td><td class="c">&#10003;</td><td class="c">&#10003;</td><td class="c">&ndash;</td><td class="c">&ndash;</td><td class="c">&ndash;</td></tr>
+<tr><td>Oxygen Tank</td><td class="c">&ndash;</td><td class="c">&#10003;</td><td class="c">&ndash;</td><td class="c">&ndash;</td><td class="c">&ndash;</td><td class="c">&ndash;</td><td class="c">&ndash;</td></tr>
+<tr><td>Glowstick, Shark Bait, Shark Poison, Shark Repellent</td><td class="c">&ndash;</td><td class="c">&#10003;</td><td class="c">&#10003;</td><td class="c">&ndash;</td><td class="c">&ndash;</td><td class="c">&ndash;</td><td class="c">&ndash;</td></tr>
+<tr><td>Lambat</td><td class="c">&ndash;</td><td class="c">&ndash;</td><td class="c">&#10003;</td><td class="c">&ndash;</td><td class="c">&ndash;</td><td class="c">&ndash;</td><td class="c">&ndash;</td></tr>
+<tr><td>Axe, Tolda</td><td class="c">&#10003;</td><td class="c">&ndash;</td><td class="c">&ndash;</td><td class="c">&ndash;</td><td class="c">&ndash;</td><td class="c">&ndash;</td><td class="c">&ndash;</td></tr>
+<tr><td>Binoculars</td><td class="c">&ndash;</td><td class="c">&ndash;</td><td class="c">&ndash;</td><td class="c">&#10003;</td><td class="c">&ndash;</td><td class="c">&ndash;</td><td class="c">&ndash;</td></tr>
+<tr><td>Finds (and anything not listed)</td><td class="c" colspan="7">everyone</td></tr>
+</table>
+<ul>
+  <li><b>The rules</b> live in the new <code>ItemConfig.RoleGear</code>. <code>ItemConfig.RoleNames</code> gives the job names, and there are new helpers: <code>RoleOf(player)</code> (no job = "tambay"), <code>RoleAllows(key, role)</code>, <code>CanCarry(player, key)</code> and <code>RolesLabel(key)</code> (e.g. "Maninisid, Mangingisda"). The server and the screens read the same table.</li>
+  <li><b>Nothing is taken away.</b> Gear a job can't use stays in the bag or bodega. It just doesn't reach the hotbar, and it comes back the moment the player takes a job that uses it.</li>
+  <li><b>Hotbar</b> (<code>InventoryService.syncTools</code>): a tool is only made for gear the job allows. The exception is a pitched tolda, which keeps its tool so the stall can always be packed up. <code>syncTools</code> also manages the <b>StarterPack Flashlight</b>: a Nars, Tindero or Pating has it removed, including just after every respawn, and a job that carries one gets a fresh copy with its <code>FlashlightClient</code> script. A new listener on the player's <code>Role</code> attribute re-syncs the hotbar and repaints the bag and Palengke on every job change.</li>
+  <li><b>Refused on the server:</b>
+    <ul>
+      <li>buying at the Palengke (<code>RequestItemBuy</code>);</li>
+      <li>using gear from the bag (<code>RequestItemUse</code>, e.g. an oxygen tank);</li>
+      <li>laying a glowstick (<code>RequestItemDrop</code>; other gear can still be dropped for a teammate);</li>
+      <li>buying a tolda from Suki ("You've got a job. Come back when you're a Tambay.");</li>
+      <li>pitching a tolda;</li>
+      <li>Shark Repellent going off from the bag (<code>SharkService.spendRepellent</code>).</li>
+    </ul>
+    The message names who can: "Only a Maninisid or Mangingisda can lay a Glowstick. Take the job at the Munisipyo board first." The lambat already checked for the Mangingisda.</li>
+  <li><b>Palengke</b> (<code>GearHud</code>): a tile for another job's gear shows "Mangingisda only" and a greyed price (below).</li>
+  <li><b>Bag</b> (<code>BagHud</code>): another job's gear is dimmed. Selecting it shows "Maninisid, Mangingisda gear. Take that job to use it." and there is no USE button. DROP stays.</li>
+</ul>
+<figure class="solo"><img src="images/palengke-maninisid.png" alt="The Palengke panel as a Maninisid: Battery 90, Glowstick 25 (have 19), O2 Tank 280 (have 1), Lambat marked Mangingisda only with a grey 600 price, Shark Bait 120, Repellent 60; the hotbar below shows the flashlight, one oxygen tank and 19 glowsticks"><figcaption>As a Maninisid: the Lambat is Mangingisda gear, so its price is grey. The hotbar holds the Maninisid's kit: flashlight, oxygen tank, glowsticks.</figcaption></figure>
+
+<h2 id="files">All changes</h2>
+<table>
+<tr><th>Instance</th><th>Change</th></tr>
+<tr><td><code>ReplicatedStorage.ItemConfig</code></td><td><span class="tag mod">edit</span> new RoleGear, RoleNames, RoleOf, RoleAllows, CanCarry, RolesLabel</td></tr>
+<tr><td><code>ServerScriptService.RoleService</code></td><td><span class="tag mod">edit</span> new maninisid role; pating order 6</td></tr>
+<tr><td><code>ServerScriptService.InventoryService</code></td><td><span class="tag mod">edit</span> StarterPack reference; role gate and flashlight handling in syncTools; roleRefusal; checks in buy, use and glowstick drop; DIVER_RATE and SHALLOW_FINDS on selling; Role attribute listener</td></tr>
+<tr><td><code>ServerScriptService.BlackMarketService</code></td><td><span class="tag mod">edit</span> Suki sells a tolda only to a Tambay; only a Tambay pitches</td></tr>
+<tr><td><code>ServerScriptService.SharkService</code></td><td><span class="tag mod">edit</span> requires ItemConfig; repellent only works for a job that carries it</td></tr>
+<tr><td><code>StarterPlayer.StarterPlayerScripts.RoleHud</code></td><td><span class="tag mod">edit</span> Tambay subtitle; six-jobs comment</td></tr>
+<tr><td><code>StarterPlayer.StarterPlayerScripts.GearHud</code></td><td><span class="tag mod">edit</span> keeps each tile's button API; "X only" note and locked price for another job's gear</td></tr>
+<tr><td><code>StarterPlayer.StarterPlayerScripts.BagHud</code></td><td><span class="tag mod">edit</span> dims another job's gear; info line; USE hidden</td></tr>
+</table>
+<p>No new instances, remotes or saved fields. Every script was compile-checked with <code>loadstring</code> before saving.</p>
+
+<h2 id="tests">Testing</h2>
+<p>A solo playtest on MERS_Cov2, ended by kicking the player from the Server. The kick released the save lock (checked in the DataStore afterwards). No script errors. The first attempt could not load the account because another session (0e606b75, not a Studio playtest) was holding its save; I left that lock alone and started again once it was released.</p>
+<ul>
+  <li><b>The table itself:</b> printed <code>RoleAllows</code> for every item and job in Edit, and it matches the table above.</li>
+  <li><b>Tambay on join:</b> the hotbar held only the Flashlight. The Binoculars, which everyone used to carry, were gone.</li>
+  <li><b>Tambay at the Palengke:</b> buying a glowstick was refused: "Only a Maninisid or Mangingisda can buy glowstick..." (the wording has since been fixed to "a Glowstick").</li>
+  <li><b>Maninisid:</b> taking the job charged the 100 fee ("Paid the 100 Peso clearance. The only job that carries Oxygen Tanks..."). A glowstick (25) and an oxygen tank (280) then bought fine. With the bodega up, the hotbar showed Flashlight, OxygenTank and Glowstick.</li>
+  <li><b>Handing the job back:</b> the hotbar went back to just the Flashlight, and the bag still held oxygen 1 and glowstick 19. Laying a glowstick and using the tank were both refused.</li>
+  <li><b>Nars</b> (taken with the admin <code>/job me nurse</code>): no tools at all. Handing it back returned a Flashlight with its script. A respawn as Nars showed the StarterPack Flashlight right after spawning and none 2 seconds later.</li>
+  <li><b>Board and Palengke:</b> screenshots above. The six rows fit, and the Lambat tile reads "Mangingisda only" as a Maninisid.</li>
+  <li><b>Selling as a Maninisid</b> with only Kabibe in the sack: "Sold 2 finds for 20 Peso." No diver's rate, which is correct for shallow finds.</li>
+</ul>
+
+<h2 id="gaps">Gaps and things to check</h2>
+<ul>
+  <li><b>The +10% diver's rate on a cave find was not seen in play.</b> A script couldn't trigger a cave pearl's pickup prompt (a shallow shell's worked), so this is checked by reading the code only. Sell a cave pearl as a Maninisid once to confirm.</li>
+  <li><b>The axe for a Tambay was not seen on the hotbar.</b> Players' axes start in the bodega, and it was not moved to the bag in the test. The rule is the same one the other items passed.</li>
+  <li><b>Not tested:</b> the Suki refusal and tolda pitch refusal (they need the fixer prompt), the Pulis's binoculars, and the repellent refusal (it needs an AI shark bite).</li>
+  <li><b>A brief flash on respawn:</b> a Nars, Tindero or Pating sees the StarterPack Flashlight on the hotbar for about half a second after respawning, until the sync removes it.</li>
+  <li><b>Other hotbar-only messages</b> were not reworded; for example, a player's own sale message still shows the amount before the VIP and fiesta multipliers, as it did before.</li>
+  <li><b>The old welcome/tutorial panel</b> still lists older activities; it is replaced in Phase 8.</li>
+</ul>
+</main>
+</body>
+</html>

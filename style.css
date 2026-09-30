@@ -211,7 +211,7 @@ html.no-3d body::before{
 .hud-depth b{font-size:2.3rem;font-weight:600;text-shadow:0 2px 14px rgba(0,0,0,.6)}
 .hud-depth i{font-style:normal;font-size:1rem;opacity:.7}
 .hud-zone{
-  font-family:var(--font-display);font-size:.92rem;margin-top:.15rem;
+  font-family:var(--font-display);font-size:1.12rem;line-height:1.2;margin-top:.15rem;
   color:var(--gold);text-shadow:0 2px 10px rgba(0,0,0,.6);
 }
 .hud-risk{
@@ -445,6 +445,15 @@ h3{font-size:1.2rem;letter-spacing:0}
 .shot img{aspect-ratio:1/1;object-fit:cover;width:100%;transition:transform .5s var(--ease)}
 .shot:hover img{transform:scale(1.05)}
 .shot figcaption{padding:.85rem 1rem;font-size:.85rem;color:rgba(255,255,255,.72)}
+/* in-game screenshots are 16:9 phone captures; a square crop would cut the HUD off */
+.shot-wide img{aspect-ratio:16/9}
+.shots-pair{margin-top:1.4rem;grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+
+/* feature banner: a screenshot beside its explanation (Pating, Shipwreck) */
+.banner.feature{margin-top:0;margin-bottom:1.4rem}
+.banner.feature img{aspect-ratio:16/9;height:auto;min-height:0;align-self:center}
+.banner-body .stats{margin-top:.4rem}
+.feature-cards{margin-top:.2rem}
 .shot figcaption b{
   display:block;font-family:var(--font-display);font-weight:600;
   font-size:1rem;color:#fff;margin-bottom:.15rem;

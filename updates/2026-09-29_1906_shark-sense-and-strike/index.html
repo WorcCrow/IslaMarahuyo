@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Update 2026-09-29: Shark sense ring, tail-slap strike, /give</title>
+<style>
+  :root { --ink:#1d2430; --dim:#5b6675; --line:#dde2e8; --bg:#fbfbf9; --accent:#c9485b; --ok:#2f8f6a; --warn:#b7791f; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width:960px; margin:0 auto; padding:32px 16px 64px; }
+  h1 { font-size:26px; margin:0 0 4px; }
+  h2 { font-size:20px; margin:40px 0 8px; padding-top:16px; border-top:1px solid var(--line); }
+  h3 { font-size:16px; margin:20px 0 4px; }
+  .meta { color:var(--dim); margin:0 0 20px; }
+  code { font:13px/1.4 ui-monospace, Consolas, monospace; background:#eef0f3; padding:1px 4px; border-radius:3px; }
+  table { border-collapse:collapse; width:100%; margin:8px 0 16px; font-size:14px; }
+  th, td { text-align:left; vertical-align:top; padding:6px 8px; border-bottom:1px solid var(--line); }
+  th { color:var(--dim); font-weight:600; }
+  .tag { display:inline-block; font-size:12px; font-weight:600; padding:0 6px; border-radius:3px; color:#fff; }
+  .new { background:var(--ok); } .mod { background:#3b6fb6; } .del { background:var(--accent); }
+  .box { border-left:3px solid var(--warn); background:#fff8ec; padding:8px 12px; margin:12px 0; }
+  ul { padding-left:22px; }
+  nav a { margin-right:12px; }
+  .pair { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:12px 0 20px; }
+  .pair figure, figure.solo { margin:0; }
+  figure img { width:100%; height:auto; border:1px solid var(--line); border-radius:4px; display:block; }
+  figcaption { color:var(--dim); font-size:13px; margin-top:4px; }
+  @media (max-width:640px) { .pair { grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+<main>
+<p><a href="../index.html">&larr; all updates</a></p>
+<h1>Shark sense ring (PUBG-style), the tail-slap strike, and admin /give</h1>
+<p class="meta">2026-09-29, 19:06 and later that evening &middot; place "[New Map]Isla Marahuyo" (placeId 128146022575640) &middot; follows <a href="../2026-09-29_1752_pating-shark-round2/index.html">Pating round 2</a> &middot; plan: <code>C:\Users\Administrator\.claude\plans\dapper-gliding-cosmos.md</code></p>
+
+<nav><a href="#ask">What was asked</a><a href="#what">What changed</a><a href="#files">All changes</a><a href="#tests">Testing</a><a href="#gaps">Gaps</a></nav>
+
+<div class="box"><b>Not live yet.</b> None of today's shark changes are in the published game until the place is published from Studio (File &rarr; Publish to Roblox). The owner first tried the strike in the live game, where it could not work for that reason.</div>
+
+<h2 id="ask">What was asked (in order)</h2>
+<ol>
+  <li><b>Shark sense like PUBG's visual sound indicators</b>: follow where the screen shows red. Answers: <b>both</b> a centre ring with red arcs and a red screen-edge aura; <b>every prey in range</b>, closer = stronger; <b>uploaded PNG images</b>.</li>
+  <li><b>Players on a small island were almost impossible to hit.</b> New move: the shark clicks a player when close enough, with a <b>49%</b> chance to push them into the water. Answers: a hit does <b>no damage</b>, only throws the player off position, "toward the opposite direction of the shark" (a shark coming from the east throws a player on the west back east); 25 stamina, 4 s wait after a miss; targets are anyone near the water.</li>
+  <li>"My shark won't jump on the player when I click" (tried in the live game, which doesn't have the strike yet). The click was also made more forgiving, and it now says why it can't strike.</li>
+  <li>Four more points:
+    <ol>
+      <li>sharks called for backup, and the shark player, must not drop shells into a lambat, so it can't be farmed;</li>
+      <li>admins can add funds to any player on the server, a chat command is fine;</li>
+      <li>the strike reaches <b>30 studs</b>;</li>
+      <li>the player hit flies <b>as high as an AI shark bite</b>.</li>
+    </ol></li>
+  <li><b>"It should look like it slaps the player with its tail or just passes by, no collision, like a normal shark jump."</b></li>
+</ol>
+
+<h2 id="what">What changed</h2>
+
+<h3>1. The sense ring and the edge aura</h3>
+<div class="pair">
+  <figure><img src="images/sense-ring.png" alt="Open sea from behind the shark: a faint ring round the middle of the screen with a bright red arc on the right, a medium one at the top and a faint one on the left; the top-left card reads SCENT 3 prey, nearest 30 studs"><figcaption>Three stand-in prey: 30 studs east (bright arc, right), 120 north (medium, top) and 250 west (faint, left). The camera faces north.</figcaption></figure>
+  <figure><img src="images/sense-aura.png" alt="The same view with the left screen edge glowing red and a strong arc on the left of the ring"><figcaption>Prey 8 studs to the left: the left screen edge glows red (it pulses under 20 studs).</figcaption></figure>
+</div>
+<ul>
+  <li><b>Server</b> (<code>SharkPlayerService.scentTick</code>, 4 Hz): sends every prey within 300 studs, nearest first, up to <code>SCENT_MAX_TARGETS = 8</code>, as <code>targets = {{dir, dist}, ...}</code>. Smell still ignores walls.</li>
+  <li><b>Ring:</b> a faint circle in the middle of the screen (46% of the shorter side). It never takes a tap or click.</li>
+  <li><b>Arcs:</b> one red arc per prey, turned to its bearing from where the camera faces. Transparency runs from 0.8 far to 0.05 close, and the arc grows up to 8% bigger when close. The arcs are smoothed between updates.</li>
+  <li><b>Edge aura:</b> when the nearest prey is within 60 studs, the edge on its side glows red; top means ahead and bottom behind. The strength follows the square root of closeness: the first, linear version was too faint on bright water. It never goes past 0.25 transparency, and pulses under 20 studs.</li>
+  <li><b>Card:</b> the compass dial is gone. It reads "SCENT &middot; N prey" over "nearest N studs &ndash; warmer/colder/steady", with the stamina bar unchanged.</li>
+</ul>
+<table>
+<tr><th>Image (uploaded with the owner's approval)</th><th>Asset</th></tr>
+<tr><td><code>sense_ring.png</code> 512&times;512, thin soft circle</td><td><code>rbxassetid://72322686561590</code></td></tr>
+<tr><td><code>sense_arc.png</code> 512&times;512, ~36&deg; glowing arc at 12 o'clock</td><td><code>rbxassetid://84187837575769</code></td></tr>
+<tr><td><code>sense_edge.png</code> 128&times;512, glow bright on its left edge</td><td><code>rbxassetid://89426249204212</code></td></tr>
+</table>
+<p>White with alpha, tinted in the game. The source and the generator (<code>make_sense_pngs.py</code>, standard-library Python) are in <code>D:\GitHubRepo\IslaMarahuyo\assets\ui\shark-sense\</code>. They were uploaded through a temporary localhost server and the Studio MCP <code>upload_image</code>.</p>
+
+<h3>2. The strike: click or tap a player, the shark leaps up beside them and slaps them with its tail</h3>
+<figure class="solo"><img src="images/strike-slap.png" alt="The shark at the top of its leap above a rocky shore, level with and just beside a stand-in target standing on the sand"><figcaption>The top of a strike leap, frozen for the shot: the shark is up beside and above the target on the shore, not on them. This roll was a miss, so it passed about 7 studs wide. After the slap it falls back into the sea it came from.</figcaption></figure>
+<ul>
+  <li><b>Who can be struck:</b> anyone within <b><code>STRIKE_RANGE = 30</code> studs</b> (was 20) who is swimming, or within <code>SHORE_REACH = 10</code> studs of the water: beach, small island, dock, boat. The check is <code>nearWater</code>, one voxel read of the block around and below them. Excluded: sharks, and anyone Jailed, Reviving or in a Shipwreck match.</li>
+  <li><b>Red outline</b> (a <code>PatingTarget</code> Highlight, shark's screen only), grey while the strike isn't ready. The first time one appears, a toast explains the strike.</li>
+  <li><b>Click or tap</b> (<code>InputBegan</code> MouseButton1 / <code>TouchTap</code>): picks the outlined player whose head, torso or root is within 70 px. The position is tried in both GUI and screen coordinates, since that differs between devices. A click on someone who isn't outlined, or while the strike isn't ready, now says why:
+    <ul>
+      <li>"Too far to strike &ndash; get within 30 studs (34 away)"</li>
+      <li>"They are too far from the water to strike"</li>
+      <li>"Not enough stamina to strike (12 of 25)"</li>
+      <li>"Missed &ndash; next strike in 3s"</li>
+    </ul></li>
+  <li><b>Server</b> (<code>strike</code>) re-checks everything (5 studs of slack for lag), takes 25 stamina and rolls <code>STRIKE_CHANCE = 0.49</code>.</li>
+  <li><b>The leap</b> is a normal jump that tops out <b>beside</b> the target, never on them:
+    <ul>
+      <li>2.5 studs to one side on a hit, 7 on a miss;</li>
+      <li><code>STRIKE_PASS_ABOVE = 5</code> studs above their middle (between 7 and 24 above the shark), so its body clears the sand they stand on.</li>
+    </ul>
+    The server works out the launch, <code>lungeGo {launch, pass, recoil}</code>. At the top (<code>pass</code>), the client sends the shark back the way it came at <code>STRIKE_RECOIL = 0.9</code> of its approach speed, so it drops into the sea it leapt from.
+    <ul>
+      <li>The first version carried on past the player; against a player on an island it always came down on the island, beached.</li>
+      <li>The second topped out level with the player and touched down on the sand.</li>
+    </ul></li>
+  <li><b>No collision:</b> for the leap plus 1.5 s, <code>NoCollisionConstraint</code>s (<code>PatingPassBy</code>) keep the shark's body and the target's apart. Terrain, boats and everyone else still collide.</li>
+  <li><b>Tail slap:</b> the server sets <code>SharkSlapAt</code> (server time of the top of the leap). Every client whips that shark's mesh side to side once (&plusmn;55&deg; over 0.4 s) through the same Motor6D aim that points it where it swims.</li>
+  <li><b>Hit:</b> at the top of the leap the target is ragdolled and thrown <b>as high as an ambient shark's bite: 150 sideways, 400 up</b>, with the same spin. The throw goes <b>the way the shark came from</b>: a shark from the east sends a player on the west side back east. <b>No air or health is lost.</b> The target gets "A shark leapt out of the sea and threw you off your feet!". That shark can't strike or hit them again for 10 s.</li>
+  <li><b>Miss:</b> "A shark lunged at you and missed!" for the target, and a 4 s wait for the shark (<code>SharkStrikeReadyAt</code>).</li>
+  <li><b>Shark Poison</b> still kills a shark that strikes at its holder, hit or miss.</li>
+  <li><b>Also changed:</b> the normal jump-leap hit now throws a player on a deck or shore at the same 150/400 as a swimmer (before, 40/75). Shore players now count as prey for the scent ring and the jump-leap too.</li>
+</ul>
+
+<h3>3. Called sharks can't farm a lambat</h3>
+<ul>
+  <li><code>LambatService</code> only ever drops finds for the ambient sharks in <code>Activities.Sharks</code>. A Pating player never shakes anything out of a net, and that is now stated in the code.</li>
+  <li>The sharks that answer a Pating's CALL get <code>NoLambatUntil</code> (server time) set by <code>SharkService</code>'s <code>SharkSummon</code>, for the 15 s call plus 60 s after. The lambat scan skips any shark whose <code>NoLambatUntil</code> is still in the future.</li>
+</ul>
+
+<h3>4. Admins: /give Peso to anyone on the server</h3>
+<ul>
+  <li>In chat: <code>/give &lt;player&gt; &lt;amount&gt;</code>, or <code>/givepeso</code>. For example <code>/give Juan 500</code>, or <code>/give me 1000</code>.</li>
+  <li>The name matches the start of a username or display name. If it matches several players or nobody, it says so. Amounts run from 1 to 100,000.</li>
+  <li>It uses the dashboard's own <code>AdminService.GrantShells</code> (ledger: "AdminGrant"), and the reply comes through the admin toast (<code>AdminFeedback</code>).</li>
+  <li>Admins only (<code>AdminConfig.IsAdmin</code>). The command is hidden from chat autocomplete, and non-admins get no reply.</li>
+  <li>It is a <code>TextChatCommand</code> (<code>AdminGive</code>) that <code>AdminBootstrap</code> creates under <code>TextChatService.TextChatCommands</code>. The dashboard's own grant still gives only to yourself.</li>
+</ul>
+
+<h2 id="files">All changes</h2>
+<table>
+<tr><th></th><th>DataModel path</th><th>What</th></tr>
+<tr><td><span class="tag mod">edited</span></td><td><code>ServerScriptService.SharkPlayerService</code></td><td>
+  <ul>
+    <li><code>scentTick</code> sends all targets.</li>
+    <li>New <code>nearWater</code> and <code>strike</code>; <code>fling(v, dir, side, up)</code>.</li>
+    <li><code>processLunge</code> and <code>scentTick</code> use <code>nearWater</code>.</li>
+    <li>New record field <code>strikeReadyAt</code>; attributes <code>SharkStrikeReadyAt</code>, <code>SharkSlapAt</code>.</li>
+    <li>Tuning: <code>SCENT_MAX_TARGETS 8, STRIKE_RANGE 30, STRIKE_SLACK 5, STRIKE_CHANCE 0.49, STRIKE_MISS_WAIT 4, STRIKE_THROW_SIDE/UP 150/400, STRIKE_PASS_HIT 2.5, STRIKE_PASS_MISS 7, STRIKE_PASS_ABOVE 5, STRIKE_MIN/MAX_HEIGHT 7/24, STRIKE_LIFT 1.12, STRIKE_RECOIL 0.9, SHORE_REACH 10</code>. <code>FLING_SIDE_DRY/UP_DRY</code> are now 150/400.</li>
+    <li>Studio hook <code>DebugPating(player, "strike", target)</code>.</li>
+  </ul></td></tr>
+<tr><td><span class="tag mod">edited</span></td><td><code>StarterPlayer.StarterPlayerScripts.SharkClient</code></td><td>
+  <ul>
+    <li>Sense ring, arcs and aura (<code>IMG_RING/ARC/EDGE, SENSE_SIZE 0.46, ARC_SLOTS 8, AURA_RANGE 60, PULSE_RANGE 20</code>) and the card text.</li>
+    <li>Strike targets and outlines (<code>preyPool</code>, <code>refreshStrikeTargets</code>), click/tap (<code>pickNear</code>, <code>tryStrike</code>, <code>TAP_TOLERANCE 70</code>).</li>
+    <li>Server-given strike launch with the recoil at the top; tail slap (<code>SLAP_TIME 0.4</code>, <code>SLAP_SWING 55&deg;</code>).</li>
+    <li>Compass dial removed.</li>
+  </ul></td></tr>
+<tr><td><span class="tag mod">edited</span></td><td><code>ServerScriptService.SharkService</code></td><td><code>SharkSummon</code> sets <code>NoLambatUntil</code> on called sharks.</td></tr>
+<tr><td><span class="tag mod">edited</span></td><td><code>ServerScriptService.LambatService</code></td><td>The shark scan skips sharks with a future <code>NoLambatUntil</code>.</td></tr>
+<tr><td><span class="tag mod">edited</span></td><td><code>ServerScriptService.AdminBootstrap</code></td><td><code>/give</code> command (<code>findPlayer</code>, <code>onGiveCommand</code>, <code>GIVE_MAX 100000</code>).</td></tr>
+<tr><td><span class="tag new">remote</span></td><td><code>ReplicatedStorage.Remotes.RequestSharkStrike</code></td><td>client &rarr; server, a Player (or a Studio dummy Model).</td></tr>
+<tr><td><span class="tag new">runtime</span></td><td><code>TextChatService.TextChatCommands.AdminGive</code></td><td>created by AdminBootstrap at start (in its own folder of that name when it runs before Roblox's default one; both work).</td></tr>
+<tr><td><span class="tag new">assets</span></td><td>3 Roblox images; <code>assets\ui\shark-sense\</code> in the repo</td><td>see above.</td></tr>
+</table>
+<p>No world edits. No instances removed. All scripts were written through <code>ScriptEditorService:UpdateSourceAsync</code> and compile.</p>
+
+<h2 id="tests">Testing</h2>
+<p>Solo playtests in iPhone emulation with stand-in dummies (<code>DebugPatingDummy</code>), each ended with a Server-side kick. The data lock was checked released after each. No script errors in the logs; the only client errors are two old Health Post sound ids.</p>
+<ul>
+  <li><b>Arcs:</b> dummies 30 studs east, 120 north and 250 west, camera facing north: arcs at 90&deg; / 0&deg; / &minus;90&deg;, transparency 0.13 / 0.35 / 0.67.</li>
+  <li><b>Aura:</b> prey 8 studs to the left: left edge only, transparency 0.41 after the strengthening (0.63 before).</li>
+  <li><b>Tail-slap strike</b> (6 tries at a dummy on the sand at (60, 7, 470), from 16 and 28 studs out):
+    <ul>
+      <li><b>Hits:</b> closest pass 5.8&ndash;7.8 studs from the target's middle (2.5 to the side, 5 above), at the top of the leap. Every hit came back down in the water where it started (z 486&ndash;500, y &minus;0.5).</li>
+      <li><b>The miss</b> passed 8.8 studs away and came down on the sand edge (z 480).</li>
+      <li><b>Earlier versions:</b> the carry-on-past version landed on the island every time, and the level-pass version touched down on the sand.</li>
+    </ul></li>
+  <li><b>Direction:</b> the shark came from +Z (the sea), and the hit threw the target toward (0, 0, 1), back to the sea.</li>
+  <li><b>Real click:</b> a mouse click through the MCP on an outlined dummy fired a strike.</li>
+  <li><b>/give:</b>
+    <ul>
+      <li>"/give me 1" gave +1 (729 &rarr; 730 after "/givepeso mers 1", which matched the name prefix).</li>
+      <li>"/give nobody 50" &rarr; "No player here named "nobody"."</li>
+      <li>"/give me 0" &rarr; "Amount must be 1 to 100000."</li>
+      <li>"/give" &rarr; the usage line.</li>
+    </ul></li>
+  <li><b>Lambat:</b> after a CALL, 6 of 78 ambient sharks carried <code>NoLambatUntil</code> 74 s into the future. The skip in the net scan was not run against a real planted net.</li>
+</ul>
+<div class="box"><b>Test money:</b> with the owner's OK, 1000 Peso were granted back to MERS_Cov2 through the admin GrantShells (ledger "AdminGrant") after role fees had run it down to 28, plus 2 Peso through the /give tests. Role fees in these tests then cost 400 more (the saved balance was 430 at the end). The live game also saw play in between.</div>
+
+<h2 id="gaps">Still unverified / known issues</h2>
+<ul>
+  <li><b>No real second player:</b> the throw on a real character (ragdoll, 150 sideways and 400 up, no damage) and the victim's messages; also <code>/give</code> to another player (the name matching is the same code path as "me" and prefixes).</li>
+  <li><b>A finger tap</b> was not tested (the MCP sends mouse clicks). <code>TouchTap</code> uses the same picker.</li>
+  <li><b>Misses</b> sometimes come down on the edge of the sand, beached for a moment.</li>
+  <li><b>After the slap the shark turns round</b> to face the way it falls (its pose follows its velocity), which reads as a flip back into the sea.</li>
+  <li><b>The lambat skip</b> needs a real net and a CALL to watch it work end to end.</li>
+  <li><b>First-pass numbers:</b> the strike throw, the arc's lift, the recoil, the 70 px tap tolerance and the aura strength.</li>
+  <li><b>Blocked tests:</b> testing was blocked twice while the owner's account was on a live server, since a Studio playtest can't load a player whose save another server holds.</li>
+</ul>
+</main>
+</body>
+</html>

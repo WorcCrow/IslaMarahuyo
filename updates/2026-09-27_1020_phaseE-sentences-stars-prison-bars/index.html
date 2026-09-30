@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Update 2026-09-27: Phase E — sentences, prison stars, barred walls</title>
+<style>
+  :root { --ink:#1d2430; --dim:#5b6675; --line:#dde2e8; --bg:#fbfbf9; --accent:#c9485b; --ok:#2f8f6a; --warn:#b7791f; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width:960px; margin:0 auto; padding:32px 16px 64px; }
+  h1 { font-size:26px; margin:0 0 4px; }
+  h2 { font-size:20px; margin:40px 0 8px; padding-top:16px; border-top:1px solid var(--line); }
+  .meta { color:var(--dim); margin:0 0 20px; }
+  code { font:13px/1.4 ui-monospace, Consolas, monospace; background:#eef0f3; padding:1px 4px; border-radius:3px; }
+  table { border-collapse:collapse; width:100%; margin:8px 0 16px; font-size:14px; }
+  th, td { text-align:left; vertical-align:top; padding:6px 8px; border-bottom:1px solid var(--line); }
+  th { color:var(--dim); font-weight:600; }
+  .tag { display:inline-block; font-size:12px; font-weight:600; padding:0 6px; border-radius:3px; color:#fff; }
+  .new { background:var(--ok); } .mod { background:#3b6fb6; } .del { background:var(--accent); }
+  .box { border-left:3px solid var(--warn); background:#fff8ec; padding:8px 12px; margin:12px 0; }
+  ul { padding-left:22px; }
+  nav a { margin-right:12px; }
+  .pair { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:12px 0 20px; }
+  .pair figure, figure.one { margin:0; }
+  figure img { width:100%; height:auto; border:1px solid var(--line); border-radius:4px; display:block; }
+  figcaption { color:var(--dim); font-size:13px; margin-top:4px; }
+  figure.one { max-width:620px; margin:12px 0 20px; }
+  @media (max-width:640px) { .pair { grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+<main>
+<p><a href="../index.html">&larr; all updates</a></p>
+<h1>Phase E: 10/15/20-minute sentences, prison stars over the head, barred prison walls</h1>
+<p class="meta">2026-09-27 &middot; place "[New Map]Isla Marahuyo" (placeId 128146022575640) &middot; phase 5 of 7</p>
+
+<nav><a href="#ask">What was asked</a><a href="#sent">1. Sentences</a><a href="#stars">2. Stars</a><a href="#bars">3. Barred walls</a><a href="#files">All changes</a><a href="#tests">Testing</a><a href="#gaps">Gaps</a></nav>
+
+<h2 id="ask">What was asked</h2>
+<ol>
+  <li><b>Item 13</b> &mdash; "adjust prison sentence to 10mins first offence and so on". The user then said "max is only 3 lets do 5 mins per offence", so: 10, 15, 20 minutes, capped at the third.</li>
+  <li><b>Item 17</b> (the display half) &mdash; "if player go to prison, it should show on top of player like a name that this player already come from prison and how many star, 6 star meaning very bad person". The police response to stars is in Phase F.</li>
+  <li><b>Item 11</b> &mdash; "make prison wall like a bar/screen, so player outside can easily see and taunt prisoner inside, make the wall big enough so prisoner cannot just jump over the wall".</li>
+</ol>
+
+<h2 id="sent">1. Sentences grow with the record (item 13)</h2>
+<ul>
+  <li><code>PoliceService</code>: the flat <code>SENTENCE_CAUGHT = 2</code> / <code>SENTENCE_VOTED = 2</code> island days (48 real minutes) are gone. <code>SENTENCE_MINUTES = {10, 15, 20}</code> is indexed by how many times the player has been jailed, including this time, and capped at the third. Every path goes through it: an NPC officer's booking, a player pulis's arrest, and a community vote. Minutes are converted to the island days the rest of the file counts in (24 real minutes to a day).</li>
+  <li>The count lives in a <b>new, separate record</b>, <code>IslaMarahuyo_Jail_v1</code> key <code>Record_&lt;userId&gt;</code> = <code>{offenses}</code>, because the sentence key <code>Jail_&lt;userId&gt;</code> is deleted on release. It is read on join, raised on each sentence, and written with <code>SetAsync</code>. If the read fails, the player is treated as clean but nothing is cached or written, so a DataStore blip can never wipe a record.</li>
+  <li><code>sentencePlayer(player, reason, days?)</code> now returns the days given. <code>days</code> is only passed by Studio's <code>DebugJail</code>: <code>DebugJail:Fire(player)</code> now uses the record, and <code>DebugJail:Fire(player, days)</code> still forces a length.</li>
+  <li>The officer's toast reads "&lt;name&gt; booked -- N minutes.", and the startup log says "10/15/20-minute sentences". The service comment was updated: a sentence is now 5&ndash;9 restocks at the tuned credit, or 1 revive.</li>
+  <li><code>PoliceStation.Harapan_RulesPlaque</code> now reads: "Jail: 10 min, then 15, then 20. / Every jailing is a star on your name. / Community vote: 66% to jail. / Work it off at the duty desk."</li>
+</ul>
+
+<h2 id="stars">2. Prison stars over the head (item 17, display)</h2>
+<ul>
+  <li>Every jailing is a star. <code>PoliceService</code> publishes <code>Player.PrisonStars</code> = min(offences, <code>MAX_STARS = 6</code>) and <code>Player.Offenses</code>, on join and on each sentence. Stars never expire (the user did not ask for decay).</li>
+  <li><span class="tag new">new</span> <code>ServerScriptService.JailTagService</code> hangs <code>Head.JailTag</code>, a BillboardGui 220&times;22 at 4.8 studs, above <code>RoleTag</code> (3.95) and <code>TitleTag</code> (3.1), <code>MaxDistance = 90</code>. It reads "EX-PRESO &#9733;&#9733;" in amber (1&ndash;2 stars), orange (3&ndash;4) or red (5), and "MAPANGANIB &#9733;&#9733;&#9733;&#9733;&#9733;&#9733;" ("dangerous") in red at 6. It is empty and disabled for a clean record.</li>
+  <li><code>NameTagController</code> hides and shows <code>JailTag</code> with the other tags when a viewer toggles names.</li>
+</ul>
+<figure class="one"><img src="images/jailtag-4-stars.png" alt="EX-PRESO with four stars above a player's head"><figcaption>After four jailings: "EX-PRESO &#9733;&#9733;&#9733;&#9733;" in orange above the player's title. (Six stars turns it red and reads MAPANGANIB; see the Phase F/G night shot.)</figcaption></figure>
+
+<h2 id="bars">3. Barred prison walls (item 11)</h2>
+<p>The walls were already 14 studs of concrete (y 18&ndash;32) with a cap and barbed wire, about twice a default jump (7.2), so the height was kept. Escape is also enforced in code: anyone serving time outside <code>Prison.PrisonBounds</code> is put back in their cell. What changed is that you can now see through: the five solid faces became railings.</p>
+<div class="pair">
+  <figure><img src="images/prison-bars-before.png" alt="Solid concrete prison wall"><figcaption>Before: solid concrete.</figcaption></figure>
+  <figure><img src="images/prison-bars-after.png" alt="Barred prison wall, yard visible"><figcaption>After: bars between concrete pillars. The court and mess area are in view.</figcaption></figure>
+</div>
+<ul>
+  <li><span class="tag new">new</span> <code>Prison.Walls.Bars</code> (349 parts): vertical metal bars 0.3 studs thick every 1.2 studs (a 0.9 gap, too narrow for a body) from the top of the foot (y 19.6) to the underside of the cap (y 32). Two flat rails run through them at 33% and 80% height, with concrete pillars about every 12 studs and at the ends. Metal colour <code>(70,74,80)</code>, concrete <code>(196,190,176)</code>.</li>
+  <li>The caps, feet, <code>WirePost</code>s and <code>Wire</code> are unchanged, as are the gate, the towers and <code>PrisonBounds</code>.</li>
+  <li><span class="tag del">retired</span> <code>Wall_South</code>, <code>Wall_North_W</code>, <code>Wall_North_E</code>, <code>Wall_East</code>, <code>Wall_West</code> &rarr; <code>ServerStorage._Retired.Workspace_Prison_Walls__SolidFaces</code>. No script referenced them.</li>
+</ul>
+
+<h2 id="files">All changes</h2>
+<table>
+  <tr><th></th><th>Path</th><th>What</th></tr>
+  <tr><td><span class="tag mod">edited</span></td><td><code>ServerScriptService.PoliceService</code></td><td><code>SENTENCE_MINUTES</code>, <code>MAX_STARS</code>, records (<code>recordOf</code>, <code>showRecord</code>, <code>Record_</code> key), <code>sentencePlayer(player, reason, days?)</code>, call sites, texts</td></tr>
+  <tr><td><span class="tag new">new</span></td><td><code>ServerScriptService.JailTagService</code></td><td>overhead star tag</td></tr>
+  <tr><td><span class="tag mod">edited</span></td><td><code>ReplicatedStorage.NameTagController</code></td><td>toggles <code>JailTag</code> too</td></tr>
+  <tr><td><span class="tag mod">edited</span></td><td><code>PoliceStation.Harapan_RulesPlaque.BillboardGui.TextLabel</code></td><td>new rules text</td></tr>
+  <tr><td><span class="tag new">new</span></td><td><code>Workspace.IslaMarahuyo.Prison.Walls.Bars</code></td><td>349 bar/rail/pillar parts</td></tr>
+  <tr><td><span class="tag del">retired</span></td><td>5 solid wall faces</td><td>see above</td></tr>
+</table>
+<p>New attributes: <code>Player.PrisonStars</code> (1&ndash;6, nil when clean) and <code>Player.Offenses</code>. New DataStore key: <code>IslaMarahuyo_Jail_v1 / Record_&lt;userId&gt;</code>.</p>
+
+<h2 id="tests">How it was tested</h2>
+<ul>
+  <li>Playtest with the Studio hooks, a clean record to start: <code>DebugJail</code> &times;4 with <code>DebugRelease</code> in between gave <b>10.0, 15.0, 20.0, 20.0 minutes</b> (<code>JailDays</code> &times; 24), with <code>PrisonStars</code> / <code>Offenses</code> 1, 2, 3, 4. After a release the stars stayed and <code>Jailed</code> cleared. The tag read "EX-PRESO &#9733;" after one and "EX-PRESO &#9733;&#9733;&#9733;&#9733;" after four.</li>
+  <li>A real arrest (the Phase F ronda: three axe warnings, taser, cuffs, escort) booked the player for 20 minutes as their 5th offence, and a raid arrest made the 6th. The tag then read "MAPANGANIB &#9733;&#9733;&#9733;&#9733;&#9733;&#9733;" in red.</li>
+  <li>The record persisted across playtests: a new session loaded 5 stars. <b>Cleanup:</b> the test account's <code>Record_8745800367</code> (6 offences) was removed from the live DataStore after testing, and no sentence record was left.</li>
+  <li>The barred walls: edit-mode screenshots from outside, before and after.</li>
+</ul>
+
+<h2 id="gaps">Not verified / known gaps</h2>
+<div class="box">
+<ul>
+  <li>No one has tried to climb or squeeze through the new bars in a playtest. The 0.9-stud gap and 12.4-stud height were chosen on paper, and <code>PrisonBounds</code> puts escapees back anyway.</li>
+  <li>The community-vote and player-pulis arrest paths use the new lengths too, but only the NPC booking and <code>DebugJail</code> were exercised.</li>
+  <li>Stars never go away. If the user wants them to fade (for example one per real day clean), that belongs in <code>PoliceService.recordOf</code> and <code>showRecord</code>.</li>
+  <li>The tag stacks at 4.8 studs even when a player has no job chip at 3.95, which leaves a gap between the title and the stars.</li>
+  <li>The station's other signs (<code>Floor.Sign</code>, the WANTED poster) and the JusticeHud texts were not reviewed for "days" wording beyond the rules plaque and the arrest toast.</li>
+</ul>
+</div>
+</main>
+</body>
+</html>

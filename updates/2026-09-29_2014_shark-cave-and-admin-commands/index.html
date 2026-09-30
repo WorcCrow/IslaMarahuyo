@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Update 2026-09-29: Shark cave rules and admin commands</title>
+<style>
+  :root { --ink:#1d2430; --dim:#5b6675; --line:#dde2e8; --bg:#fbfbf9; --accent:#c9485b; --ok:#2f8f6a; --warn:#b7791f; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width:960px; margin:0 auto; padding:32px 16px 64px; }
+  h1 { font-size:26px; margin:0 0 4px; }
+  h2 { font-size:20px; margin:40px 0 8px; padding-top:16px; border-top:1px solid var(--line); }
+  h3 { font-size:16px; margin:20px 0 4px; }
+  .meta { color:var(--dim); margin:0 0 20px; }
+  code { font:13px/1.4 ui-monospace, Consolas, monospace; background:#eef0f3; padding:1px 4px; border-radius:3px; }
+  table { border-collapse:collapse; width:100%; margin:8px 0 16px; font-size:14px; }
+  th, td { text-align:left; vertical-align:top; padding:6px 8px; border-bottom:1px solid var(--line); }
+  th { color:var(--dim); font-weight:600; }
+  .tag { display:inline-block; font-size:12px; font-weight:600; padding:0 6px; border-radius:3px; color:#fff; }
+  .new { background:var(--ok); } .mod { background:#3b6fb6; }
+  .box { border-left:3px solid var(--warn); background:#fff8ec; padding:8px 12px; margin:12px 0; }
+  ul { padding-left:22px; }
+  nav a { margin-right:12px; }
+  figure.solo { margin:12px 0 20px; }
+  figure img { width:100%; height:auto; border:1px solid var(--line); border-radius:4px; display:block; }
+  figcaption { color:var(--dim); font-size:13px; margin-top:4px; }
+</style>
+</head>
+<body>
+<main>
+<p><a href="../index.html">&larr; all updates</a></p>
+<h1>A shark explores nothing in the cave; admin chat commands</h1>
+<p class="meta">2026-09-29 &middot; place "[New Map]Isla Marahuyo" (placeId 128146022575640) &middot; follows <a href="../2026-09-29_1906_shark-sense-and-strike/index.html">Shark sense ring and the tail-slap strike</a></p>
+
+<nav><a href="#ask">What was asked</a><a href="#what">What changed</a><a href="#files">All changes</a><a href="#tests">Testing</a><a href="#gaps">Gaps</a></nav>
+
+<div class="box"><b>Not live yet.</b> Like the other shark updates today, this reaches the published game only when the place is published from Studio.</div>
+
+<h2 id="ask">What was asked</h2>
+<ol>
+  <li>"Shark exploring cave will not count as player explored the cave system."</li>
+  <li>"Create me an admin command you think I can use." The earlier <code>/give</code> was folded into a small set.</li>
+</ol>
+
+<h2 id="what">What changed</h2>
+
+<h3>1. A Pating in the cave earns nothing</h3>
+<ul>
+  <li><b>Exploration</b> (<code>CaveExplorationService.scanPlayer</code>): skipped for a <code>SharkRole</code> player, so a shark gets no chambers, no "New chamber found" call-outs, and no exploration badges or titles (Bagong Maninisid through Scuba Diving Professional). This is checked by position on the server every 0.6 s, so it can't be claimed any other way.</li>
+  <li><b>The cave's other rewards now also refuse a shark on the server.</b> Its screen already hid them (<a href="../2026-09-29_1752_pating-shark-round2/index.html">round 2</a>), but the server did not check:
+    <ul>
+      <li>Lung Coral breath upgrades and the Perlas Hollow pearl (<code>CaveBootstrap</code>);</li>
+      <li>the Kristal ng Kailaliman (<code>CaveCrystalService</code>);</li>
+      <li>dead-end hoards (<code>CaveHoardService.claim</code>);</li>
+      <li>writing a cave slate (<code>CaveSignService</code>'s write remote).</li>
+    </ul></li>
+</ul>
+
+<h3>2. Admin chat commands</h3>
+<figure class="solo"><img src="images/admin-cmds.png" alt="The chat window open on a phone layout: a green [Admin] line listing the commands and a red [Admin] line saying no player is named nobody, with the usage for /job"><figcaption>Replies arrive as private system lines in the admin's own chat: green when it worked, red when it didn't.</figcaption></figure>
+<table>
+<tr><th>Command</th><th>What it does</th></tr>
+<tr><td><code>/cmds</code> (or <code>/admin</code>)</td><td>Lists the commands.</td></tr>
+<tr><td><code>/give &lt;player&gt; &lt;amount&gt;</code> (or <code>/givepeso</code>)</td><td>Peso to anyone on the server, 1&ndash;100,000, through <code>AdminService.GrantShells</code> (ledger "AdminGrant").</td></tr>
+<tr><td><code>/tp &lt;player&gt;</code> (or <code>/goto</code>)</td><td>Go to them.</td></tr>
+<tr><td><code>/bring &lt;player&gt;</code></td><td>Bring them to you. Refused while they are being revived at the Health Post.</td></tr>
+<tr><td><code>/job &lt;player&gt; &lt;job|none&gt;</code></td><td>Set or clear anyone's job <b>for free</b>: no entry fee, no re-take wait, no cap. Jobs: mangingisda, nurse, pating, pulis, tindero. <code>/job me pating</code> makes testing the shark free; <code>/job me none</code> hands it back.</td></tr>
+<tr><td><code>/time &lt;0-24&gt;</code></td><td>Sets the island clock (<code>/time 13</code> midday, <code>/time 22</code> night). <code>DayNightCycle</code> carries on from there.</td></tr>
+<tr><td><code>/kick &lt;player&gt; [reason]</code></td><td><code>AdminService.KickPlayer</code>. Never yourself or another admin.</td></tr>
+</table>
+<ul>
+  <li>A <code>&lt;player&gt;</code> is <code>me</code>, or the start of a username or display name. If it matches several players or nobody, you're told.</li>
+  <li><b>Admins only</b> (<code>AdminConfig.IsAdmin</code>: the place's creator plus <code>AdminUserIds</code>). Anyone else typing them gets no reply, and none of them appear in chat autocomplete.</li>
+  <li><b>Replies</b>: the first <code>/give</code> answered through the dashboard's <code>AdminFeedback</code> line, but that line only shows while the dashboard panel is open, so a chat command's answer was invisible. Chat commands now answer through a new <code>AdminChatReply</code> remote, which <code>AdminDashboardController</code> shows as a system line in the admin's own chat.</li>
+  <li><code>RoleService.Claim(player, roleKey, free)</code> gained the <code>free</code> flag that <code>/job</code> uses. Ordinary claims from the work board are unchanged.</li>
+</ul>
+
+<h2 id="files">All changes</h2>
+<table>
+<tr><th></th><th>DataModel path</th><th>What</th></tr>
+<tr><td><span class="tag mod">edited</span></td><td><code>ServerScriptService.CaveExplorationService</code></td><td><code>scanPlayer</code> returns for a <code>SharkRole</code> player.</td></tr>
+<tr><td><span class="tag mod">edited</span></td><td><code>ServerScriptService.CaveBootstrap</code></td><td>Lung Coral and Perlas Hollow prompts refuse a shark.</td></tr>
+<tr><td><span class="tag mod">edited</span></td><td><code>ServerScriptService.CaveCrystalService</code>, <code>CaveHoardService</code>, <code>CaveSignService</code></td><td>kristal pickup, hoard claim and slate writing refuse a shark.</td></tr>
+<tr><td><span class="tag mod">edited</span></td><td><code>ServerScriptService.AdminBootstrap</code></td><td>The command set (<code>COMMANDS</code>, <code>findPlayer</code>, <code>reply</code>, <code>GIVE_MAX 100000</code>), one <code>TextChatCommand</code> per command named <code>Admin_&lt;name&gt;</code> under <code>TextChatService.TextChatCommands</code> (the earlier <code>AdminGive</code> is removed at start).</td></tr>
+<tr><td><span class="tag mod">edited</span></td><td><code>ServerScriptService.RoleService</code></td><td><code>Claim(player, roleKey, free)</code>: <code>free</code> skips the fee, the re-take wait and the cap.</td></tr>
+<tr><td><span class="tag mod">edited</span></td><td><code>StarterPlayer.StarterPlayerScripts.AdminDashboardController</code></td><td>Shows <code>AdminChatReply</code> messages as <code>RBXSystem:DisplaySystemMessage</code> lines (green/red, escaped).</td></tr>
+<tr><td><span class="tag new">remote</span></td><td><code>ReplicatedStorage.Remotes.AdminChatReply</code></td><td>server &rarr; one admin client. Created by AdminBootstrap.</td></tr>
+</table>
+<p>All scripts were written through <code>ScriptEditorService:UpdateSourceAsync</code> and compile. No world edits.</p>
+
+<h2 id="tests">Testing</h2>
+<p>Solo playtests, each ended with a Server-side kick. The data lock was released afterwards, and there were no server script errors.</p>
+<ul>
+  <li><b>Shark in the cave:</b> the shark was placed in four chambers the account had not explored (SilidAgosLihim, RestJ, SilidBituinBaha, RestF). <code>CaveExplored</code> stayed at 41 throughout, with no call-outs. The human side was deliberately not run, so the account didn't get chambers it hadn't really explored. That path's code is unchanged.</li>
+  <li><b>Commands</b>, each sent through chat (<code>RBXGeneral:SendAsync</code>):
+    <ul>
+      <li><code>/cmds</code>: the list.</li>
+      <li><code>/time 13</code>: clock 13.0.</li>
+      <li><code>/job me pating</code>: <code>SharkRole</code> on. <b>No ledger entry</b>: the saved balance stayed 10230, and the last ledger line was the owner's own live-game job fee from earlier.</li>
+      <li><code>/job me none</code>: role cleared.</li>
+      <li><code>/job me pilot</code>: "No job called "pilot"" with the list.</li>
+      <li><code>/tp me</code>, <code>/bring me</code>: "Can't reach them right now".</li>
+      <li><code>/kick me</code>: refused.</li>
+      <li><code>/tp nobody</code>: "No player here named "nobody"".</li>
+      <li><code>/time 30</code>: usage.</li>
+    </ul>
+    Replies were seen arriving through <code>TextChatService.MessageReceived</code> and on screen (see the image).</li>
+</ul>
+<div class="box">The owner's live-game session in between shows in the ledger: an AdminGrant of 10,000 and a Pating fee of 100. Neither came from this testing. The saved balance at the end is 10,230.</div>
+
+<h2 id="gaps">Still unverified</h2>
+<ul>
+  <li><code>/tp</code>, <code>/bring</code>, <code>/kick</code> and <code>/give</code> against a second real player (the name matching is the same code for everyone).</li>
+  <li>The other cave-reward guards (coral, pearl, kristal, hoard, slate) are one-line checks on the attribute that was tested for exploration. They weren't each triggered by a shark.</li>
+</ul>
+</main>
+</body>
+</html>

@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Update 2026-09-30: Phase 4, cave-ins</title>
+<style>
+  :root { --ink:#1d2430; --dim:#5b6675; --line:#dde2e8; --bg:#fbfbf9; --accent:#c9485b; --ok:#2f8f6a; --warn:#b7791f; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width:960px; margin:0 auto; padding:32px 16px 64px; }
+  h1 { font-size:26px; margin:0 0 4px; }
+  h2 { font-size:20px; margin:40px 0 8px; padding-top:16px; border-top:1px solid var(--line); }
+  h3 { font-size:16px; margin:20px 0 4px; }
+  .meta { color:var(--dim); margin:0 0 20px; }
+  code { font:13px/1.4 ui-monospace, Consolas, monospace; background:#eef0f3; padding:1px 4px; border-radius:3px; }
+  table { border-collapse:collapse; width:100%; margin:8px 0 16px; font-size:14px; }
+  th, td { text-align:left; vertical-align:top; padding:6px 8px; border-bottom:1px solid var(--line); }
+  th { color:var(--dim); font-weight:600; }
+  .tag { display:inline-block; font-size:12px; font-weight:600; padding:0 6px; border-radius:3px; color:#fff; }
+  .new { background:var(--ok); } .mod { background:#3b6fb6; }
+  .box { border-left:3px solid var(--warn); background:#fff8ec; padding:8px 12px; margin:12px 0; }
+  ul { padding-left:22px; }
+  nav a { margin-right:12px; }
+  figure.solo { margin:12px 0 20px; }
+  .pair { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:12px 0 20px; }
+  .pair figure { margin:0; }
+  @media (max-width:700px) { .pair { grid-template-columns:1fr; } }
+  figure img { width:100%; height:auto; border:1px solid var(--line); border-radius:4px; display:block; }
+  figcaption { color:var(--dim); font-size:13px; margin-top:4px; }
+</style>
+</head>
+<body>
+<main>
+<p><a href="../index.html">&larr; all updates</a></p>
+<h1>Phase 4: five to ten cave-ins a day, with a warning and a way to dig out</h1>
+<p class="meta">2026-09-30 &middot; place "[New Map]Isla Marahuyo" (placeId 128146022575640) &middot; follows <a href="../2026-09-30_0048_phase3-air-lung-coral/index.html">Phase 3: air and Lung Coral</a> &middot; plan: "Isla Marahuyo Roadmap" artifact (https://claude.ai/artifact/EHMUmaSk3nCsyiZbR6iLPT)</p>
+
+<nav><a href="#ask">What was asked</a><a href="#what">What changed</a><a href="#files">All changes</a><a href="#tests">Testing</a><a href="#gaps">Gaps</a></nav>
+
+<div class="box"><b>Not live yet.</b> Like Phases 1 to 3, this reaches players only when the place is published from Studio.</div>
+
+<h2 id="ask">What was asked</h2>
+<ul>
+  <li>"Change the daily cave-in from one collapse a day to a random 5–10, even if a diver is behind it."</li>
+  <li>The owner accepted the plan's recommendations: a warning before each collapse, a dig-out for a trapped diver, and at most 3 collapses standing at once.</li>
+</ul>
+
+<h2 id="what">What changed</h2>
+
+<h3>1. Five to ten collapses per island day</h3>
+<ul>
+  <li><code>CaveInService</code> used to drop one collapse per island day, clearing yesterday's first. Now each day (24 real minutes) it draws <b>5 to 10</b> (<code>PER_DAY_MIN</code>, <code>PER_DAY_MAX</code>). The day is cut into that many equal slots with one collapse at a random moment in each, so they spread out rather than bunch up. A new server's first collapse comes after 20 s (<code>FIRST_DELAY</code>).</li>
+  <li><b>Unchanged:</b> only dead ends and deep runs can collapse (<code>CaveGen.Sealable</code>), and the rock goes in near the far end, so the cave can never be cut in half and no air pocket is ever sealed off.</li>
+  <li><b>At most 3 stand at once</b> (<code>MAX_STANDING</code>). When a fourth falls, the oldest clears, so rubble moves around the cave instead of piling up. The passage cleared last is never the next to fall.</li>
+  <li><code>workspace.CaveInPassage</code> now lists every standing collapse ("a; b; c"), and the new <code>workspace.CaveInCount</code> gives how many. The cave audit's wording changed to match ("standing cave-ins", "returns when it clears").</li>
+</ul>
+
+<h3>2. A diver behind it no longer stops it; there is a warning instead</h3>
+<div class="pair">
+<figure><img src="images/warning-dust.png" alt="Looking down a narrow rock tunnel; pale silt clouds drift in the tunnel mouth ahead"><figcaption>The 4-second warning: silt drifting down along the passage that is about to go. The rumble and a building shake come with it.</figcaption></figure>
+<figure><img src="images/rubble-sign.png" alt="The same tunnel after the fall: rock fills it, with the sign GUHO — CAVE-IN, this way is closed"><figcaption>After the fall: rubble fills the passage, with the sign on its near face.</figcaption></figure>
+</div>
+<ul>
+  <li>The old rule skipped any passage with a diver within 45 studs of anything behind it, and the day passed with no collapse if every candidate was occupied. That rule is gone.</li>
+  <li>Everyone within <b>80 studs</b> (<code>WARN_RADIUS</code>) gets <b>4 seconds</b> of warning (<code>WARN_SECONDS</code>). A chat line says "The rock groans overhead. Something nearby is about to cave in!", and on screen the new <code>CaveInClient</code> plays a low rumble, a camera shake that builds with how close you are, and silt and grit drifting down along the plug.</li>
+  <li>When the rock falls, the same players get a crash, a hard short shake and a burst of dust.</li>
+  <li>The sounds are Roblox's built-in files pitched down (<code>HalloweenThunder.wav</code> for the rumble, <code>impact_explosion_03.mp3</code> for the crash), so nothing was uploaded. The shake uses <code>Humanoid.CameraOffset</code>, the way SharkAlertController already does.</li>
+  <li>The silt is nearly self-lit (<code>LightInfluence</code> 0.1). The first version was lit like the rock and could not be seen in the dark cave; a warning nobody can see is not a warning.</li>
+  <li><b>No rock is ever filled on top of a diver.</b> If someone is swimming inside the plug itself when it is due, it waits 3 s, up to 3 times, for them to move, then gives up on that passage.</li>
+  <li>The rubble sign ("GUHO &mdash; CAVE-IN / this way is closed") now sits on the <b>near face</b> of the rubble, 3 studs clear of it, rather than floating in the middle of the rock. It is also smaller: at full size a lump of new rock hid half of it.</li>
+</ul>
+
+<h3>3. Digging out</h3>
+<figure class="solo"><img src="images/dig-out.png" alt="Inside a dead end facing the rubble; a prompt reads Guho (rubble), Dig out; the air badge shows 31 s / 90 s"><figcaption>Shut in behind a collapse: "Dig out" on the rubble's far face. The air keeps draining (31 s left here) while you hold.</figcaption></figure>
+<ul>
+  <li>Divers behind a new collapse (within 45 studs of the rest of the passage, its chamber, or a deep run from that chamber) are told: "The way back caved in behind you! Swim to the rubble and hold to dig out (8 s)." They also get a toast.</li>
+  <li>The rubble's <b>far face</b> has a "Dig out · Guho (rubble)" prompt, held for <b>8 s</b> (<code>DIG_SECONDS</code>, reach 12 studs) while air keeps draining. Digging through clears that collapse for everyone. Players within 80 studs get a chat line saying who dug through.</li>
+  <li>There is no prompt on the near side. Clearing rubble from outside is what the Susi ng Yungib is for (Phase 5).</li>
+  <li>A Pating (shark player) can't dig.</li>
+</ul>
+
+<h2 id="files">All changes</h2>
+<table>
+<tr><th>Instance</th><th></th><th>Change</th></tr>
+<tr><td><code>ServerScriptService.CaveInService</code></td><td><span class="tag mod">rewrite</span></td><td>Day schedule (5&ndash;10 slots), warning, "never inside the plug" check, up to 3 standing, near-face sign, far-face dig prompt, trapped messages, <code>CaveInCount</code>. Studio-only hook <code>ServerStorage.DebugCaveIn</code> (<code>"collapse", index?</code>; <code>"clear"</code>).</td></tr>
+<tr><td><code>StarterPlayer.StarterPlayerScripts.CaveInClient</code></td><td><span class="tag new">new</span></td><td>LocalScript: rumble, shake, silt and grit for <code>"warn"</code>; crash, hard shake and dust burst for <code>"fall"</code>.</td></tr>
+<tr><td><code>ReplicatedStorage.Remotes.CaveInWarning</code></td><td><span class="tag new">new</span></td><td>RemoteEvent (created by CaveInService): <code>(kind, a, b, radius, seconds)</code>, where a and b are the plug's two ends.</td></tr>
+<tr><td><code>ServerStorage.CaveGen</code></td><td><span class="tag mod">edit</span></td><td>New <code>M.SealRange</code> exposes the plug's samples, radius and first/last index. Nothing else changed.</td></tr>
+<tr><td><code>ServerStorage.CaveAudit</code></td><td><span class="tag mod">edit</span></td><td>Report wording only ("standing cave-ins", "SEALED by a cave-in", "returns when it clears").</td></tr>
+<tr><td><code>StarterPlayer.StarterPlayerScripts.NotificationController</code></td><td><span class="tag mod">edit</span></td><td>Chat colour for the new DiveFeedback kind <code>cavein</code>.</td></tr>
+<tr><td><code>Workspace.CaveIns.CaveIn_&lt;n&gt;</code></td><td><span class="tag new">runtime</span></td><td>One Model per standing collapse: <code>NearFace</code> (BillboardGui sign) and <code>FarFace</code> (<code>DigPrompt</code>). Replaces the old single <code>Workspace.CaveInMarker</code>.</td></tr>
+</table>
+<p><b>Tuning</b> (top of CaveInService): <code>PER_DAY_MIN = 5</code>, <code>PER_DAY_MAX = 10</code>, <code>MAX_STANDING = 3</code>, <code>WARN_SECONDS = 4</code>, <code>WARN_RADIUS = 80</code>, <code>DIG_SECONDS = 8</code>, <code>TRAPPED_RADIUS = 45</code>, <code>FIRST_DELAY = 20</code>, <code>INSIDE_PAD = 4</code>. Terrain changes are still runtime only; a new server starts from the clean carve. Every edited script was compile-checked with <code>loadstring</code>; nothing was removed from the map.</p>
+
+<h2 id="tests">Testing</h2>
+<p>Three solo playtests on MERS_Cov2, each ended by kicking the player from the Server. (The kick after the second left Studio in Play mode with no players in it; it was stopped after that, with the save already released.) There were no script errors.</p>
+<ul>
+  <li><b>Schedule:</b> on start, "[CaveInService] day 1: 5 collapses on the way"; the first fell 20 s in (Last Breath Niche). An early version scheduled twice at start ("day nil") because it ran before DayNightCycle set the day. It now waits for the day to be set.</li>
+  <li><b>Shut in:</b> with the player anchored in the Hukay ng Kadiliman dead end, collapsing its passage sent the "fall" event, the "caved in behind you" message and the toast. The camera offset peaked at 1.04 studs and went back to 0, and the dust part appeared.</li>
+  <li><b>Dig out:</b> from 4.3 studs inside, holding the prompt for 8 s cleared the collapse ("MERS_Cov2 dug through..."). A voxel read showed 0 of 7 plug samples still basalt, against 7 of 7 in a standing plug.</li>
+  <li><b>Cap of 3:</b> four collapses in a row (Sump-Lock Pit, Cold Silt Trap, Stalactite Blind, Black Mud Siphon) held the count at 3, each clearing the oldest. The cleared plugs read 0 basalt.</li>
+  <li><b>Warning, and never inside the plug:</b> with the player anchored inside the Silt Curtain plug, the "warn" event and message arrived (shake up to 0.37 studs). The collapse then "held off: a diver stayed in the way" and never fell.</li>
+  <li><b>Screenshots</b> (above) used a Scriptable camera, the character hidden locally, and a dim local lamp at the camera, since the cave is black without a torch.</li>
+</ul>
+
+<h2 id="gaps">Gaps and things to check</h2>
+<ul>
+  <li><b>A whole island day was not watched.</b> The 5&ndash;10 schedule was seen being set up (5 and 6 drawn), but only the first timed collapse fell on its own; the rest were forced with the hook.</li>
+  <li><b>The cave audit with several collapses standing</b> was not run. It flags rubble by material, so it should mark each as expected. The audit that ran at start had none standing.</li>
+  <li><b>Sound levels</b> were not heard (no audio in these captures). The rumble volume scales from 0.6 to 1.5 with distance; tune it if it is too loud or quiet.</li>
+  <li><b>Not tested with two players:</b> the "X dug through" line to others, and a friend being warned from 80 studs away.</li>
+  <li><b>Dig time:</b> an 8 s hold with the air still draining is harsh for a diver who reaches the rubble with little air left. That is the plan's intent; watch the drowning counts after launch.</li>
+  <li>The old welcome panel and the existing "Going deep?" tip still pop up. The panel is replaced in Phase 8.</li>
+  <li><b>Test account:</b> MERS_Cov2 drowned once while anchored underwater, which cost a real Health Post bill of 15% (6,766 &rarr; 5,752 Peso, saved). No quick-test values were left in the place. <code>Bodega.AxeDamage = 20</code> from before is still there, to be restored in Phase 7.</li>
+</ul>
+</main>
+</body>
+</html>

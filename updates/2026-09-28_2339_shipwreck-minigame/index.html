@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Update 2026-09-28: Shipwreck minigame</title>
+<style>
+  :root { --ink:#1d2430; --dim:#5b6675; --line:#dde2e8; --bg:#fbfbf9; --accent:#c9485b; --ok:#2f8f6a; --warn:#b7791f; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width:960px; margin:0 auto; padding:32px 16px 64px; }
+  h1 { font-size:26px; margin:0 0 4px; }
+  h2 { font-size:20px; margin:40px 0 8px; padding-top:16px; border-top:1px solid var(--line); }
+  h3 { font-size:16px; margin:20px 0 4px; }
+  .meta { color:var(--dim); margin:0 0 20px; }
+  code { font:13px/1.4 ui-monospace, Consolas, monospace; background:#eef0f3; padding:1px 4px; border-radius:3px; }
+  table { border-collapse:collapse; width:100%; margin:8px 0 16px; font-size:14px; }
+  th, td { text-align:left; vertical-align:top; padding:6px 8px; border-bottom:1px solid var(--line); }
+  th { color:var(--dim); font-weight:600; }
+  .tag { display:inline-block; font-size:12px; font-weight:600; padding:0 6px; border-radius:3px; color:#fff; }
+  .new { background:var(--ok); } .mod { background:#3b6fb6; } .del { background:var(--accent); }
+  .box { border-left:3px solid var(--warn); background:#fff8ec; padding:8px 12px; margin:12px 0; }
+  ul { padding-left:22px; }
+  nav a { margin-right:12px; }
+  .pair { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:12px 0 20px; }
+  .pair figure, figure.one { margin:0; }
+  figure img { width:100%; height:auto; border:1px solid var(--line); border-radius:4px; display:block; }
+  figcaption { color:var(--dim); font-size:13px; margin-top:4px; }
+  figure.one { max-width:620px; margin:12px 0 20px; }
+  @media (max-width:640px) { .pair { grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+<main>
+<p><a href="../index.html">&larr; all updates</a></p>
+<h1>Shipwreck: a sink-or-swim minigame with a player shark</h1>
+<p class="meta">2026-09-28 &middot; place "[New Map]Isla Marahuyo" (placeId 128146022575640) &middot; approved plan: <code>C:\Users\Administrator\.claude\plans\i-wanted-to-add-compiled-neumann.md</code></p>
+
+<nav><a href="#ask">What was asked</a><a href="#plan">Changes from the plan</a><a href="#lobby">1. Join circle</a><a href="#arena">2. Arena</a><a href="#planks">3. Planks</a><a href="#shark">4. Shark</a><a href="#mash">5. Bite &amp; tap race</a><a href="#out">6. Out, spectate, win</a><a href="#rewards">7. Rewards</a><a href="#others">8. Other systems</a><a href="#files">All changes</a><a href="#tests">Testing</a><a href="#gaps">Gaps</a></nav>
+
+<h2 id="ask">What was asked</h2>
+<p>A minigame called Shipwreck. Players stand in a circle to join, and once enough have joined they are brought to a separate room. There they find themselves on floating shipwreck planks in the middle of the sea. The planks sink little by little, some hold only 1&ndash;2 people, and a shark takes anyone caught in the water. The last one left wins a special item to take back to Isla Marahuyo. The details were settled in a question-by-question session with the owner:</p>
+<ul>
+  <li><b>Joining:</b> a circle near <b>LoobanDock</b>, 3 to 10 players. Once 3 are in, anyone can press <b>Start</b> for a 15&ndash;30 s countdown (20 s is used). Reaching 10 starts at once.</li>
+  <li><b>Where:</b> the same server, not a teleport to another place. This avoids the DataStore session-lock risk, and nothing in this game uses <code>TeleportService</code> anyway.</li>
+  <li><b>The shark is a player</b>, picked at random from those who joined, shown with the game's existing <code>SharkAssets.SharkMesh</code>. Its goal is to eat everyone. It cannot climb onto planks.</li>
+  <li><b>Planks:</b> players + 1 of them, sized to the group. All of them sink all the time, and the more people on one, the faster it sinks. Eventually every plank is gone and the shark decides the ending in open water.</li>
+  <li><b>A bite</b> drags both players to a small cave on the seabed for a <b>4-second mash contest</b>. The shark's button stays in one place; the victim's jumps somewhere random after each tap. More taps wins. A winning victim gets <b>10 s of immunity</b> and swims back to a plank on their own. A losing victim is dragged in and eaten. Everyone else hears it happen.</li>
+  <li><b>Eliminated</b> players choose between spectating until the end and going straight back to the island.</li>
+  <li><b>Rewards:</b> cosmetic first, a catalog pirate/crown hat. The consolation for losers was left to me to decide.</li>
+  <li>The island's ambient AI sharks are kept away from the arena.</li>
+</ul>
+
+<h2 id="plan">Changes from the approved plan (and why)</h2>
+<div class="box">
+<ul>
+  <li><b>Arena water is Terrain, at sea level, past the edge of the ocean.</b> The plan had a <code>Part</code> of Water material floating at Y=350. In Roblox only Terrain water can be swum in, and every water check here (<code>BreathService</code>, <code>SharkService</code>) raycasts Terrain only. The real ocean is a 32-stud water slab that ends at Z&asymp;&minus;800 with void beyond. So the arena is its own Terrain pool at (0, 0, &minus;1700), about 900 studs past that edge. Nobody can boat or swim over, and it sits outside <code>SharkService</code>'s <code>MAP_BOUNDS</code> (&plusmn;1200), so ambient sharks never pick roam points there.</li>
+  <li><b>The shark is the player's own character, hidden, with the shark mesh welded on.</b> It is not a separate server-driven model fed by an input remote. <code>SprintScript</code> forces every swimmer's WalkSpeed to 16 each frame, and a server-moved model would have added input lag to the shark's camera. This way the shark uses native swimming and the normal camera, and needs only a one-line speed exception.</li>
+  <li><b><code>SharkService</code> edit is an attribute check, not a bounds box.</b> The arena is already outside the roam area, so the only edit is "never target a player with <code>ShipwreckInArena</code>", as a safety net.</li>
+  <li><b>Fewer files.</b> Lobby, shark and match loop are one module, <code>ShipwreckService</code>, instead of the planned separate lobby and shark services. There is one client script instead of three. The shark needs no controller of its own (native movement), and spectating uses the normal camera.</li>
+  <li><b>Spectating follows the players still in the match</b> (&lt; / &gt; buttons) instead of a free-fly camera. It works the same on phones, where the place is mostly played.</li>
+  <li><b>No tools in the arena</b> (the plan kept gear). An axe hit is reported to the pulis as a scene, and <code>PoliceUnit</code> would send an officer walking toward a spot past the edge of the map.</li>
+  <li><b>Not in the plan, but needed:</b> no air drain in the arena (<code>BreathService</code>); Wanted players cannot join (it would be a way to escape the police); a 5-minute match limit (survivors still afloat win); a losing shark is paid per catch; a match ends if everyone has left it.</li>
+  <li>Planks were built by hand from Parts, not with <code>generate_procedural_model</code>, to get flat walkable tops and control over the size.</li>
+</ul>
+</div>
+
+<h2 id="lobby">1. The join circle at Looban</h2>
+<figure class="one"><img src="images/01-join-circle-lobby.png" alt="A glowing blue ring on the grass with a player standing in it and a SHIPWRECK panel with a START button"><figcaption>Playtest (solo mode): the ring, the world sign behind the panel, and the lobby panel with Start. The panel was moved to the top of the screen after this was taken (same content).</figcaption></figure>
+<ul>
+  <li><code>LoobanDock</code> itself is <b>buried about 10 studs under the grass</b> at (430, 12.2, &minus;40); the terrain has been reshaped over it. The circle is on the ground above it at (430, 22.2, &minus;40), between the LoobanVillage zone and the Ferry's mainland landing. The shore is about 80&ndash;100 studs east.</li>
+  <li>Joining uses the same approach as every other area check in this game: a flat radius check (<code>JOIN_RADIUS = 9.5</code>), polled every 0.25 s. There is no Touched trigger. Walking out before the countdown ends leaves the queue without penalty. Anyone <code>Jailed</code>, <code>Reviving</code>, <code>Wanted</code> or carrying a patient is not counted.</li>
+  <li>The sign above the circle shows the state: "Stand in the circle to join (3-10 players)" / "2 aboard -- need 3 to start" / "Setting sail in 12s -- 4/10 aboard" / "Match at sea -- 3 still afloat".</li>
+  <li>The lobby panel (top of the screen) shows the count and a <b>START</b> button once the minimum is met. The countdown is cancelled if the group drops below 3, and the match starts at once when 10 are in the circle. Only one match runs per server; people waiting in the circle see "A match is at sea -- you're next in line".</li>
+  <li>Players are moved with a <code>HumanoidRootPart.CFrame</code> set after <code>Player:RequestStreamAroundAsync</code> (the place has <code>StreamingEnabled</code>). They come back to a random spot 15 studs outside the ring, so they don't queue again by accident.</li>
+</ul>
+
+<h2 id="arena">2. The arena</h2>
+<div class="pair">
+  <figure><img src="images/02-arena-hud-solo.png" alt="Open ocean with a wreck plank and a SURVIVE HUD"><figcaption>In a match: the HUD ("SURVIVE &middot; Afloat 1/1 &middot; 4:27", Leave). The island's own "DO NOT SWIM" shark warning showed under the HUD here; it is now hidden during a match.</figcaption></figure>
+  <figure><img src="images/08-grotto.png" alt="A rock dome on a sandy seabed with a lit teal opening"><figcaption>The grotto on the seabed where the tap race happens (Edit mode; the floating island labels only render in Edit).</figcaption></figure>
+</div>
+<ul>
+  <li><b>Terrain:</b> a water cylinder of radius 360, from Y &minus;40 to 0, centred at (0, 0, &minus;1700). Sand seabed (Y &minus;48..&minus;40) under radius 175 only; beyond that it has no floor, like the open ocean. There are 14 small rock and basalt mounds on the seabed.</li>
+  <li><b>Grotto:</b> a hollow slate dome (outer radius 16, inner 11) at (0, &minus;38, &minus;1625), filled with water, its mouth facing the centre. Filling Water into solid rock did not carve it; it had to be cleared with Air first, then flooded.</li>
+  <li><code>Workspace.IslaMarahuyo.Activities.ShipwreckArena</code>: <code>Walls</code> (48 invisible parts forming a ring of radius 150, from Y &minus;50 to +50), <code>Grotto</code> (markers <code>SeatShark</code>, <code>SeatVictim</code>, <code>Mouth</code>, and <code>Glow</code> with a teal <code>PointLight</code>), <code>SpectatorHold</code> (90 studs above the centre), <code>SharkStart</code>, <code>Center</code>, and <code>Live</code> (the planks of the running match).</li>
+</ul>
+
+<h2 id="planks">3. The planks</h2>
+<div class="pair">
+  <figure><img src="images/03-layout-10-players.png" alt="Eleven wreck planks in a wide ring seen from above"><figcaption>10 players &rarr; 11 planks (1 Large, 4 Medium, 6 Small), on a ring of radius 78. Closest centres 42 studs apart.</figcaption></figure>
+  <figure><img src="images/03b-layout-3-players.png" alt="Four planks close together seen from above"><figcaption>3 players &rarr; 4 planks on a ring of radius 36.</figcaption></figure>
+</div>
+<figure class="one"><img src="images/04-plank-closeup.png" alt="A wooden raft with a broken mast and sail, capacity signs 0/8, 0/2, 0/4 above planks"><figcaption>The Large plank (broken mast, sail, railing) with its "0/8" sign; Small and Medium behind. The sign turns red when a plank holds more than its capacity.</figcaption></figure>
+<ul>
+  <li><b>Prefabs</b> in <code>ServerStorage.ShipwreckAssets.PlankPrefabs</code>: <code>Small</code> 6&times;6, capacity 2, buoyancy 1.0 (with a barrel); <code>Medium</code> 10&times;8, capacity 4, buoyancy 1.3 (crate, rope); <code>Large</code> 14&times;12, capacity 8, buoyancy 1.7 (mast, sail, railing). Each has an invisible <code>Footprint</code> PrimaryPart that players stand on and that the occupancy raycast hits. Decks, beams and props are non-colliding decoration. <code>ModelStreamingMode = Atomic</code>.</li>
+  <li><b>Layout</b> (<code>ShipwreckArenaService.Build</code>): players + 1 planks. The Large is always at the centre; of the rest, 40% are Medium and the others Small (at least one Small). They sit on a ring of radius <code>18 + 6 &times; players</code>, spread evenly, with &plusmn;15% angle and &plusmn;20% radius jitter from a per-match seed. If a pair ends up closer than their size plus 8 studs, the second one loses its jitter.</li>
+  <li><b>Sinking</b>, every frame: <code>(0.04 + 0.03 &times; players on it + 0.15 &times; players above capacity) / buoyancy</code> studs per second. Decks start 1.8 studs above the water. A plank stops holding anyone once it has dropped 4.5 studs (deck about 2.7 under), and it is destroyed at 12. An empty Small lasts about 110 s (dry for about 45 s); two players on a Small, about 45 s. There is no floor on this; every plank goes.</li>
+  <li>Survivors start spread over every plank except the last one, which starts empty.</li>
+</ul>
+
+<h2 id="shark">4. The player shark</h2>
+<figure class="one"><img src="images/09-player-shark.png" alt="A shark dorsal fin cutting the water with YOU ARE THE SHARK in the HUD"><figcaption>Playtest, forced shark: the player's own character, hidden, with the shark welded on. The dorsal fin breaks the surface while it swims.</figcaption></figure>
+<ul>
+  <li>At the start the chosen player's parts and face go transparent, and their name, title and medal tags are switched off (re-hidden every 0.5 s, because those services can rebuild them). <code>SharkMesh</code> is cloned, scaled to 12 studs, named <code>ShipwreckShark</code>, tagged <code>ShipwreckShark</code>, and <code>Weld</code>ed 0.5 studs below the root (massless, no collision). The snout points along the root's LookVector.</li>
+  <li><b>Cannot climb onto planks:</b> the shark's parts go into collision group <code>ShipwreckShark</code>, which does not collide with <code>ShipwreckPlank</code>, the group every plank footprint is in. It passes under planks and falls through if placed on one.</li>
+  <li><b>Speed:</b> player attribute <code>SwimSpeedOverride = 26</code>, which <code>SprintScript</code> now uses in water instead of 16. Measured swimming speed is about 16&ndash;17 studs/s for the shark, so swimming runs at about 0.65&times; WalkSpeed; survivors should be about 10.5.</li>
+  <li><b>Animation:</b> every client bends the mesh's own bones (<code>body_0..3</code> side to side, faster when it moves fast) and opens the jaw (<code>ago_0</code>) when the mesh gets a <code>ChompAt</code> attribute.</li>
+  <li>The shark cannot bite during the first 5 s (<code>SHARK_RELEASE_DELAY</code>).</li>
+</ul>
+
+<h2 id="mash">5. The bite and the tap race</h2>
+<figure class="one"><img src="images/10-mash-victim-view.png" alt="Dim overlay: The shark has you -- fight! You 26 - 17 shark, a blue BREAK FREE button on the right"><figcaption>Playtest, the victim's side mid-race against a test bot: score, time bar, and the BREAK FREE button in one of its random spots. The shark's side is the same with a red BITE! button fixed in the centre.</figcaption></figure>
+<ul>
+  <li><b>Who can be bitten</b> (checked every frame): a survivor who is not on a plank, is inside the water (the same double raycast as <code>BreathService</code>), has been off a plank for at least <code>SPLASH_GRACE = 1</code> s, is not immune, and is within <code>BITE_RANGE = 7</code> of the shark. The shark must also be off cooldown: 3 s after a catch, 4 s after losing a race. Bites are automatic on contact; there is no button.</li>
+  <li><b>Drag:</b> both roots are anchored and moved from the bite spot to the grotto mouth, then to the two seats facing each other, over 1.5 s. Everyone else in the match gets a red flash, the shark sting sound, a splash, and "<i>name</i> is being dragged under!".</li>
+  <li><b>Race</b> (<code>ShipwreckMashService</code>): 1.2 s "Get ready", then 4 s. The server keeps the clock (<code>GetServerTimeNow</code>) and the score. A tap counts only inside the window and no faster than one per 0.05 s. The live score is pushed every 0.15 s, for display only. A tie goes to the shark.</li>
+  <li><b>Victim wins:</b> both are let go in the grotto. The victim gets 10 s of immunity (<code>ShipwreckImmuneUntil</code>, shown in the HUD) and swims up on their own.</li>
+  <li><b>Shark wins:</b> the jaw snaps, and the victim is pulled into the mouth, hidden and eliminated.</li>
+  <li>If either player leaves mid-race, the race is cancelled and the other is let go.</li>
+</ul>
+
+<h2 id="out">6. Out, spectating, and winning</h2>
+<figure class="one"><img src="images/05-eliminated-panel.png" alt="You were eaten! panel with Spectate and Back to Isla buttons"><figcaption>Playtest: after losing a race. The HUD now reads "YOU'RE OUT" instead of "SURVIVE" (fixed after this shot).</figcaption></figure>
+<ul>
+  <li>An eaten player's hidden body is parked, anchored, at <code>SpectatorHold</code>. <b>Spectate</b> points the camera at the players still in (&lt; / &gt; to switch, "Back" to leave). <b>Back to Isla</b> sends them home at once; they are still paid at the end.</li>
+  <li>A survivor can also press <b>Leave</b> during the match (not during a race). For the shark, that forfeits.</li>
+  <li><b>Wins:</b> one survivor left &rarr; they win. No survivors left &rarr; the shark wins. The shark gone (left, died or reset) &rarr; every survivor still afloat wins. The 5-minute limit ends &rarr; every survivor still afloat wins. Dying or resetting in the arena counts as out; the new body spawns on the island as usual.</li>
+  <li>The results screen stays up for 6 s ("YOU WON! Barnacle Hat + 220 Peso" / "+48 Peso for taking part"). Then everyone still in the arena is sent home and the planks are removed.</li>
+</ul>
+
+<h2 id="rewards">7. Rewards</h2>
+<figure class="one"><img src="images/07-barnacle-hat.png" alt="Player wearing a black pirate tricorn with a skull and crossbones"><figcaption>The winner's Barnacle Hat, put on straight away and again on every spawn.</figcaption></figure>
+<ul>
+  <li><b>Winner:</b> <code>profile.Cosmetics.HatShipwreckCrown</code> +1 (created the first time, the same lazy set-up the Bilao Box uses), worn at once, plus <code>WINNER_SHELLS = 100</code> through <code>CurrencyService.AddShells(..., true, "Shipwreck_Win")</code>. The VIP and Fiesta multipliers apply, so the test account received 220. The results screen shows what actually landed, not the base amount.</li>
+  <li><b>Everyone else</b> (<code>"Shipwreck_Survival"</code>): survivors get <code>min(120, 10 + 0.5 per second survived)</code>; a losing shark gets <code>min(120, 10 + 15 per catch)</code>.</li>
+  <li><b>The hat</b> (<code>ServerStorage.ShipwreckAssets.Cosmetics.HatShipwreckCrown</code>) is an Accessory built from Creator Store asset 144593544 ("Captain Barnacle Bones's Pirate Hat"). Only its mesh was kept; the asset's "HatHelperGuideGiverScript" was dropped. It has a <code>HatAttachment</code> at (0, &minus;0.35, 0.1).</li>
+  <li><b>New <code>CosmeticEquipService</code>:</b> until now <code>profile.Cosmetics</code> was only a tally; nothing ever appeared on a character. This service puts owned cosmetics listed in its <code>WEARABLE</code> table on after <code>CharacterAppearanceLoaded</code> (waiting for the profile). Only the hat is listed. The Bilao Box cosmetics (<code>HatSalakot</code>, <code>GlowingTrail</code>, ...) still show nothing; adding them is separate work.</li>
+</ul>
+
+<h2 id="others">8. Other systems touched</h2>
+<ul>
+  <li><code>BreathService</code>: no air drain or refill for players with <code>ShipwreckInArena</code>. The finale is all swimming, and drowning would hand them to the Health Post revive and scatter their bag. Their air stays where it was when they entered.</li>
+  <li><code>SharkService</code>: a player with <code>ShipwreckInArena</code> counts as <code>caveSafe</code>, so ambient sharks never target them.</li>
+  <li><code>SprintScript</code>: in water, <code>WalkSpeed = SwimSpeedOverride or 16</code>.</li>
+  <li><code>CurrencyService</code>: <code>Shipwreck_Win</code> ("Won Shipwreck") and <code>Shipwreck_Survival</code> ("Shipwreck: stayed afloat") added to <code>LEDGER_LABELS</code> and <code>TRANSACTION_TYPE_BY_SOURCE</code> (Gameplay).</li>
+  <li>The island's <code>SharkAlertGui</code> is switched off on the client during a match and restored afterwards.</li>
+</ul>
+
+<h2 id="files">All changes</h2>
+<table>
+  <tr><th></th><th>Path</th><th>What</th></tr>
+  <tr><td><span class="tag new">new</span></td><td><code>ReplicatedStorage.ShipwreckConfig</code></td><td>every tunable (below)</td></tr>
+  <tr><td><span class="tag new">new</span></td><td><code>ServerScriptService.ShipwreckService</code></td><td>lobby, countdown, state, shark body, match loop, bite gate, eliminations, return home, Studio debug hooks</td></tr>
+  <tr><td><span class="tag new">new</span></td><td><code>ServerScriptService.ShipwreckArenaService</code></td><td>plank layout, sinking, occupancy</td></tr>
+  <tr><td><span class="tag new">new</span></td><td><code>ServerScriptService.ShipwreckMashService</code></td><td>drag to the grotto, tap race, eating</td></tr>
+  <tr><td><span class="tag new">new</span></td><td><code>ServerScriptService.ShipwreckRewardService</code></td><td>payouts</td></tr>
+  <tr><td><span class="tag new">new</span></td><td><code>ServerScriptService.CosmeticEquipService</code></td><td>wears owned cosmetics</td></tr>
+  <tr><td><span class="tag new">new</span></td><td><code>ServerScriptService.ShipwreckBootstrap</code> (Script)</td><td>Init for the two services above</td></tr>
+  <tr><td><span class="tag new">new</span></td><td><code>StarterPlayer.StarterPlayerScripts.ShipwreckClient</code></td><td>all UI, spectate camera, shark bone animation</td></tr>
+  <tr><td><span class="tag mod">edited</span></td><td><code>ServerScriptService.BreathService</code></td><td>heartbeat skips <code>ShipwreckInArena</code></td></tr>
+  <tr><td><span class="tag mod">edited</span></td><td><code>ServerScriptService.SharkService</code></td><td><code>caveSafe</code> includes <code>ShipwreckInArena</code></td></tr>
+  <tr><td><span class="tag mod">edited</span></td><td><code>StarterPlayer.StarterPlayerScripts.SprintScript</code></td><td><code>SwimSpeedOverride</code></td></tr>
+  <tr><td><span class="tag mod">edited</span></td><td><code>ServerScriptService.CurrencyService</code></td><td>two ledger sources</td></tr>
+  <tr><td><span class="tag new">new</span></td><td><code>Workspace.IslaMarahuyo.Activities.Shipwreck</code></td><td><code>JoinCircle</code>, <code>JoinCircleInner</code>, <code>JoinSign</code> (BillboardGui <code>Board</code>: <code>Title</code>, <code>Status</code>)</td></tr>
+  <tr><td><span class="tag new">new</span></td><td><code>Workspace.IslaMarahuyo.Activities.ShipwreckArena</code></td><td><code>Walls</code>, <code>Grotto</code>, <code>SpectatorHold</code>, <code>SharkStart</code>, <code>Center</code>, <code>Live</code></td></tr>
+  <tr><td><span class="tag new">new</span></td><td><code>ServerStorage.ShipwreckAssets</code></td><td><code>PlankPrefabs.{Small,Medium,Large}</code>, <code>Cosmetics.HatShipwreckCrown</code></td></tr>
+  <tr><td><span class="tag new">new</span></td><td>Terrain</td><td>the pool, seabed, grotto and rocks around (0, &minus;20, &minus;1700); nothing was there before</td></tr>
+</table>
+<p><b>Remotes</b> (created by <code>ShipwreckService</code> in <code>ReplicatedStorage.Remotes</code>): <code>ShipwreckStatus</code> (server&rarr;client: <code>lobby</code>, <code>match</code>, <code>survivors</code>, <code>biteAlert</code>, <code>mash</code>, <code>immune</code>, <code>eliminated</code>, <code>result</code>, <code>ended</code>) and <code>RequestShipwreck</code> (client&rarr;server: <code>start</code>, <code>tap</code>, <code>spectate</code>, <code>leave</code>).</p>
+<p><b>Player attributes</b> (in memory only, never saved): <code>ShipwreckState</code> (inMatch / eliminated / spectating), <code>ShipwreckRole</code> (shark / survivor), <code>ShipwreckInArena</code>, <code>ShipwreckImmuneUntil</code> (server time), <code>SwimSpeedOverride</code>. Mesh attribute <code>ChompAt</code>. Collision groups <code>ShipwreckShark</code> and <code>ShipwreckPlank</code>. Profile field <code>Cosmetics.HatShipwreckCrown</code>.</p>
+<p><b>Tunables</b> (<code>ShipwreckConfig</code>): MIN_PLAYERS 3, MAX_PLAYERS 10, COUNTDOWN_SECONDS 20, JOIN_RADIUS 9.5, RETURN_RING 15, ARENA_CENTER (0,0,&minus;1700), PLAY_RADIUS 150, BASE_RADIUS 18, RADIUS_PER_PLAYER 6, MEDIUM_SHARE 0.4, SWIM_GAP 8, PLANK_TOP_Y 1.8, SINK_BASE 0.04, SINK_PER_PLAYER 0.03, SINK_OVERLOAD 0.15, SUNK_COLLISION_DROP 4.5, SUNK_DESTROY_DROP 12, SHARK_SWIM_SPEED 26, SHARK_LENGTH 12, SHARK_RELEASE_DELAY 5, BITE_RANGE 7, BITE_COOLDOWN 3, BITE_COOLDOWN_AFTER_LOSS 4, SPLASH_GRACE 1, DRAG_SECONDS 1.5, MASH_READY_SECONDS 1.2, MASH_SECONDS 4, MIN_TAP_INTERVAL 0.05, VICTIM_WIN_IMMUNITY 10, EAT_SECONDS 1.2, MATCH_TIME_LIMIT 300, RESULT_SECONDS 6, WINNER_SHELLS 100, SURVIVAL_BASE 10, SURVIVAL_PER_SECOND 0.5, SURVIVAL_CAP 120, SHARK_PER_CATCH 15.</p>
+<p><b>Studio-only test hooks</b> (created only when <code>RunService:IsStudio()</code>): <code>ServerStorage.DebugShipwreckSoloMode:Fire(true)</code> (1 player is enough), <code>DebugShipwreckForceStart:Fire()</code>, <code>DebugShipwreckSetShark:Fire(player | false | nil)</code>, <code>DebugShipwreckForceSink:Fire(index, studsPerSec)</code>, <code>DebugShipwreckTriggerBite:Fire(player, botTapsPerSec)</code> (a race against a bot), <code>DebugShipwreckEndMatch:Fire(winner | nil)</code>. With fewer than 2 players, or no shark, a match runs in test mode and never ends on its own, except by time, or when everyone has left.</p>
+
+<h2 id="tests">How it was tested</h2>
+<p>Four solo playtests on the iPhone 6 Plus emulation, each ended by kicking the player from the Server datamodel. Every new and edited script passed a <code>loadstring</code> compile check first, and the startup log shows "[ShipwreckService] circle open at Looban -- 3-10 players" with no errors.</p>
+<ul>
+  <li><b>Lobby:</b> standing in the ring &rarr; sign "1 aboard -- ready, press Start!", panel "1/10 aboard &middot; ready!". Start &rarr; "Setting sail in 19s" and the button hides.</li>
+  <li><b>Start:</b> 1 player &rarr; 2 planks, the player on the Large at (0, 4.9, &minus;1700), attributes set, sign "Match at sea -- 1 still afloat".</li>
+  <li><b>Sinking:</b> the plank was forced down under the player &rarr; they were swimming, and island air stayed at 90 (the exemption works). The plank was removed once gone.</li>
+  <li><b>Shark:</b> <code>role=shark</code>, head transparency 1, group <code>ShipwreckShark</code>, client WalkSpeed 26, swimming about 16&ndash;17 studs/s. Placed on the Large plank, it fell through into the water (root at &minus;0.55, below the deck at 0.22).</li>
+  <li><b>Tap race:</b> as the shark against a bot at 6 taps/s: 41 taps sent, 34 counted, 24&ndash;34 &rarr; "Gulp! One less swimmer." As the victim: 38 taps from 745.41 to 749.53 (server clock) against a window of 745.35&ndash;749.35 &rarr; victim won, with 7 s of immunity left when checked, and no other requests in the server log. Not tapping at all &rarr; eaten &rarr; moved to <code>SpectatorHold</code> (Y 90) &rarr; "You were eaten!" panel.</li>
+  <li><b>Spectate &rarr; Back:</b> state <code>spectating</code>, bar "Nobody left afloat" (solo). Back &rarr; home 15 studs from the ring, unanchored, no Shipwreck attributes left, planks removed, the match ended as "empty", no results screen popped up on the island.</li>
+  <li><b>Win:</b> <code>DebugShipwreckEndMatch</code> with the player &rarr; the hat on at once (attached by <code>AccessoryRigidConstraint</code>), ledger "Won Shipwreck +220", results screen, then home after 6 s.</li>
+  <li><b>Plank layouts</b> for 3 and 10 players were built in Edit with a copy of the module, photographed, and cleared.</li>
+  <li><b>Fixed during testing:</b> decks started too low and were awash in about 20 s (raised to 1.8, sink window retuned); the reward text read "Barnacle Hat + +100 Peso" and showed the base amount, not the 220 actually paid; the lobby panel sat mid-screen on a phone (moved to the top); the island's "DO NOT SWIM" banner showed under the HUD; the HUD kept saying "SURVIVE" after elimination; a match stayed open with nobody in it; the tap button looked live during the drag.</li>
+</ul>
+
+<h2 id="gaps">Not verified / known gaps</h2>
+<div class="box">
+<ul>
+  <li><b>No real multiplayer match yet.</b> Every bite in testing came from the debug hook against a bot. The automatic bite (range, 1 s grace, in-water test, immunity) never fired between two real players. Nobody else saw the bite alert, and spectating was never pointed at another player. This needs at least 3 accounts, or a published test server.</li>
+  <li><b>Getting out of the water onto a plank</b> (deck 1.8 above the water, and <code>WaterMovementService</code>'s jump rules) was not tried.</li>
+  <li>The tail sway was seen once on a posed mesh in Edit. The jaw chomp and the "pulled into the mouth" eat were not checked by eye.</li>
+  <li>Not exercised: the countdown cancelling below 3; the early start at 10; the 5-minute limit; the shark leaving mid-match; a player dying in the arena.</li>
+  <li>The hat's position was checked on one R15 avatar only. It is always worn; there is no way to take it off yet.</li>
+  <li>The results-screen fixes (actual amount paid, no doubled "+") were made after the last match that ended with a win; no match has shown the new text yet.</li>
+  <li>A Wanted player standing in the circle is ignored silently, with no message saying why.</li>
+  <li>The balance (sink rates, 26 vs 16 speed, 7-stud bite, 42&ndash;60 stud gaps at 10 players) is first-pass. Watch real matches for length and fairness.</li>
+  <li><b>Unexplained input in one run:</b> during one test, "spectate" and then "leave" reached the server without my scripts sending them, and an earlier playtest stopped on its own. It could not be reproduced; with the request log on, only my taps arrived.</li>
+</ul>
+</div>
+<p><b>Test values to revert:</b> nothing is left in the place (<code>Lighting.ClockTime</code> was set to 14 in Edit for the layout shots and put back to 0; solo mode and the forced shark exist only while a playtest runs). The test account <b>MERS_Cov2</b> kept real rewards from testing: <b>+413 Peso</b> (Won Shipwreck 220, and stayed afloat 55, 48 and 90) and <code>Cosmetics.HatShipwreckCrown = 1</code>. They have not been removed.</p>
+</main>
+</body>
+</html>

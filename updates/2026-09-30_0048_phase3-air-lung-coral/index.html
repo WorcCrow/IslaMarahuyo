@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Update 2026-09-30: Phase 3, air and Lung Coral</title>
+<style>
+  :root { --ink:#1d2430; --dim:#5b6675; --line:#dde2e8; --bg:#fbfbf9; --accent:#c9485b; --ok:#2f8f6a; --warn:#b7791f; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width:960px; margin:0 auto; padding:32px 16px 64px; }
+  h1 { font-size:26px; margin:0 0 4px; }
+  h2 { font-size:20px; margin:40px 0 8px; padding-top:16px; border-top:1px solid var(--line); }
+  h3 { font-size:16px; margin:20px 0 4px; }
+  .meta { color:var(--dim); margin:0 0 20px; }
+  code { font:13px/1.4 ui-monospace, Consolas, monospace; background:#eef0f3; padding:1px 4px; border-radius:3px; }
+  table { border-collapse:collapse; width:100%; margin:8px 0 16px; font-size:14px; }
+  th, td { text-align:left; vertical-align:top; padding:6px 8px; border-bottom:1px solid var(--line); }
+  th { color:var(--dim); font-weight:600; }
+  .tag { display:inline-block; font-size:12px; font-weight:600; padding:0 6px; border-radius:3px; color:#fff; }
+  .new { background:var(--ok); } .mod { background:#3b6fb6; }
+  .box { border-left:3px solid var(--warn); background:#fff8ec; padding:8px 12px; margin:12px 0; }
+  ul { padding-left:22px; }
+  nav a { margin-right:12px; }
+  figure.solo { margin:12px 0 20px; }
+  .pair { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:12px 0 20px; }
+  .pair figure { margin:0; }
+  @media (max-width:700px) { .pair { grid-template-columns:1fr; } }
+  figure img { width:100%; height:auto; border:1px solid var(--line); border-radius:4px; display:block; }
+  figcaption { color:var(--dim); font-size:13px; margin-top:4px; }
+</style>
+</head>
+<body>
+<main>
+<p><a href="../index.html">&larr; all updates</a></p>
+<h1>Phase 3: air in seconds, and Lung Corals processed on land</h1>
+<p class="meta">2026-09-30 &middot; place "[New Map]Isla Marahuyo" (placeId 128146022575640) &middot; follows <a href="../2026-09-29_2311_phase2-roles-loadouts/index.html">Phase 2: the Maninisid job</a> &middot; plan: "Isla Marahuyo Roadmap" artifact (https://claude.ai/artifact/EHMUmaSk3nCsyiZbR6iLPT)</p>
+
+<nav><a href="#ask">What was asked</a><a href="#what">What changed</a><a href="#files">All changes</a><a href="#tests">Testing</a><a href="#gaps">Gaps</a></nav>
+
+<div class="box"><b>Not live yet.</b> Like Phases 1 and 2, this reaches players only when the place is published from Studio.</div>
+
+<h2 id="ask">What was asked</h2>
+<ul>
+  <li>"Show 45 for 45 s instead of a percentage", so players notice when they have more air than normal, and "highlight the air UI when a Lung Coral takes effect."</li>
+  <li>Picking up a Lung Coral should not grow your lungs straight away: "you bring it to land, place it, and it takes about one game day to process, with a dropdown showing the status."</li>
+  <li>The deep-run plates "look buggy. Remove them or make them better."</li>
+  <li>The owner accepted the plan's recommendations: one coral processed at a time, in a banga (clay jar) at the bodega, still processing while offline, no stealing in v1, and plates remade as wall markers (removed if the screenshots still looked wrong).</li>
+</ul>
+
+<h2 id="what">What changed</h2>
+
+<h3>1. Air in seconds, with a gold chip for extra air</h3>
+<figure class="solo"><img src="images/absorbed.png" alt="The left status column: a shark count badge, then the air badge reading 90 s / 90 s with a gold +45 s chip, beside an empty clay banga at night"><figcaption>After absorbing: the air badge reads "90 s / 90 s", and the gold chip shows the 45 s gained from three corals. The banga beside it is empty and dark again.</figcaption></figure>
+<ul>
+  <li>The air badge in <code>StatusHud</code> reads <b>"38 s / 60 s"</b> instead of a percentage. The ring still fills with the air left, turns gold at 55% and red at 25%, as before.</li>
+  <li>Any max above the base lung shows as a <b>gold "+15 s" chip</b> in the badge's value tab. The base comes from the new player attribute <code>BreathBase</code> (45), set by <code>BreathService</code>.</li>
+  <li><b>When a coral is absorbed</b>, the badge pulses gold three times (ring glow and value tab), the max counts up from the old number to the new one over 1.4 s, the badge stays on screen for 8 s even on dry land, "Lungs stronger!" floats beside it, and a toast plus a chat line say "Lung Coral absorbed: you can hold your breath for 75 s now."</li>
+  <li>That floating word now sits just past the end of the value tab, which grew with the seconds text. It also includes the top-bar inset, which the old placement left out.</li>
+</ul>
+
+<h3>2. Lung Corals are carried home and processed in a banga</h3>
+<div class="pair">
+<figure><img src="images/banga-beside-bodega.png" alt="A round terracotta clay jar with a dark band, beside the stone bodega's wall, a glowing pink coral in its mouth; the hourglass badge on the left reads 23m 20s +1"><figcaption>The banga stands at the bodega's front corner. While something is processing, the coral glows pink in its mouth.</figcaption></figure>
+<figure><img src="images/banga-processing.png" alt="The PINOPROSESO dropdown beside the hourglass badge: Lung Coral · Upper, 23m 38s left with a short green bar; Lung Coral · Mid, starts in 23m 38s"><figcaption>Tap the hourglass for the Pinoproseso dropdown. The second coral waits for the first.</figcaption></figure>
+</div>
+<ul>
+  <li><b>Picking up</b> a coral (prompt now "Pick up · Lung Coral (hilaw)") gives a raw coral and no air. It rides home with your finds, shown as a new <b>🌺 "raw coral"</b> badge. The coral emoji itself does not render in Roblox (it drew a blank box), hence the hibiscus.</li>
+  <li><b>Corals are now per player.</b> Before, the first diver to take one destroyed the model for the whole server until it restarted. Now the three corals (Upper, Mid, Deep) stay in the world, each player can take each once, and <code>LungCoralClient</code> hides the ones you already have on your screen only.</li>
+  <li><b>Drowning with a raw coral loses it</b>, and it grows back where you found it (chat: "The raw Lung Coral slipped out of your sack as you blacked out...").</li>
+  <li><b>The banga</b> is built by <code>LungCoralService</code> beside every bodega that is placed, at its front corner and seated on the ground. It is part of the bodega model, so it goes away when the bodega is packed or broken. Its prompt answers only the owner ("That's X's banga." to anyone else). With a raw coral it takes all of them; with none it says how long is left, or that it is empty.</li>
+  <li><b>Processing</b> takes one island day (<code>PROCESS_SECONDS</code> = 1440 s), one coral at a time. More corals queue behind. The queue is saved on the profile as unix times, so it keeps running while the player is offline or on another server. Anything that finished while they were away completes on their first second back, and its message waits 8 s for the HUD to load.</li>
+  <li><b>Pinoproseso:</b> a new ⏳ badge in the left status column appears whenever something is processing. Its ring fills with the current item's progress, it counts down ("23m 38s +1" means one more waiting), and tapping it opens a dropdown listing every item with a bar and its time left or start time. It is built generically: <code>ProcessingService</code> can take any timed kind later.</li>
+  <li><b>Changed from the plan:</b> the plan put Pinoproseso in the top bar. The saved UI rule is to leave the top bar untouched, so it lives in the status column instead.</li>
+  <li><b>The 3-coral cap</b> counts absorbed + carried + processing. Players who took corals under the old instant rule keep their upgrades; they just have fewer left to find. The coral they already took is not recorded by name, so they could pick that same one again, but the cap still stops them at 3.</li>
+  <li>No stealing in v1: the banga only answers its owner, and a broken bodega spills nothing from it, because the queue is on the profile, not in the jar.</li>
+</ul>
+
+<h3>3. Deep-run markers are stone slabs on the wall</h3>
+<div class="pair">
+<figure><img src="images/marker-green.png" alt="A dark stone slab on the cave wall with a green border: Deep Level 3: Siwang ng Lamig, KAILANGAN: 75 s, two tally marks, 291 studs each way · you: 90 s"><figcaption>90 s of air covers a 75 s run: green.</figcaption></figure>
+<figure><img src="images/marker-red.png" alt="The same slab in red: KAILANGAN: 75 s, 291 studs each way · you: 60 s, not enough; the raw coral badge shows a hibiscus"><figcaption>60 s doesn't: red. (The 🌺 raw coral badge is in this shot.)</figcaption></figure>
+</div>
+<ul>
+  <li><code>DeepRunService</code> no longer builds floating BillboardGuis. Each of the six deep runs gets a 7 &times; 4 stud slate slab (<code>Marker_&lt;key&gt;</code>) mounted on the chamber wall a few studs to one side of the tunnel mouth, facing back into the chamber. The text is a SurfaceGui on its face, so it can't float, clip through rock or change size with distance.</li>
+  <li>The wall is found by raycasting into the terrain beside the mouth. The slab is then pushed out until it clears the rock at its corners, because the first try sank into the lumpy voxel wall. All six found a wall; if one ever doesn't, it falls back to a standing stone on the chamber floor (attribute <code>Mount</code> says which).</li>
+  <li>The face reads the run's name, <b>"KAILANGAN: 75 s"</b>, one carved tally mark per coral the run was solved for, and "291 studs each way &middot; you: 90 s". The seconds come from <code>BreathService</code> (45 + 15 per coral), not a hard-coded table.</li>
+  <li>Each player sees it tinted for their own lungs by <code>LungCoralClient</code>: <b>green</b> if their max air covers <code>NeedSeconds</code>, <b>red</b> ("not enough") if it doesn't. It repaints when their max changes.</li>
+</ul>
+
+<h2 id="files">All changes</h2>
+<table>
+<tr><th>Instance</th><th></th><th>Change</th></tr>
+<tr><td><code>ServerScriptService.ProcessingService</code></td><td><span class="tag new">new</span></td><td>ModuleScript. The timed queue: <code>RegisterKind(kind, {label, seconds, onDone})</code>, <code>Start(player, kind, tag)</code>, <code>List</code>, <code>Count</code>, <code>FastForward</code> (test support), <code>Init</code>. A 1 s tick completes finished items and publishes <code>ProcessingJson</code>.</td></tr>
+<tr><td><code>ServerScriptService.LungCoralService</code></td><td><span class="tag new">new</span></td><td>Script. Coral prompts (moved from CaveBootstrap), per-player state, loss on <code>PlayerDrowned</code>, the banga beside each bodega, the <code>lungcoral</code> processing kind and its absorb message. Studio-only hook <code>ServerStorage.DebugCoral</code>.</td></tr>
+<tr><td><code>StarterPlayer.StarterPlayerScripts.LungCoralClient</code></td><td><span class="tag new">new</span></td><td>LocalScript. Hides corals you already have; tints the deep-run markers for your max air. Re-applies as the cave streams in and after the shark view (SharkClient) restores what it hid.</td></tr>
+<tr><td><code>ServerScriptService.CaveBootstrap</code></td><td><span class="tag mod">edit</span></td><td>Lung Coral loop removed (it gave the upgrade instantly and destroyed the coral for everyone); header and start-up print updated. It still starts BreathService and runs the Perlas Hollow treasure.</td></tr>
+<tr><td><code>ServerScriptService.BreathService</code></td><td><span class="tag mod">edit</span></td><td>Sets <code>BreathBase</code> on join. <code>AddUpgrade</code> comment: it is now called when processing finishes, not on pickup.</td></tr>
+<tr><td><code>ServerScriptService.DeepRunService</code></td><td><span class="tag mod">edit</span></td><td>Rewritten marker builder: wall mount (<code>mountFor</code>), stone slab with SurfaceGui, attributes <code>Tier</code>, <code>NeedSeconds</code>, <code>LengthStuds</code>, <code>Mount</code>. Requires BreathService for the seconds.</td></tr>
+<tr><td><code>ServerScriptService.PlayerProfileService</code></td><td><span class="tag mod">edit</span></td><td>Load defaults for the new fields <code>CoralsTaken</code> and <code>Processing</code>.</td></tr>
+<tr><td><code>StarterPlayer.StarterPlayerScripts.StatusHud</code></td><td><span class="tag mod">edit</span></td><td>Air in seconds, gold chip, absorb pulse and count-up; new raw coral and Pinoproseso badges; the dropdown; flash-word placement.</td></tr>
+<tr><td><code>StarterPlayer.StarterPlayerScripts.NotificationController</code></td><td><span class="tag mod">edit</span></td><td>Chat colours for the new DiveFeedback kinds <code>coral</code> and <code>absorbed</code>.</td></tr>
+<tr><td><code>Workspace.IslaMarahuyo.Activities.CaveSystem.LungCoral_*.Stalk.CollectPrompt</code></td><td><span class="tag mod">edit</span></td><td>ActionText "Pick up", ObjectText "Lung Coral (hilaw)" (also set at runtime).</td></tr>
+<tr><td><code>Workspace.IslaMarahuyo.Bodegas.Bodega_*.Banga</code></td><td><span class="tag new">runtime</span></td><td>Model (Body, Neck, Rim, Band, Coral + PointLight, <code>BangaPrompt</code>) built when a bodega is placed.</td></tr>
+<tr><td><code>Workspace.DeepRunMarkers.Marker_*</code></td><td><span class="tag new">runtime</span></td><td>Stone slabs; they replace the old invisible <code>Mouth_*</code> anchor parts that carried the billboard plates. Built at server start, as before.</td></tr>
+</table>
+<p><b>New profile fields:</b> <code>CoralsTaken</code> (<code>{[name] = "carried" | "processing" | "absorbed"}</code>) and <code>Processing</code> (array of <code>{kind, tag, startsAt, endsAt}</code>). <b>New player attributes:</b> <code>BreathBase</code>, <code>CoralsTaken</code> (comma list), <code>CoralsCarried</code>, <code>ProcessingJson</code>. <b>New DiveFeedback kinds:</b> <code>coral</code>, <code>absorbed</code>. No new remotes. <b>Tuning:</b> <code>LungCoralService.PROCESS_SECONDS = 1440</code>, <code>JOIN_GRACE = 8</code>; <code>DeepRunService.SLAB = 7 &times; 4 &times; 0.6</code>. Every edited script was compile-checked with <code>loadstring</code> before saving; nothing was removed from the map.</p>
+
+<h2 id="tests">Testing</h2>
+<p>Three solo playtests on MERS_Cov2, each ended by kicking the player from the Server. That account already had all 3 corals, so the new Studio hook set it to 1 for the tests (<code>DebugCoral "lungs"</code>) and put it back to 3 with an empty coral record and queue (<code>"reset"</code>) before every kick. No script errors in the output.</p>
+<ul>
+  <li><b>Real pickup:</b> the Upper coral's prompt, held by the client with the character anchored beside it, gave "carried". The coral went invisible, with its prompt off, on that client only; the server model stayed. The raw coral badge appeared. (Moving the character from the client dropped it through the unstreamed cave, and an anchored client move never reached the server, so the server did the move.)</li>
+  <li><b>Drowning</b> (<code>DebugDrown</code>) with the raw coral cleared it, and the coral showed again on the client.</li>
+  <li><b>Banga:</b> a stone bodega placed at (-320, 34, -40) got its banga on the ground at the front corner (jar bottom 34.1, ground 34.25). Placing a coral said "Ready in 24 min, even if you leave." A second coral said "Lung Coral queued behind the one already in the banga. Ready in 48 min." The coral glowed and the prompt changed to "Check".</li>
+  <li><b>Processing:</b> <code>DebugCoral "finish"</code> brought the queue forward. The first coral finished: max air 60 &rarr; 75, record Upper = absorbed, and Mid started where Upper ended. A client log of the second finish showed the <code>absorbed</code> event, the badge counting 75 &rarr; 80 &rarr; 85 &rarr; 90 over about 1.4 s, and staying up for 8 s. The chip read "+30 s", then "+45 s".</li>
+  <li><b>Dropdown position:</b> the first shot had it about one top-bar height too high; after the inset fix it lines up with its badge (screenshot above). The "Lungs stronger!" word was measured centred on the air badge, just past its tab.</li>
+  <li><b>Markers:</b> all six mounted on walls. At 75 s max the four 60 s and 75 s runs were green and the two 90 s runs red; screenshots at 90 s and 60 s above.</li>
+</ul>
+
+<h2 id="gaps">Gaps and things to check</h2>
+<ul>
+  <li><b>The gold pulse itself was not caught on camera.</b> It lasts about 2 s and the capture tool takes longer than that. It is checked by the client log above only. Watch it once when a coral finishes.</li>
+  <li><b>Not seen:</b> an offline finish on rejoin, and a coral taken by the prompt in normal play (the test anchored the character). The banga beside a wood bodega and next to a second bodega slot is untested; each placed bodega gets its own banga.</li>
+  <li><b>Axe swings on the banga</b> count as hits on the bodega, since the jar is part of its model. That seems right, but it is untested.</li>
+  <li><b>Shark view:</b> SharkClient hides and restores cave markers by saving LocalTransparencyModifier. LungCoralClient re-applies 0.2 s after SharkRole changes, which should win, but a Pating ending their job near a taken coral was not tested.</li>
+  <li><b>The coral glows almost white.</b> The neon pink blows out at night; a lower-brightness colour may read better.</li>
+  <li>The old welcome/tutorial panel popped up during the last playtest (it was hidden for the shot). It is replaced in Phase 8.</li>
+  <li><b>Quick-test values:</b> none left in the place. The test account was restored to 3 corals with an empty record and queue. <code>Bodega.AxeDamage = 20</code> from before is still there, to be restored in Phase 7.</li>
+</ul>
+</main>
+</body>
+</html>

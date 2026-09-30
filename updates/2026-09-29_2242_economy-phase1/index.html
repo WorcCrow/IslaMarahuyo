@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Update 2026-09-29: Economy Phase 1, the money rules</title>
+<style>
+  :root { --ink:#1d2430; --dim:#5b6675; --line:#dde2e8; --bg:#fbfbf9; --accent:#c9485b; --ok:#2f8f6a; --warn:#b7791f; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width:960px; margin:0 auto; padding:32px 16px 64px; }
+  h1 { font-size:26px; margin:0 0 4px; }
+  h2 { font-size:20px; margin:40px 0 8px; padding-top:16px; border-top:1px solid var(--line); }
+  h3 { font-size:16px; margin:20px 0 4px; }
+  .meta { color:var(--dim); margin:0 0 20px; }
+  code { font:13px/1.4 ui-monospace, Consolas, monospace; background:#eef0f3; padding:1px 4px; border-radius:3px; }
+  table { border-collapse:collapse; width:100%; margin:8px 0 16px; font-size:14px; }
+  th, td { text-align:left; vertical-align:top; padding:6px 8px; border-bottom:1px solid var(--line); }
+  th { color:var(--dim); font-weight:600; }
+  .tag { display:inline-block; font-size:12px; font-weight:600; padding:0 6px; border-radius:3px; color:#fff; }
+  .new { background:var(--ok); } .mod { background:#3b6fb6; }
+  .box { border-left:3px solid var(--warn); background:#fff8ec; padding:8px 12px; margin:12px 0; }
+  ul { padding-left:22px; }
+  nav a { margin-right:12px; }
+  figure.solo { margin:12px 0 20px; }
+  figure img { width:100%; height:auto; border:1px solid var(--line); border-radius:4px; display:block; }
+  figcaption { color:var(--dim); font-size:13px; margin-top:4px; }
+</style>
+</head>
+<body>
+<main>
+<p><a href="../index.html">&larr; all updates</a></p>
+<h1>Economy Phase 1: the money rules</h1>
+<p class="meta">2026-09-29 &middot; place "[New Map]Isla Marahuyo" (placeId 128146022575640) &middot; follows <a href="../2026-09-29_2014_shark-cave-and-admin-commands/index.html">A shark explores nothing in the cave</a> &middot; plan: "Isla Marahuyo Roadmap" artifact (https://claude.ai/artifact/EHMUmaSk3nCsyiZbR6iLPT) &middot; numbers: "Isla Economy Adjuster" artifact (https://claude.ai/artifact/WsydRxzvxHWgA3LEpk3wts)</p>
+
+<nav><a href="#ask">What was asked</a><a href="#what">What changed</a><a href="#files">All changes</a><a href="#tests">Testing</a><a href="#gaps">Gaps</a></nav>
+
+<div class="box"><b>Not live yet.</b> This and all of today's shark updates reach players only when the place is published from Studio.</div>
+
+<h2 id="ask">What was asked</h2>
+<p>The owner asked for a plan covering Lung Coral processing, cave changes, a Diver job, the market, role hotbars, shark bait, bodega chests, a tutorial and gamepasses, then accepted every recommendation in it. Phase 0 built the economy adjuster, and the owner accepted its proposed numbers ("I go with your recommendation"). This page is Phase 1, the money rules:</p>
+<ul>
+  <li>"Drowned player will cost 15% of their wallet, if this player is big time then the player nurse will get a big amount."</li>
+  <li>"The money AI receive like nurse, market, police confiscated item, will be collected on the server overall income", unlocking an event later at a threshold.</li>
+  <li>"Glowstick now sell a piece not per pack, it is one of crucial item and we cannot give it for free."</li>
+  <li>"Too much amount to give per crate", and "not any player can stock crate, only vendor".</li>
+  <li>"Each job should have payment, so player will be needed to pay before they can take the job."</li>
+  <li>Palengke prices based on real Philippine prices.</li>
+</ul>
+
+<h2 id="what">What changed</h2>
+
+<h3>1. The Kaban ng Barangay (Community Fund)</h3>
+<figure class="solo"><img src="images/fund-board-close.png" alt="A dark board on a post reading KABAN NG BARANGAY, 1,619 Peso, next goal 10,000, Health Post bills 1,534, Job fees 60, all servers 1,619 Peso"><figcaption>The new board after the playtest: a bot nurse's bill (1,534) and a Tindero job fee (60). The 25 Peso glowstick is the third source, below the top two shown.</figcaption></figure>
+<figure class="solo"><img src="images/fund-board.png" alt="The plaza: the fund board on the left, the Munisipyo crime blotter in the middle and the job board on the right"><figcaption>It stands at the plaza to the left of the crime blotter, mirroring the job board on the right.</figcaption></figure>
+<ul>
+  <li>New ModuleScript <code>ServerScriptService.CommunityFundService</code>. <code>Add(amount, source)</code> adds to a per-server total. Every 10,000 Peso (<code>THRESHOLD_STEP</code>) it tells the whole server in chat (new remote <code>IslandNotice</code>) and fires the new <code>ServerStorage.CommunityFundThreshold(level, total)</code>. Nothing listens to that signal yet; it is the hook for the future barangay events.</li>
+  <li>A lifetime all-servers total is kept in the new DataStore <code>CommunityFund</code> (key <code>lifetime</code>). It is added to with <code>UpdateAsync</code> once a minute and on close.</li>
+  <li>Totals are also published as the <code>ReplicatedStorage</code> attributes <code>CommunityFund</code>, <code>CommunityFundNext</code> and <code>CommunityFundLifetime</code>.</li>
+  <li><b>Where the money comes from:</b> <code>CurrencyService.TrySpend</code> now sends every spend to the fund unless the source is in <code>PAID_TO_PLAYERS</code> (<code>GiftSent</code>, <code>ToldaBuy</code>, <code>CarrySabotage</code>, <code>NurseFee</code>, <code>DrowningBill</code>). That covers Palengke purchases, bag upgrades, job fees, bangka hire, zipline fares, and bodega upgrades and repairs.</li>
+  <li><b>Ronda raids:</b> when the NPC ronda seizes a tolda, the 25% cut that a player officer would have kept goes to the fund (<code>BlackMarketService.confiscate</code>). A player officer still keeps it.</li>
+  <li>New board <code>Workspace.IslaMarahuyo.FundBoard</code> (<code>Post</code> + <code>Board</code>, cloned from the job board's parts, with its <code>Face</code> SurfaceGui retitled). It shows the total, the next goal, the top two sources and the lifetime total. The module rewrites <code>Face.Frame.Body</code> (rich text).</li>
+  <li><b>Changed from the plan:</b> there is no top-bar counter. The saved UI rule is to leave the top bar untouched, so the fund appears on the board and in threshold announcements only.</li>
+</ul>
+
+<h3>2. Drowning costs 15% of the wallet</h3>
+<ul>
+  <li>In <code>ReviveService</code>, one Health Post bill replaces both the flat 60/30 nurse and passer-by fees: <code>DROWN_BILL = 0.15</code> of the Peso the diver holds, uncapped. Because it is a percentage, a broke diver never goes into debt. (BreathService's old 15% capped at 25 was dead code; its constants are removed.)</li>
+  <li>Who keeps the bill:
+    <ul>
+      <li>a player nurse keeps all of it;</li>
+      <li>a passer-by keeps half (<code>PASSERBY_SHARE</code>);</li>
+      <li>a fumbled lay-down keeps 60% of that share (<code>POOR_WORK_RATE</code>);</li>
+      <li>a bot nurse, a nurse serving a sentence, or coming round alone keeps nothing.</li>
+    </ul>
+    Whatever the carrier doesn't keep goes to the fund.</li>
+  <li><b>Anti-farming:</b> a diver is billed at most once every 10 minutes (<code>BILL_COOLDOWN</code>, saved as <code>profile.LastDrownBillAt</code>). If a player shark caused the drowning, the carrier's share is halved. <code>SharkPlayerService</code> now sets <code>PatingHitAt</code> on a lunge victim, and <code>ReviveService.Begin</code> treats a hit within 60 s (<code>SHARK_WINDOW</code>) as the cause.</li>
+  <li>The patient's "done" message names the bill, for example "Nurse Fely brought you round. Health Post bill: 1534 Peso, paid into the Kaban ng Barangay." The ledger line reads "Health Post bill (15% of your wallet)".</li>
+</ul>
+
+<h3>3. Glowsticks sold one at a time, and no free gear</h3>
+<ul>
+  <li><code>ItemConfig.Items.glowstick</code>: <code>bundle = 10</code> removed and the price set to <b>25</b> per stick (was 140 per pack of 10). The shop, purchase and bag code already fell back to single items when <code>bundle</code> is absent.</li>
+  <li><code>PlayerProfileService</code>: <code>STARTER_KIT</code> is now empty (was 3 glowsticks and an oxygen tank), and <code>STARTING_SHELLS</code> is 750 (was 2000). Saved balances are untouched.</li>
+  <li>A dropped glowstick is tagged <code>OwnerId</code> (<code>InventoryService</code>), and only its owner can pick it back up. Anyone else sees "That glowstick marks someone else's trail. Leave it burning." Other dropped gear stays shareable.</li>
+</ul>
+
+<h3>4. Job fees, free first job, 5-minute wait between jobs</h3>
+<ul>
+  <li><code>RoleService.Roles</code> costs:
+    <ul>
+      <li>Nars 80</li>
+      <li>Pulis 120</li>
+      <li>Tindero 60</li>
+      <li>Mangingisda 100</li>
+      <li>Pating 100 (unchanged)</li>
+    </ul>
+    Ledger source <code>JobFee_&lt;key&gt;</code>, shown as "Job fee: tindero". All fees go to the fund.</li>
+  <li><b>First job free</b>, like a first-time job seeker's barangay clearance (RA 11261). This uses <code>profile.FirstJobTaken</code> and the player attribute <code>FirstJobFree</code>. The board's button reads "TAKE FREE" until then.</li>
+  <li><code>RECLAIM_COOLDOWN</code> is 300 s (was 90) and now applies to <b>any</b> job after taking or leaving one, tracked in the new <code>waitUntil</code> table. <code>Revoke</code> (a poisoned shark) still sets its own shorter wait.</li>
+  <li>The custody check (jailed, reviving, wanted, in Shipwreck) now applies to every job, because every job has a fee.</li>
+  <li><code>RoleHud</code>: every TAKE button shows its price and is green; only the Pating stays red.</li>
+</ul>
+
+<h3>5. Crates are the Tindero's, and pay less</h3>
+<ul>
+  <li><code>VendorService</code>: only a Tindero, or a player serving a Palengke sentence, can restock the 1&rarr;2&rarr;3 crates. Anyone else is told "Only the Tindero restocks the Palengke crates. Take the job at the Munisipyo board." Pay is now 0 per crate plus 5 per round with no streak (was 3 per crate + 12 + a streak of up to 10).</li>
+  <li><code>MarketShiftService</code>: a shift pays 250 base + 5 per crate, up to 40 crates, for a maximum of 450 (was 180 + 12 &times; 40 = 660).</li>
+  <li><code>QuestService</code>: the daily task "Run 3 market restocks" is removed from the pool, since most players can no longer do it. The pool is index-based, so today's four tasks reshuffle once when this goes live. Progress is keyed by kind and is kept.</li>
+</ul>
+
+<h3>6. Prices</h3>
+<table>
+<tr><th>Item</th><th>Was</th><th>Now</th><th>Real PH reference</th></tr>
+<tr><td>Glowstick</td><td>140 per pack of 10</td><td>25 each</td><td>3 (party, bulk) to 75&ndash;120 (6" chemlight)</td></tr>
+<tr><td>Oxygen Tank</td><td>240</td><td>280</td><td>refill 200&ndash;750</td></tr>
+<tr><td>Shark Bait</td><td>80</td><td>120</td><td>galunggong about 234/kg</td></tr>
+<tr><td>Shark Repellent</td><td>40</td><td>60</td><td>&ndash;</td></tr>
+<tr><td>Shark Poison</td><td>100</td><td>250</td><td>none; priced by what it does</td></tr>
+<tr><td>Lambat</td><td>320</td><td>600</td><td>small gill net 800&ndash;2,500 (estimate)</td></tr>
+<tr><td>Tolda (from the fixer)</td><td>260</td><td>500</td><td>tarp 300&ndash;800, canopy 2,500&ndash;4,500 (estimate)</td></tr>
+<tr><td>Stone Bodega</td><td>10,000</td><td>3,000</td><td>&ndash;</td></tr>
+<tr><td>Bangka hire, 10 min (Mahaba)</td><td>180</td><td>150</td><td>the long hire cost more per minute than the short ones</td></tr>
+</table>
+<p>Unchanged: battery 90, bags 550 / 1,500 / 3,800, zipline 25, shorter bangka hires, all find sell prices. The axe stays free: every player already owns one, and it will be revisited in Phase 2. Kasama VIP's 2&times; waits for Phase 9. <code>ItemConfig</code>'s PRICING header now explains the scale and points to the adjuster.</p>
+
+<h2 id="files">All changes</h2>
+<table>
+<tr><th>Instance</th><th>Change</th></tr>
+<tr><td><code>ServerScriptService.CommunityFundService</code></td><td><span class="tag new">new</span> ModuleScript, described above</td></tr>
+<tr><td><code>ServerStorage.CommunityFundThreshold</code></td><td><span class="tag new">new</span> BindableEvent, created at runtime by the module</td></tr>
+<tr><td><code>ReplicatedStorage.Remotes.IslandNotice</code></td><td><span class="tag new">new</span> RemoteEvent, created at runtime by the module</td></tr>
+<tr><td><code>Workspace.IslaMarahuyo.FundBoard</code></td><td><span class="tag new">new</span> Model (Post, Board with Face SurfaceGui) at about (-252.4, 28.6, -50.3), same facing as the job board</td></tr>
+<tr><td><code>ServerScriptService.CurrencyService</code></td><td><span class="tag mod">edit</span> requires the fund; <code>PAID_TO_PLAYERS</code>; fund routing in <code>TrySpend</code>; ledger labels (DrowningBill, CarrySabotage, BodegaUpgrade, BodegaRepair, <code>JobFee_*</code>); the "suspicious amount" warning now only covers money coming in, and not NurseWork</td></tr>
+<tr><td><code>ServerScriptService.ReviveService</code></td><td><span class="tag mod">edit</span> NURSE_FEE and PLAYER_CARRY_FEE replaced by DROWN_BILL, PASSERBY_SHARE, BILL_COOLDOWN, SHARK_WINDOW; new billFor, chargeBill, billLine; payNurse rewritten; bot, player and self-revive paths bill; Begin sets <code>t.sharkCaused</code>; header comments updated</td></tr>
+<tr><td><code>ServerScriptService.SharkPlayerService</code></td><td><span class="tag mod">edit</span> sets <code>PatingHitAt</code> on a lunge victim</td></tr>
+<tr><td><code>ServerScriptService.BreathService</code></td><td><span class="tag mod">edit</span> dead DROWN_FEE_* constants removed; comment points to ReviveService</td></tr>
+<tr><td><code>ReplicatedStorage.ItemConfig</code></td><td><span class="tag mod">edit</span> PRICING header; glowstick bundle removed; prices above; stone bodega 3,000</td></tr>
+<tr><td><code>ServerScriptService.PlayerProfileService</code></td><td><span class="tag mod">edit</span> STARTING_SHELLS 750, STARTER_KIT empty</td></tr>
+<tr><td><code>ServerScriptService.InventoryService</code></td><td><span class="tag mod">edit</span> glowstick OwnerId on drop, owner-only pickup</td></tr>
+<tr><td><code>ServerScriptService.RoleService</code></td><td><span class="tag mod">edit</span> costs, first job free, RECLAIM_COOLDOWN 300 for any job (<code>waitUntil</code>), <code>JobFee_</code> source, fee line in the claim message, FirstJobFree attribute on join</td></tr>
+<tr><td><code>StarterPlayer.StarterPlayerScripts.RoleHud</code></td><td><span class="tag mod">edit</span> TAKE button text and colour</td></tr>
+<tr><td><code>ServerScriptService.VendorService</code></td><td><span class="tag mod">edit</span> Tindero or sentenced only; 0/crate + 5, no streak</td></tr>
+<tr><td><code>ServerScriptService.MarketShiftService</code></td><td><span class="tag mod">edit</span> SHIFT_BASE 250, PER_CRATE 5</td></tr>
+<tr><td><code>ServerScriptService.QuestService</code></td><td><span class="tag mod">edit</span> VendorRestock task removed from the pool</td></tr>
+<tr><td><code>ServerScriptService.BlackMarketService</code></td><td><span class="tag mod">edit</span> ronda raid cut goes to the fund; comment no longer quotes the old tolda price</td></tr>
+<tr><td><code>ServerScriptService.BoatRentalService</code></td><td><span class="tag mod">edit</span> Mahaba 150</td></tr>
+<tr><td><code>StarterPlayer.StarterPlayerScripts.NotificationController</code></td><td><span class="tag mod">edit</span> IslandNotice listener (gold system chat line); daily login says Peso</td></tr>
+<tr><td><code>ServerScriptService.MonetizationConfig</code></td><td><span class="tag mod">edit</span> comment only (stone bodega price)</td></tr>
+</table>
+<p>New profile fields: <code>LastDrownBillAt</code> (unix time) and <code>FirstJobTaken</code> (bool). New player attributes: <code>FirstJobFree</code> and <code>PatingHitAt</code> (server clock). Every edited script was compile-checked with <code>loadstring</code> before saving.</p>
+
+<h2 id="tests">Testing</h2>
+<p>One solo playtest (account MERS_Cov2, which starts with a large balance from earlier admin grants), ended by kicking the player from the Server. There were no script errors in the output.</p>
+<ul>
+  <li><b>First job free:</b> RequestRole "nurse" gave the role, with the message "Your first job's clearance is free." <code>FirstJobFree</code> went to false and the balance didn't change.</li>
+  <li><b>5-minute wait:</b> RequestRole "tindero" straight after was refused: "You changed jobs recently. Wait 292 more seconds before taking the Tindero job."</li>
+  <li><b>Paid fee:</b> after the wait, taking Tindero charged 60 (ledger "Job fee: tindero -60") and the fund rose by 60.</li>
+  <li><b>Drowning bill, bot nurse:</b> DebugDrown with 10,230 Peso. Nurse Fely carried the player in (about 40 s) and billed 1,534 = 15%. The ledger showed "Health Post bill (15% of your wallet) -1534", the fund went to 1,534, the board updated, and the patient saw the bill in the "done" message.</li>
+  <li><b>10-minute bill cooldown:</b> a second DebugDrown straight after went through Nurse Luz with no bill ("Nurse Luz brought you round.") and no change to the fund.</li>
+  <li><b>Glowstick:</b> RequestItemBuy "glowstick" at the Palengke gave "Glowstick in your bag. -25 Peso." and the fund rose by 25.</li>
+  <li><b>Crates:</b> triggering CrateC's RestockPrompt as a Nars gave "Only the Tindero restocks the Palengke crates&hellip;"</li>
+  <li><b>Board:</b> screenshots above. The post first showed through the middle of the board; it was moved 0.5 studs behind it in both the running server and Edit.</li>
+</ul>
+
+<h2 id="gaps">Gaps and things to check</h2>
+<ul>
+  <li><b>Not tested (needs two players):</b> a player nurse's full share, a passer-by's half, the fumble rate, the shark-caused halving, a ronda raid paying the fund, and the owner-only glowstick pickup.</li>
+  <li><b>The DataStore lifetime total</b> was read and shown (0 at start), but the minute-long flush was not watched in this test. If Studio has API access off, it simply stays at the server total.</li>
+  <li><b>The job board panel and the Palengke glowstick tile weren't screenshotted.</b> Their prompts don't fire from a script in a playtest. The button text change is small; open the board once to check "TAKE FREE" and "TAKE 80".</li>
+  <li><b>The old welcome/tutorial panel</b> still says crates give "a steady Shells payout". It gets replaced in Phase 8.</li>
+  <li><b>No thresholds were crossed</b>, so the 10,000 announcement wasn't seen in play. It uses the same system-chat path as the other notices.</li>
+  <li><b>The playtest's balance changes</b> (drowning bill, glowstick, fee) were saved to the test account's DataStore as usual. No quick-test values were added, and <code>Bodega.AxeDamage = 20</code> from before is still there, to be restored in Phase 7.</li>
+</ul>
+</main>
+</body>
+</html>

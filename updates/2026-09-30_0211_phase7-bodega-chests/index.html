@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Update 2026-09-30: Phase 7, bodega chests</title>
+<style>
+  :root { --ink:#1d2430; --dim:#5b6675; --line:#dde2e8; --bg:#fbfbf9; --accent:#c9485b; --ok:#2f8f6a; --warn:#b7791f; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width:960px; margin:0 auto; padding:32px 16px 64px; }
+  h1 { font-size:26px; margin:0 0 4px; }
+  h2 { font-size:20px; margin:40px 0 8px; padding-top:16px; border-top:1px solid var(--line); }
+  h3 { font-size:16px; margin:20px 0 4px; }
+  .meta { color:var(--dim); margin:0 0 20px; }
+  code { font:13px/1.4 ui-monospace, Consolas, monospace; background:#eef0f3; padding:1px 4px; border-radius:3px; }
+  table { border-collapse:collapse; width:100%; margin:8px 0 16px; font-size:14px; }
+  th, td { text-align:left; vertical-align:top; padding:6px 8px; border-bottom:1px solid var(--line); }
+  th { color:var(--dim); font-weight:600; }
+  .tag { display:inline-block; font-size:12px; font-weight:600; padding:0 6px; border-radius:3px; color:#fff; }
+  .new { background:var(--ok); } .mod { background:#3b6fb6; } .ret { background:#8a6d3b; }
+  .box { border-left:3px solid var(--warn); background:#fff8ec; padding:8px 12px; margin:12px 0; }
+  ul { padding-left:22px; }
+  nav a { margin-right:12px; }
+  figure.solo { margin:12px 0 20px; }
+  .pair { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:12px 0 20px; }
+  .pair figure { margin:0; }
+  @media (max-width:700px) { .pair { grid-template-columns:1fr; } }
+  figure img { width:100%; height:auto; border:1px solid var(--line); border-radius:4px; display:block; }
+  figcaption { color:var(--dim); font-size:13px; margin-top:4px; }
+</style>
+</head>
+<body>
+<main>
+<p><a href="../index.html">&larr; all updates</a></p>
+<h1>Phase 7: bodega chests</h1>
+<p class="meta">2026-09-30 &middot; place "[New Map]Isla Marahuyo" (placeId 128146022575640) &middot; follows <a href="../2026-09-30_0146_phase6-shark-bait-galit/index.html">Phase 6</a> and <a href="../2026-09-30_0159_seabed-outer-sea/index.html">the outer-sea fix</a> &middot; plan: "Isla Marahuyo Roadmap" artifact (https://claude.ai/artifact/EHMUmaSk3nCsyiZbR6iLPT)</p>
+
+<nav><a href="#ask">What was asked</a><a href="#what">What changed</a><a href="#files">All changes</a><a href="#tests">Testing</a><a href="#gaps">Gaps</a></nav>
+
+<div class="box"><b>Not live yet.</b> Like Phases 1 to 6, this reaches players only when the place is published from Studio.</div>
+
+<h2 id="ask">What was asked</h2>
+<ul>
+  <li>The free bodega becomes a small box. The next tiers are stone, steel and gold, all the size of a chest, because today's big bodega is exposed to too many players.</li>
+  <li>Locked on 29 Sep: tiers add storage capacity, and Ginto is bought with Peso or a pass. The roadmap also asked to keep <code>OwnerId</code> and a <code>PrimaryPart</code> on the models (the Phase 3 banga attaches to those), to move Stone Bodega pass owners up to Bakal as goodwill, and to restore the quick-test <code>Bodega.AxeDamage = 20</code>.</li>
+  <li>The four models were built first and shown to the owner, who approved them ("continue phase 7") before they were wired in.</li>
+</ul>
+
+<h2 id="what">What changed</h2>
+
+<h3>1. Four chests instead of huts</h3>
+<figure class="solo"><img src="images/chests-lineup.png" alt="Four chests on the beach beside the test avatar: a wooden crate, a stone chest with a carved sun, a steel strongbox with a padlock, and a domed gold chest with gems"><figcaption>Left to right: Kahon, Bato, Bakal, Ginto, with the test avatar for scale. The chests come up to about the hip.</figcaption></figure>
+<div class="pair">
+<figure><img src="images/chest-kahon.png" alt="Kahon: a wooden crate with dark corner posts, cross braces, rope handles and a rope lashed over the lid"><figcaption><b>Kahon</b>: a plain wooden crate with rope handles.</figcaption></figure>
+<figure><img src="images/chest-bato.png" alt="Bato: a stone chest with pale pillars, a sunken dark panel with a carved sun, and a stepped lid"><figcaption><b>Bato</b>: a carved stone chest.</figcaption></figure>
+<figure><img src="images/chest-bakal.png" alt="Bakal: a diamond-plate steel box with black riveted straps, a brass padlock and side handles"><figcaption><b>Bakal</b>: a riveted steel strongbox.</figcaption></figure>
+<figure><img src="images/chest-ginto.png" alt="Ginto: a domed chest of dark red wood under gold bands, with a ruby lock plate and emerald studs"><figcaption><b>Ginto</b>: gold-plated. It glows and sparkles, so thieves notice it.</figcaption></figure>
+</div>
+<table>
+<tr><th>Tier (key)</th><th>Health</th><th>Storage</th><th>Price</th><th>Upgrade from the tier below</th><th>Model (studs)</th></tr>
+<tr><td>Kahon (<code>wood</code>)</td><td>100</td><td>30 slots</td><td>free</td><td>&ndash;</td><td>4.6 &times; 2.6 &times; 3.4</td></tr>
+<tr><td>Bato (<code>stone</code>)</td><td>200</td><td>60 slots</td><td>3,000</td><td>3,000</td><td>4.6 &times; 3.0 &times; 3.4</td></tr>
+<tr><td>Bakal (<code>steel</code>)</td><td>350</td><td>120 slots</td><td>8,000, or the Stone Bodega pass</td><td>5,000</td><td>4.6 &times; 2.8 &times; 3.4</td></tr>
+<tr><td>Ginto (<code>gold</code>)</td><td>500</td><td>250 slots</td><td>20,000, or the new Ginto pass</td><td>12,000</td><td>4.6 &times; 3.2 &times; 3.4</td></tr>
+</table>
+<ul>
+  <li>The tier keys stay <code>wood</code> and <code>stone</code> from the hut days, so saved profiles need no migration: a player who bought stone has a Bato now.</li>
+  <li><b>Upgrades go one tier at a time and cost the difference</b>, so Ginto costs 20,000 in total however it is reached. Nothing asked for skipping tiers, and the UI stays one button.</li>
+  <li>Each model is built from parts. Its <code>PrimaryPart</code> is an invisible hitbox, and its pivot is the middle of its base, facing &minus;Z.</li>
+</ul>
+
+<h3>2. Opening, placing, and upgrading in place</h3>
+<div class="pair">
+<figure><img src="images/placed-bakal.png" alt="The placed Bakal with the owner's green outline, a tag reading DARKxGRey's bodega · Bakal, and an Open prompt reading DARKxGRey's bodega (Bakal) 350/350"><figcaption>Placed: the tag reads "DARKxGRey's bodega &middot; Bakal". The owner sees the green outline and an <b>Open</b> prompt on the chest itself.</figcaption></figure>
+<figure><img src="images/placed-bakal-banga.png" alt="The Bakal on the beach with the clay banga beside its front corner"><figcaption>The Phase 3 banga still sets itself down beside the chest's front corner.</figcaption></figure>
+</div>
+<ul>
+  <li><b>Opening:</b> the huts had a storage box inside, with a line-of-sight prompt so the walls enforced "go inside". A chest has no inside, so the <b>Open</b> prompt sits on the chest, with line of sight off (the chest's own lid would block it) and a range of 8. GearHud still shows it to the owner only.</li>
+  <li><b>Placing:</b> the chest goes down 3 studs in front of the player (the huts: 10). It must be at least 10 studs clear of another bodega (the huts: 15). It needs ground within about a stud of level across it. Someone standing within 1.5 studs of where it lands blocks it (the huts: 4).</li>
+  <li><b>Upgrading</b> works from anywhere: a chest that is up is rebuilt as the new tier where it stands, at full health, with its banga. Before, a player had to pack up and place again.</li>
+  <li><b>Pass tiers:</b> owning the Stone Bodega pass (<code>CabinBuilder</code>) now gives Bakal, and <code>GintoBodega</code> gives Ginto. A granted tier that beats the one bought is written into the profile with full health, the first time it applies. That happens on join, or when the pass is bought, since BodegaService listens to the pass attributes. The Ginto pass has id 0 until it is made on the Creator Dashboard in Phase 9, so nobody owns it yet.</li>
+  <li><b>Axe:</b> back to 1 point a swing (the quick-test 20 is gone). A lone thief needs 100 swings on a Kahon and 500 on a Ginto. The axe already measured reach to the hitbox, so a small chest needed no change there.</li>
+</ul>
+<figure class="solo"><img src="images/placed-ginto.png" alt="The same spot after the Ginto pass was switched on: a domed gold chest where the Bakal stood, the banga beside it"><figcaption>After the Ginto pass was switched on in a test: the Bakal was rebuilt as a Ginto on the same spot, 0.00 studs off.</figcaption></figure>
+
+<h3>3. Storage limits</h3>
+<ul>
+  <li>The hoard used to be unlimited. Stowing is now capped at the tier's capacity, counted in the same slots as the bag (an O2 tank is 2, a glowstick 0.2, the binoculars nothing). A full chest refuses with: "Your Bakal is full (120 of 120 slots) -- a Ginto holds 250."</li>
+  <li><b>Nothing is lost:</b> a hoard already over its new limit keeps everything and just takes nothing more until it's under. Bound items (axe, binoculars) are always kept, and a break-in spills everything as before.</li>
+</ul>
+
+<h3>4. The bag's Bodega tab</h3>
+<div class="pair">
+<figure><img src="images/bag-bodega-tab.png" alt="The BAG panel on the BODEGA tab: the first tile is the Bakal chest with 350; the footer bar reads Bakal 2/120 and the info box reads 2 of 120 slots used"><figcaption>The footer bar is now the chest's storage ("Bakal 2/120"). The first tile is your tier's chest, with its health.</figcaption></figure>
+<figure><img src="images/upgrade-confirm.png" alt="An ARE YOU SURE dialog: Upgrade to Ginto? with the gold chest icon, its health and slots, and 12000 Peso, with NO and UPGRADE buttons"><figcaption>UPGRADE asks first, showing the next chest, its health and slots against yours, and the price.</figcaption></figure>
+</div>
+<ul>
+  <li>The footer bar used to be health. It is now storage used, gold, turning red when full. The idle line reads "2 of 120 slots used" instead of "Unlimited storage".</li>
+  <li>The chest tile draws your tier's chest and shows its health. Selecting it gives <b>REPAIR</b> (when damaged and at the chest) and <b>UPGRADE</b> (whenever there is a next tier, confirmed through the kit's dialog). Before, the button only knew about stone.</li>
+  <li>New icons <code>ReplicatedStorage.ItemIcons.bodega_wood / _stone / _steel / _gold</code>. <code>ItemIcon</code> gained an opt-in <code>IconYaw</code> attribute that turns its camera round a model. The chest icons use 75&deg; so they show the front; otherwise the camera saw each chest's side and back. No other icon has the attribute, so none changed.</li>
+</ul>
+<figure class="solo"><img src="images/tier-icons.png" alt="The four chest icons front-on: Kahon with its brace, Bato with the sun, Bakal with the padlock, Ginto with gems"><figcaption>The four icons as the bag and the confirm dialog draw them.</figcaption></figure>
+
+<h2 id="files">All changes</h2>
+<table>
+<tr><th>Instance</th><th></th><th>Change</th></tr>
+<tr><td><code>ServerStorage.ItemAssets.BodegaKahon</code>, <code>BodegaBato</code>, <code>BodegaBakal</code>, <code>BodegaGinto</code></td><td><span class="tag new">new</span></td><td>The four chest models (20&ndash;46 parts each, plus <code>Hitbox</code> as PrimaryPart; its <code>PivotOffset</code> puts the pivot at the base). The Ginto has a PointLight and a <code>GoldSparkle</code> ParticleEmitter.</td></tr>
+<tr><td><code>ReplicatedStorage.ItemIcons.bodega_wood</code>, <code>_stone</code>, <code>_steel</code>, <code>_gold</code></td><td><span class="tag new">new</span></td><td>Icon copies of the chests (no hitbox), with <code>IconYaw = 75</code>.</td></tr>
+<tr><td><code>ReplicatedStorage.ItemConfig</code></td><td><span class="tag mod">edit</span></td><td><code>Bodega.AxeDamage</code> 20 &rarr; 1 and its comment. <code>BodegaTiers</code> rewritten (rank, label, look, asset, maxHealth, capacity, price, passKey) with the new <code>steel</code> and <code>gold</code>. New <code>BodegaTierOrder</code> and <code>NextBodegaTier(key)</code>.</td></tr>
+<tr><td><code>ServerScriptService.BodegaService</code></td><td><span class="tag mod">edit</span></td><td>Chest-sized placement numbers. The walk-in <code>StorageBox</code> is gone, and the Open prompt is on the hitbox. <code>spawnFor</code> is split into <code>build</code> plus placement. New <code>passTier</code>, <code>tierOf</code>, <code>publishTier</code> (attributes <code>BodegaTier</code>, <code>BodegaMaxHealth</code>, <code>BodegaCapacity</code>, <code>BodegaHealth</code>) and <code>rebuildInPlace</code>. The <code>"upgrade"</code> action replaces <code>"upgradeStone"</code>. Join waits for pass ownership, and pass attributes are listened to. New name tag, prompt text and startup line. Studio-only hook <code>ServerStorage.DebugBodega</code>: <code>(player, "tier", key, health?)</code> and <code>(player, "report")</code>.</td></tr>
+<tr><td><code>ServerScriptService.InventoryService</code></td><td><span class="tag mod">edit</span></td><td>New <code>bodegaRoomFor</code>. Stowing (<code>RequestTransfer "toBodega"</code>) stops at the capacity and says so. Comments updated.</td></tr>
+<tr><td><code>StarterPlayer.StarterPlayerScripts.BagHud</code></td><td><span class="tag mod">edit</span></td><td>The Bodega tab footer shows storage. The chest tile is redrawn per tier. UPGRADE opens a <code>K.confirm</code> and sends <code>"upgrade"</code>. It listens to <code>BodegaTier</code> and <code>BodegaCapacity</code>.</td></tr>
+<tr><td><code>ReplicatedStorage.ItemIcon</code></td><td><span class="tag mod">edit</span></td><td>Optional <code>IconYaw</code> attribute on a source turns the camera about the vertical.</td></tr>
+<tr><td><code>ServerScriptService.GamePassService</code></td><td><span class="tag mod">edit</span></td><td>New <code>IsLoaded(player)</code>. <code>ApplyPerks</code> mirrors <code>GintoBodega</code> to an attribute. Perk comments updated.</td></tr>
+<tr><td><code>ServerScriptService.MonetizationConfig</code></td><td><span class="tag mod">edit</span></td><td><code>CabinBuilder</code> is now named and described as "Bakal na Bodega" in the game's config; the Dashboard name is still "Stone Bodega" until Phase 9. New <code>GintoBodega</code> entry (id 0, suggested 299 R$). Nothing lists passes to players, so the id-0 entry is inert.</td></tr>
+<tr><td><code>ServerScriptService.AdminService</code></td><td><span class="tag mod">edit</span></td><td>The admin test-pass switch (<code>SetTestPass</code>) accepts <code>CabinBuilder</code> and <code>GintoBodega</code>.</td></tr>
+<tr><td><code>ServerStorage._Retired.ServerStorage_ItemAssets__Bodega</code>, <code>ServerStorage_ItemAssets__BodegaStone</code>, <code>ReplicatedStorage_ItemIcons__bodega</code></td><td><span class="tag ret">retired</span></td><td>The old wooden hut, the stone storehouse and the hut icon. Every script was scanned first; only BagHud used the icon, and that line was rewritten.</td></tr>
+</table>
+<p>No new remotes. Every edited script was compile-checked with <code>loadstring</code>. The preview chests, the avatar stand-in and the temporary icon check panel used for screenshots were removed, and the Edit clock was set back to 00:00.</p>
+
+<h2 id="tests">Testing</h2>
+<p>Two playtests on MERS_Cov2 (display name DARKxGRey), each ended by kicking the player from the Server; Studio was then stopped from Play mode with nobody in it. There were no script errors.</p>
+<ul>
+  <li><b>Pass goodwill, for real:</b> the test account owns the Stone Bodega pass, so on join it was moved to Bakal: 350 health, 120 slots, its hoard using 2. This is the intended migration, and it stays.</li>
+  <li><b>Placing:</b> the Bakal went down 4.7 studs in front of the player, its lowest part exactly at ground height (4.82). It had its banga, the Open prompt, <code>OwnerId</code>, and <code>AtBodega</code> on.</li>
+  <li><b>Bodega tab:</b> read "Bakal 2/120" and "2 of 120 slots used", with the Bakal chest on the tile.</li>
+  <li><b>Upgrade refused:</b> with 4,414 Peso, <code>"upgrade"</code> gave "The Ginto costs 12000 Peso more than your Bakal." and the tier stayed Bakal.</li>
+  <li><b>Capacity:</b> one glowstick packed out, the session's capacity lowered to 1.9 (1.8 stored). Stowing it was refused ("Your Bakal is full&hellip;"). With 120 back, it stowed. The hoard is unchanged.</li>
+  <li><b>Pass grant and rebuild in place:</b> <code>SetTestPass GintoBodega on</code> gave "Your pass gives you the Ginto bodega -- 500 health, 250 slots." The chest was rebuilt as a Ginto 0.00 studs from where the Bakal stood, with its banga.</li>
+  <li><b>Pack and place again</b> as a Ginto: packed in 10 s ("Everything inside is safe"), then placed again at the same spot.</li>
+  <li><b>Put back:</b> test pass off, then <code>DebugBodega "tier", "steel", 350</code>. The chest rebuilt as a Bakal, 350/350, 120 slots. Peso was 4,414 before and after.</li>
+  <li><b>Found by testing and fixed:</b> the "full" message quoted the tier's capacity instead of the number actually checked. The icon camera showed each chest's back and side, fixed with <code>IconYaw</code> and checked in the bag in the second playtest.</li>
+</ul>
+
+<h2 id="gaps">Gaps and things to check</h2>
+<ul>
+  <li><b>A paid upgrade was not bought.</b> The refusal was tested, and the pass path runs the same tier write and in-place rebuild. A real purchase was skipped because the money goes to the Community Fund, whose lifetime total is saved across all servers, so a test purchase would add real money to it.</li>
+  <li><b>Needs two players:</b>
+    <ul>
+      <li>chopping a chest with the axe (now 1 per swing), the break-open spill at chest size, and repairs;</li>
+      <li>whether the smaller spacing (10 studs) is too tight next to someone else's chest;</li>
+      <li>a second bodega (the Extra Bodega Slot pass): two chests sharing one hoard and health should still work, since the code path is unchanged.</li>
+    </ul></li>
+  <li><b>Not tested:</b> the Open prompt itself was not pressed (the bag was opened with the same remote the prompt sends). Placing on slopes wasn't tried: the rise allowed across a chest is about a stud, which may refuse some sloped sand that a hut accepted.</li>
+  <li><b>Over-limit hoards</b> were not tried with a real big hoard. The rule (keep everything, take nothing more) is in <code>bodegaRoomFor</code>.</li>
+  <li><b>Phase 9 to-dos:</b> rename the Stone Bodega pass on the Dashboard ("Bakal na Bodega"), and create the Ginto pass, then put its id in <code>MonetizationConfig.GintoBodega</code>.</li>
+  <li><b>Old style left:</b> the floating name tag and life bar over a chest are still the old native-instance style. They weren't part of the approved kit screens, but they could be restyled.</li>
+  <li><b>Quick-test values:</b> <code>Bodega.AxeDamage = 20</code> is gone (now 1). No new ones were added.</li>
+</ul>
+</main>
+</body>
+</html>

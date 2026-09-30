@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Update 2026-09-30: Phase 9, gamepasses and the website</title>
+<style>
+  :root { --ink:#1d2430; --dim:#5b6675; --line:#dde2e8; --bg:#fbfbf9; --accent:#c9485b; --ok:#2f8f6a; --warn:#b7791f; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width:960px; margin:0 auto; padding:32px 16px 64px; }
+  h1 { font-size:26px; margin:0 0 4px; }
+  h2 { font-size:20px; margin:40px 0 8px; padding-top:16px; border-top:1px solid var(--line); }
+  h3 { font-size:16px; margin:20px 0 4px; }
+  .meta { color:var(--dim); margin:0 0 20px; }
+  code { font:13px/1.4 ui-monospace, Consolas, monospace; background:#eef0f3; padding:1px 4px; border-radius:3px; }
+  table { border-collapse:collapse; width:100%; margin:8px 0 16px; font-size:14px; }
+  th, td { text-align:left; vertical-align:top; padding:6px 8px; border-bottom:1px solid var(--line); }
+  th { color:var(--dim); font-weight:600; }
+  .tag { display:inline-block; font-size:12px; font-weight:600; padding:0 6px; border-radius:3px; color:#fff; }
+  .new { background:var(--ok); } .mod { background:#3b6fb6; } .ret { background:#8a6d3b; }
+  .box { border-left:3px solid var(--warn); background:#fff8ec; padding:8px 12px; margin:12px 0; }
+  ul { padding-left:22px; }
+  nav a { margin-right:12px; }
+  figure.solo { margin:12px 0 20px; }
+  .pair { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:12px 0 20px; }
+  .pair figure { margin:0; }
+  @media (max-width:700px) { .pair { grid-template-columns:1fr; } }
+  figure img { width:100%; height:auto; border:1px solid var(--line); border-radius:4px; display:block; }
+  figcaption { color:var(--dim); font-size:13px; margin-top:4px; }
+  .scroll { overflow-x:auto; }
+</style>
+</head>
+<body>
+<main>
+<p><a href="../index.html">&larr; all updates</a></p>
+<h1>Phase 9: gamepasses, products and the website</h1>
+<p class="meta">2026-09-30 &middot; place "[New Map]Isla Marahuyo" (placeId 128146022575640) &middot; follows <a href="../2026-09-30_0847_phase8-gabay-tutorial/index.html">Phase 8</a> &middot; plan: "Isla Marahuyo Roadmap" artifact (https://claude.ai/artifact/EHMUmaSk3nCsyiZbR6iLPT)</p>
+
+<nav><a href="#ask">What was asked</a><a href="#what">What changed</a><a href="#dashboard">Dashboard to-dos</a><a href="#files">All changes</a><a href="#tests">Testing</a><a href="#gaps">Gaps</a></nav>
+
+<div class="box"><b>Not live yet, and partly waiting on you.</b> Like Phases 1 to 8, this reaches players only when the place is published. Five new passes and two new products are wired in the game with id 0: they only go on sale once you create them on the Creator Dashboard and their ids are filled in (<a href="#dashboard">the list</a>). Until then nobody sees them, except in Studio.</div>
+
+<h2 id="ask">What was asked</h2>
+<ul>
+  <li>Original request: "remove and add new gamepass, remove old one that no longer will work on the new game mechanics, add ones that you think player will buy that will earn us real money".</li>
+  <li>The roadmap's Phase 9 (accepted with every recommendation on 29 Sep): retire, repurpose and add passes and developer products, then refresh the website and the ad scripts. Its table: Kasama VIP 2&times; &rarr; 1.5&times; plus a free job fee a day and a gold nametag (announced in-game); Stone Bodega renamed Bakal na Bodega; Bangkero Speed cut; Instant Restock likely cut; the Sigla Shells packs renamed to Peso and resized to the new wage; the three coded id-0 gear passes created; and new: Pating skins, Permanenteng Lisensya, Ginto na Bodega, Tawag ng Diwata and Pista Ngayon. Not sold, by design: a Lung Coral speed-up (sells air) or a paid Mutya hint (pay-to-win). Pet colours wait for pets (Phase 5b).</li>
+  <li>This session was "continue phase 9". Nothing of Phase 9 had been built before it.</li>
+</ul>
+
+<h2 id="what">What changed</h2>
+
+<h3>1. The catalogue now drives the shops</h3>
+<ul>
+  <li><code>MonetizationConfig</code> is the one list. Each entry now also has a <code>blurb</code>, <code>glyph</code>, <code>order</code>, optional <code>ribbon</code>/<code>neon</code>, <code>shop = false</code> (sold at the Palengke instead) and <code>retired</code> (off sale, id kept so a receipt Roblox is still retrying is honoured).</li>
+  <li><code>MonetizationBootstrap</code> publishes it as <code>ReplicatedStorage.ShopCatalog</code> (<code>Passes</code>/<code>Products</code> folders, one Configuration each with <code>Name, Blurb, Glyph, Order, Ribbon, Neon, Shop, Peso, OnSale, Retired</code>; no ids). The Island Shop and the Palengke's UPGRADES tab build their tiles from it.</li>
+  <li><b>Something without a real id never shows to players.</b> Before, the shop had four hand-copied pass tiles, one of them Bangkero Speed (id 0, so BUY did nothing), and the Palengke showed Malakas na Sulo and Malaking Lambat, also id 0. In Studio, id-0 entries still show with a greyed <b>NO ID</b> button so you can see where they'll appear.</li>
+  <li>The shop now lists <b>every</b> pass that is on sale (it used to show only four of twelve), and ownership shows reliably. <code>GamePassService.ApplyPerks</code> sets <code>Owns_&lt;key&gt;</code> for every pass. The old shop read an attribute named after the key, which was never set for most passes, so OWNED never appeared.</li>
+  <li>The purchase remotes refuse anything not on sale (<code>onSale</code>: real id and not retired).</li>
+</ul>
+<div class="pair">
+<figure><img src="images/shop-passes.png" alt="The Island Shop's passes grid: Kasama VIP (VIP ribbon, OWNED), Permanenteng Lisensya (NO ID), Island Legend (OWNED), Kalangitan Isle, Zipline Pass and Extra Bodega Slot (all OWNED)"><figcaption>Passes, top of the list (the test account owns most passes). Permanenteng Lisensya shows NO ID because it isn't on the Dashboard yet; players won't see it until it is. The left tab highlight still says PESO only because the page was switched by script for the shot.</figcaption></figure>
+<figure><img src="images/shop-skins.png" alt="Further down the passes grid: Bakal and Ginto bodega tiles, then Pating Skin: Uling, Perlas, Ginto (with a green USE button) and Neon (GLOWS ribbon), Custom Title and Sayawan Emote Pack"><figcaption>Further down: the four Pating skins. Ginto is owned here (test switch), so its button reads USE; the one being worn reads IN USE.</figcaption></figure>
+</div>
+<figure class="solo"><img src="images/shop-peso.png" alt="The Island Shop's PESO tab: Peso - Supot +250, Bayong +1,200, Baul +2,800, Kaban +7,000 (BEST VALUE), then Tawag ng Diwata and Pista Ngayon on violet neon tiles with NO ID buttons"><figcaption>The PESO tab (was SHELLS): the resized packs, then the two new products on neon tiles (NO ID until created). Task Reroll and Streak Saver follow below them.</figcaption></figure>
+
+<h3>2. Kasama VIP: 1.5&times; with perks added back</h3>
+<ul>
+  <li><code>ShellsMultiplier</code> is now <code>GamePassService.VIP_MULTIPLIER = 1.5</code> (was 2). 2&times; undid the job-fee and day-wage maths from Phase 1.</li>
+  <li><b>One free job clearance a day</b> (Philippine calendar day). <code>RoleService</code> skips the fee and writes <code>profile.VipFreeJobDay</code>. The board shows TAKE FREE while it's unused (new attribute <code>FreeJobFee</code> = <code>"vip"</code>), and the claim line says "Today's free Kasama VIP clearance used." The player's very first job is free anyway and doesn't spend it.</li>
+  <li><b>Gold VIP nametag</b> (<code>TitleTagService</code>): VIP never hides a title. An earned cave title or a custom title shows in VIP gold, and an empty tag reads "Kasama VIP". Island Legend's gold words still win.</li>
+  <li>Kept: free zipline legs, the VIP bangka tier. The old description promised "a second bodega slot" and a dance emote that the code never gave; the new description only lists what it does.</li>
+  <li><b>Told once in-game:</b> a VIP owner's next join shows an island notice and a toast explaining the change (<code>profile.VipNoticeSeen</code>).</li>
+</ul>
+
+<h3>3. Retired and cut</h3>
+<table>
+<tr><th>What</th><th>Why</th><th>How</th></tr>
+<tr><td>Bangkero Speed pass</td><td>Never created (id 0); a faster bangka mattered less than the rest.</td><td>Removed from the config, <code>ApplyPerks</code> (<code>BoatSpeedBoost</code>), the admin labels and <code>BoatRentalService</code> (<code>SPEED_PASS_MULTIPLIER</code>). Every bangka has one speed.</td></tr>
+<tr><td>Instant Restock (25 R$, id 3712371226)</td><td><b>It was selling nothing.</b> Since Phase 1 only the Tindero restocks crates, and no script reads the <code>InstantRestockCharges</code> it grants.</td><td><code>retired = true</code>: off the shop; a retried receipt still clears.</td></tr>
+<tr><td>Bilao Box (79 R$, id 3712370973)</td><td>None of its 26 cosmetics is ever shown on a character or placed (the 29 Sep review's top risk). The roadmap's table didn't list it; it's retired because it no longer works, which the original request asked for.</td><td><code>retired = true</code>. The shop's ODDS tab hides while it's off sale. The odds table and receipt code stay, in case it returns with cosmetics that work.</td></tr>
+</table>
+
+<h3>4. Resized and renamed</h3>
+<ul>
+  <li><b>Peso packs</b> (keys still <code>ShellsSmall</code>&hellip;, since the ledger and analytics group by them), sized to a wage of about 600 Peso per island day:
+    <table>
+    <tr><th>Robux</th><th>Was</th><th>Now</th><th>Name in game</th></tr>
+    <tr><td>49</td><td>100</td><td>250</td><td>Peso - Supot</td></tr>
+    <tr><td>199</td><td>550</td><td>1,200</td><td>Peso - Bayong</td></tr>
+    <tr><td>399</td><td>1,200</td><td>2,800</td><td>Peso - Baul</td></tr>
+    <tr><td>899</td><td>3,000</td><td>7,000</td><td>Peso - Kaban (BEST VALUE)</td></tr>
+    </table>
+    That is 5.1, 6.0, 7.0 and 7.8 Peso per Robux. The amount granted comes from the game, so the new sizes apply as soon as it's published; the Dashboard names and descriptions still say "Sigla Shells".</li>
+  <li><b>Stone Bodega</b> is "Bakal na Bodega" in the game since Phase 7; the Dashboard name still needs changing.</li>
+  <li><b>Task Reroll</b> (25) and <b>Streak Saver</b> (49) had real ids and working grants, but nothing in the game offered them. They're now in the shop's PESO tab.</li>
+  <li>The shop's wording is Peso throughout (tab PESO, "Send Peso to a friend", money-bag icons instead of shells).</li>
+</ul>
+
+<h3>5. New passes (id 0 until created)</h3>
+<table>
+<tr><th>Key</th><th>Name</th><th>Suggested R$</th><th>What it does</th></tr>
+<tr><td><code>PermanentLicense</code></td><td>Permanenteng Lisensya</td><td>249</td><td>No job clearance, ever (<code>RoleService</code>; <code>FreeJobFee = "license"</code>). The 5-minute wait between jobs and the caps still apply.</td></tr>
+<tr><td><code>PatingUling</code></td><td>Pating Skin: Uling</td><td>149</td><td rowspan="4">Looks only. <code>SharkPlayerService.dressSkin</code> paints the shark: it drops the SurfaceAppearance and sets material and colour from <code>ItemConfig.PatingSkins</code> (Uling: Basalt charcoal; Perlas: Glass pearl-white; Ginto: Foil gold, 0.25 reflectance; Neon: Neon cyan plus a PointLight, which prey can see coming). Owners pick a skin with the shop tile's USE / IN USE button (remote <code>SetPatingSkin</code>; saved as <code>profile.PatingSkin</code>, mirrored to the <code>PatingSkin</code> attribute). A skin whose pass isn't owned is ignored, and a change applies to a shark that is already out.</td></tr>
+<tr><td><code>PatingPerlas</code></td><td>Pating Skin: Perlas</td><td>149</td></tr>
+<tr><td><code>PatingGinto</code></td><td>Pating Skin: Ginto</td><td>199</td></tr>
+<tr><td><code>PatingNeon</code></td><td>Pating Skin: Neon</td><td>249</td></tr>
+<tr><td><code>GintoBodega</code></td><td>Ginto na Bodega</td><td>299</td><td>Already wired in Phase 7 (gold chest straight away). Now has shop text.</td></tr>
+<tr><td><code>BrightBeam</code>, <code>MalakingLambat</code>, <code>DiverBag</code></td><td>Malakas na Sulo, Malaking Lambat, Kaban ng Dagat</td><td>129 / 179 / 149</td><td>Already coded (brighter beam, 100-stud net, biggest bag). The roadmap chose to create them. They sell on the Palengke's UPGRADES tab (<code>shop = false</code>), and Kaban ng Dagat got a tile there too (<code>ItemConfig.PassItems</code>). Their "flagged" notes were replaced by the roadmap decision.</td></tr>
+</table>
+<p>The roadmap named Great White, Hammerhead, Butanding and Neon skins. Recolouring the existing textured mesh barely shows (the tint only reaches the white belly; tried first). The current shark already reads as a great white, and a hammerhead or spotted whale shark needs its own mesh or texture. So the four skins are the ones a material change can do well. The lineup below was rendered from the real mesh in Studio.</p>
+<figure class="solo"><img src="images/pating-skins.png" alt="Five sharks side by side and labelled: Default (textured grey), Uling (charcoal), Perlas (pearl white), Ginto (gold foil), Neon (glowing cyan)"><figcaption>The default shark and the four skins, from the real <code>SharkAssets.SharkMesh</code> (Studio, noon light).</figcaption></figure>
+<div class="pair">
+<figure><img src="images/ginto-underwater.png" alt="A player shark in the Ginto skin swimming underwater at midday, gold with red eyes, the Pating HUD around it"><figcaption>In a playtest: the test account as a Pating wearing Ginto, underwater off the south coast. The eyes still work on a skinned mesh.</figcaption></figure>
+<figure><img src="images/neon-underwater.png" alt="The same shark switched to the Neon skin, cyan, with an AI shark swimming past in the background"><figcaption>Switched to Neon mid-job from the shop tile: it changes at once. By day the water dulls the glow; at night it's a beacon. An AI shark swims past behind.</figcaption></figure>
+</div>
+
+<h3>6. New developer products (id 0 until created)</h3>
+<ul>
+  <li><b>Tawag ng Diwata</b> (<code>TawagNgDiwata</code>, 99): calls a Mutya for the whole server. New <code>ServerStorage.MutyaSummon</code> BindableFunction in <code>RareFindService</code>. With nothing live it surfaces at once ("<i>Name</i> called on the Diwata!", then the usual surfaced notice with the area). With one live, it goes to the front of the queue and surfaces 5 s after that one is claimed or dissolves; the rest of the queue keeps its 20-minute gaps behind it. <b>Everyone hears the area at the same moment as the buyer</b>, so it buys the server a Mutya, not a head start. If the summon fails the receipt stays unprocessed, so nobody is charged.</li>
+  <li><b>Pista Ngayon</b> (<code>PistaNgayon</code>, 149): <code>FiestaEventService.StartPista(600)</code> adds +0.5 to everyone's earned-Peso multiplier for 10 minutes (another purchase adds 10 minutes, capped at an hour ahead; mirrored to <code>workspace.PistaBoostUntil</code>), and puts 1,000 Peso into the Kaban ng Barangay (new fund group "Pista Ngayon"). The island is told who threw it. It stacks by addition: a VIP on a Saturday in a Pista gets 1.5 &times; (1.5 + 0.5 + the month's bonus). Bought Peso packs are never multiplied.</li>
+  <li>Product grants moved into one <code>grant()</code> function, shared by the receipt handler and a new Studio-only hook, <code>ServerStorage.DebugProduct:Fire(player, productKey)</code>, which runs the real grant with no Robux and no id.</li>
+</ul>
+
+<h3>7. The website</h3>
+<p><code>D:\GitHubRepo\IslaMarahuyo\index.html</code> caught up with Phases 1 to 9 (not pushed; git isn't installed):</p>
+<ul>
+  <li>Hero chip 5 &rarr; 6 jobs; the surface cards mention job gear, glowsticks by the piece and the free first job.</li>
+  <li>Cave: Lung Corals are carried home and cured; "It caves in every day" became five to ten cave-ins with a warning and a dig-out; the Kristal card became a Mutya card (the Kristal stays in Zone 04); "Five deep runs" became six with green/red stone markers.</li>
+  <li>Pating: dash and backup merged into one card; a new "Galit on bait" card; Shark Poison 100 &rarr; 250.</li>
+  <li>Jobs: "Six jobs", the clearance fee and free first job, Tambay as the no-job state, the Nars's 15% bill, the Tindero's crates and 450 cap, and a new Maninisid card. The "Out of air?" card moved under the grid as a line.</li>
+  <li>Law: the four bodega chests, and only a Tambay carries the axe. Rhythm: Gabay added to the tasks card.</li>
+  <li>Passes: VIP's new perks, Stone Bodega &rarr; Bakal na Bodega, and the shelf line now lists the Peso packs, Task Reroll and Streak Saver. <b>The new passes are not on the site</b>: add them once they're on sale.</li>
+  <li>Checked in the browser at phone width (375 px): no sideways overflow. The pane was too narrow for a useful desktop screenshot.</li>
+</ul>
+
+<h2 id="dashboard">Dashboard to-dos (only the owner can do these)</h2>
+<ol>
+  <li>Create the passes and put each id in <code>ServerScriptService.MonetizationConfig.GamePasses</code>: <code>PermanentLicense</code>, <code>PatingUling</code>, <code>PatingPerlas</code>, <code>PatingGinto</code>, <code>PatingNeon</code>, <code>GintoBodega</code>, <code>BrightBeam</code>, <code>MalakingLambat</code>, <code>DiverBag</code>. Names, descriptions and suggested prices are in each entry.</li>
+  <li>Create the developer products and put their ids in <code>DeveloperProducts</code>: <code>TawagNgDiwata</code> (99), <code>PistaNgayon</code> (149).</li>
+  <li>Rename on the Dashboard: "Stone Bodega" &rarr; "Bakal na Bodega"; the four "Sigla Shells" products &rarr; the Peso names and new amounts above; Kasama VIP's description to the new one.</li>
+  <li>Take Instant Restock and Bilao Box off sale on the Dashboard as well (the game already never prompts them).</li>
+  <li>Broadcast License, Audio Customizer and Photo FX were kept. The roadmap said to check their sales before removing any; that needs the Dashboard.</li>
+</ol>
+
+<h2 id="files">All changes</h2>
+<div class="scroll">
+<table>
+<tr><th>Instance</th><th>Change</th><th>Detail</th></tr>
+<tr><td><code>ServerScriptService.MonetizationConfig</code></td><td><span class="tag mod">edit</span></td><td>Header on the catalogue/shop rule; display fields on every entry; VIP text; new <code>PermanentLicense</code>, four <code>Pating*</code> skins; <code>BangkeroSpeed</code> removed; gear passes <code>shop = false</code> with the roadmap note; packs renamed/resized with <code>order</code>; <code>InstantRestock</code>, <code>BilaoBox</code> <code>retired</code>; new <code>TawagNgDiwata</code>, <code>PistaNgayon</code> (<code>seconds = 600, fund = 1000</code>); Task Reroll and Streak Saver get shop text.</td></tr>
+<tr><td><code>ServerScriptService.MonetizationBootstrap</code></td><td><span class="tag mod">edit</span></td><td><code>onSale()</code> guard on both purchase remotes; <code>grant()</code> with the two new products; VIP change notice on join; publishes <code>ReplicatedStorage.ShopCatalog</code>; Studio hook <code>DebugProduct</code>.</td></tr>
+<tr><td><code>ServerScriptService.GamePassService</code></td><td><span class="tag mod">edit</span></td><td><code>VIP_MULTIPLIER = 1.5</code>; <code>Owns_&lt;key&gt;</code>, <code>KasamaVIP</code>, <code>PermanentLicense</code> attributes; <code>BoatSpeedBoost</code> removed; perk list comment.</td></tr>
+<tr><td><code>ServerScriptService.RoleService</code></td><td><span class="tag mod">edit</span></td><td><code>phDay</code>, <code>feeWaiver</code>, <code>M.RefreshFreeFee</code>; the waiver in <code>Claim</code> and its fee lines; refresh on join, on <code>Owns_KasamaVIP</code>/<code>Owns_PermanentLicense</code> changes, and at the Philippine day change.</td></tr>
+<tr><td><code>StarterPlayer.StarterPlayerScripts.RoleHud</code></td><td><span class="tag mod">edit</span></td><td>TAKE FREE also when <code>FreeJobFee</code> is set.</td></tr>
+<tr><td><code>ServerScriptService.TitleTagService</code></td><td><span class="tag mod">edit</span></td><td><code>VIP_GOLD</code>; VIP colours earned/custom titles gold, or shows "Kasama VIP"; listens to <code>KasamaVIP</code>.</td></tr>
+<tr><td><code>ServerScriptService.SharkPlayerService</code></td><td><span class="tag mod">edit</span></td><td><code>dressSkin()</code> called from <code>embody</code>; in <code>Init</code>: remote <code>SetPatingSkin</code>, load <code>PatingSkin</code> on join.</td></tr>
+<tr><td><code>ReplicatedStorage.ItemConfig</code></td><td><span class="tag mod">edit</span></td><td><code>PatingSkins</code>, <code>PatingSkin(key)</code>, <code>PatingSkinForPass(passKey)</code>; <code>DiverBag</code> added to <code>PassItems</code>.</td></tr>
+<tr><td><code>ServerScriptService.RareFindService</code></td><td><span class="tag mod">edit</span></td><td><code>ServerStorage.MutyaSummon</code> (SUMMON_AFTER 5 s); in <code>tick</code>, a summoned head surfaces 5 s after the live one goes, and republishes.</td></tr>
+<tr><td><code>ServerScriptService.FiestaEventService</code></td><td><span class="tag mod">edit</span></td><td><code>PISTA_BONUS 0.5</code>, <code>PISTA_MAX_SECONDS 3600</code>, <code>StartPista</code>, <code>PistaSecondsLeft</code>; <code>GetMultiplier</code> and the status text include it; "Shells" &rarr; "Peso" in the text.</td></tr>
+<tr><td><code>ServerScriptService.CommunityFundService</code></td><td><span class="tag mod">edit</span></td><td>Fund group "Pista Ngayon".</td></tr>
+<tr><td><code>ServerScriptService.CurrencyService</code></td><td><span class="tag mod">edit</span></td><td>Comment only (1.5&times;, Peso).</td></tr>
+<tr><td><code>ServerScriptService.BoatRentalService</code></td><td><span class="tag mod">edit</span></td><td>Speed-pass multiplier removed.</td></tr>
+<tr><td><code>ServerScriptService.AdminService</code></td><td><span class="tag mod">edit</span></td><td>Test-pass switch labels: VIP text, <code>BangkeroSpeed</code> out; <code>PermanentLicense</code>, four skins, <code>BrightBeam</code>, <code>MalakingLambat</code>, <code>DiverBag</code> in. <code>BoatSpeed</code> dropped from player info.</td></tr>
+<tr><td><code>StarterGui.ShopUI.ShopController</code></td><td><span class="tag mod">edit</span></td><td>Tiles from <code>ShopCatalog</code>; OWNED from <code>Owns_</code>; skin USE / IN USE; NO ID in Studio; Peso naming and icons; ODDS tab only while the Bilao Box is on sale.</td></tr>
+<tr><td><code>StarterPlayer.StarterPlayerScripts.GearHud</code></td><td><span class="tag mod">edit</span></td><td>Palengke pass tiles hidden unless on sale (NO ID in Studio); ownership from <code>Owns_</code>; Kaban ng Dagat glyph.</td></tr>
+<tr><td><code>ReplicatedStorage.ShopCatalog</code></td><td><span class="tag new">new</span></td><td>Folder built at runtime by MonetizationBootstrap.</td></tr>
+<tr><td><code>ServerStorage.MutyaSummon</code>, <code>ServerStorage.DebugProduct</code>, <code>ReplicatedStorage.Remotes.SetPatingSkin</code></td><td><span class="tag new">new</span></td><td>Made at runtime (DebugProduct in Studio only).</td></tr>
+</table>
+</div>
+<p><b>New attributes:</b> player <code>Owns_&lt;passKey&gt;</code>, <code>KasamaVIP</code>, <code>PermanentLicense</code>, <code>FreeJobFee</code>, <code>PatingSkin</code>; workspace <code>PistaBoostUntil</code>. <b>New profile fields:</b> <code>VipFreeJobDay</code>, <code>VipNoticeSeen</code>, <code>PatingSkin</code>. No world or terrain edits; nothing was retired to <code>_Retired</code> (the retired products are config flags).</p>
+
+<h2 id="tests">How it was tested</h2>
+<p>Every edited script passed a <code>loadstring</code> compile check in Edit. Then one solo playtest as MERS_Cov2, which owns most real passes, including Kasama VIP, ended by a kick from the server. No script errors in the output.</p>
+<ul>
+  <li><b>Catalogue:</b> <code>ShopCatalog</code> published 31 entries (21 passes, 10 products). OnSale was true for the 12 created passes and 6 products, and false for the id-0 and retired ones.</li>
+  <li><b>VIP:</b> on join <code>ShellsMultiplier = 1.5</code>, <code>FreeJobFee = "vip"</code>. Taking the Tindero job: "You are the Tindero. Today's free Kasama VIP clearance used." and <code>FreeJobFee</code> cleared.</li>
+  <li><b>Pista Ngayon</b> (via DebugProduct): fund 0 &rarr; 1,000, boost 600 s; a second purchase took the fund to 2,000 and the boost to 1,199 s.</li>
+  <li><b>Tawag ng Diwata:</b> with nothing live, an Epic Mutya surfaced at once. A second call while it was live queued one about 6 minutes out, behind the live one. Expiring the live one made the queued one surface about 5 s later. That test showed the dropdown's countdown wasn't republished at that moment; fixed after the playtest (compile-checked, not re-run).</li>
+  <li><b>Skins:</b> with the Ginto test pass on, <code>SetPatingSkin("Ginto")</code> was accepted and <code>"Neon"</code> (not owned) was refused. As a Pating (DebugPatingJob) the mesh was Foil gold with no SurfaceAppearance and working eyes. Switching to Neon mid-job repainted it with its light. Screenshots above.</li>
+  <li><b>Shop:</b> opened by script for the screenshots above. OWNED, NO ID, USE and the pack amounts render; the ODDS tab is hidden.</li>
+</ul>
+
+<h2 id="gaps">Unverified, known issues, and what to revert</h2>
+<ul>
+  <li><b>No real purchase was made.</b> Product grants ran through the Studio hook, which calls the same <code>grant()</code> as the receipt handler. Pass prompts can't be tested until the ids exist.</li>
+  <li><b>Not seen:</b> the gold VIP nametag on screen (the test account's tag read "AFK" during the test and wasn't looked at; the colour logic was checked by reading the code); the one-time VIP notice (the test account's profile got <code>VipNoticeSeen</code> on this join, so it won't show again there); Permanenteng Lisensya (no id, and the admin switch wasn't used for it); the Pista's effect on a real earning (by code review: <code>CurrencyService</code> reads the same <code>FiestaEventService</code>); the new Palengke Kaban ng Dagat tile.</li>
+  <li><b>Test account changes that persist:</b> <code>VipFreeJobDay</code> is today, so its free VIP clearance is used until the Philippine day changes. <code>VipNoticeSeen</code> is set. <code>PatingSkin</code> was cleared, and both test-pass switches (Ginto, Neon) were turned off. The two test Pista purchases put 2,000 Peso into that server's fund only, which ended with the playtest.</li>
+  <li><b>Hammerhead and Butanding skins</b> from the roadmap weren't made (they need their own mesh or texture); the four material skins stand in.</li>
+  <li><b>The ad scripts</b> (in the 29 Sep review artifact) weren't touched. The Pating ad could show the skins once they're on sale.</li>
+  <li>Long pass names are cut short on the shop tiles ("Permanenteng...", "Kalangitan Isle..."), the same truncation as before.</li>
+  <li>No quick-test values were added.</li>
+</ul>
+</main>
+</body>
+</html>

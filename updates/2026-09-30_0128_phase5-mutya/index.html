@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Update 2026-09-30: Phase 5, Mutya rare finds</title>
+<style>
+  :root { --ink:#1d2430; --dim:#5b6675; --line:#dde2e8; --bg:#fbfbf9; --accent:#c9485b; --ok:#2f8f6a; --warn:#b7791f; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width:960px; margin:0 auto; padding:32px 16px 64px; }
+  h1 { font-size:26px; margin:0 0 4px; }
+  h2 { font-size:20px; margin:40px 0 8px; padding-top:16px; border-top:1px solid var(--line); }
+  h3 { font-size:16px; margin:20px 0 4px; }
+  .meta { color:var(--dim); margin:0 0 20px; }
+  code { font:13px/1.4 ui-monospace, Consolas, monospace; background:#eef0f3; padding:1px 4px; border-radius:3px; }
+  table { border-collapse:collapse; width:100%; margin:8px 0 16px; font-size:14px; }
+  th, td { text-align:left; vertical-align:top; padding:6px 8px; border-bottom:1px solid var(--line); }
+  th { color:var(--dim); font-weight:600; }
+  .tag { display:inline-block; font-size:12px; font-weight:600; padding:0 6px; border-radius:3px; color:#fff; }
+  .new { background:var(--ok); } .mod { background:#3b6fb6; }
+  .box { border-left:3px solid var(--warn); background:#fff8ec; padding:8px 12px; margin:12px 0; }
+  ul { padding-left:22px; }
+  nav a { margin-right:12px; }
+  figure.solo { margin:12px 0 20px; }
+  .pair { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:12px 0 20px; }
+  .pair figure { margin:0; }
+  @media (max-width:700px) { .pair { grid-template-columns:1fr; } }
+  figure img { width:100%; height:auto; border:1px solid var(--line); border-radius:4px; display:block; }
+  figcaption { color:var(--dim); font-size:13px; margin-top:4px; }
+</style>
+</head>
+<body>
+<main>
+<p><a href="../index.html">&larr; all updates</a></p>
+<h1>Phase 5: Mutya, the rare finds of the deep</h1>
+<p class="meta">2026-09-30 &middot; place "[New Map]Isla Marahuyo" (placeId 128146022575640) &middot; follows <a href="../2026-09-30_0112_phase4-cave-ins/index.html">Phase 4: cave-ins</a> &middot; plan: "Isla Marahuyo Roadmap" artifact (https://claude.ai/artifact/EHMUmaSk3nCsyiZbR6iLPT)</p>
+
+<nav><a href="#ask">What was asked</a><a href="#what">What changed</a><a href="#files">All changes</a><a href="#tests">Testing</a><a href="#gaps">Gaps</a></nav>
+
+<div class="box"><b>Not live yet.</b> Like Phases 1 to 4, this reaches players only when the place is published from Studio.</div>
+
+<h2 id="ask">What was asked</h2>
+<ul>
+  <li>Rare items spawn in the deep cave and are announced to everyone. Only a hint is given before one spawns, and it must be collected within a time limit. The finder is announced along with what it does, and a dropdown lists the spawn times. Items could be consumables with several uses, sellable, finder-only, or pets.</li>
+  <li>The owner accepted the plan's recommendations: ship <b>Agimat ng Pating, Hininga ng Diwata, Mata ng Bakunawa, Perlas ng Buwan and Susi ng Yungib</b> first, and hold back flight (Pakpak ng Sarimanok), police immunity (Anting-anting ng Tanod), the Kabibe ng Swerte, and the pets (Phase 5b). A Mutya works for every job except the Pating.</li>
+</ul>
+
+<h2 id="what">What changed</h2>
+
+<h3>1. The schedule, the hints and the announcements</h3>
+<div class="pair">
+<figure><img src="images/mga-mutya.png" alt="The MGA MUTYA dropdown beside a crystal-ball badge reading LIVE 5m53s: in the cave now, an Epic hint and area with time left; coming, three hints with areas and countdowns"><figcaption>Tap the crystal ball for MGA MUTYA: the one out now, and the next three. Each shows a riddle, a broad area and a countdown, in its rarity colour.</figcaption></figure>
+<figure><img src="images/mga-mutya-yours.png" alt="The same dropdown scrolled down: Sa iyo (yours) lists Agimat ng Pating x3 and Mata ng Bakunawa x2 with green USE buttons; recent finds lists DARKxGRey — Susi ng Yungib"><figcaption>Scrolled down: your finder-only Mutya with a USE button each, and who found what recently.</figcaption></figure>
+</div>
+<ul>
+  <li>The new <code>RareFindService</code> keeps the next <b>3</b> spawns queued. The first comes <b>10 minutes</b> after a server starts, then one every <b>20&ndash;35 minutes</b>. One is out at a time.</li>
+  <li><b>What surfaces</b> is drawn by rarity: Rare 70, Epic 25, Legendary 5. None of the first five is Legendary, so today it is Rare or Epic. <b>Where:</b> deeper than y&nbsp;&minus;110. Rare in deep junctions and dead ends, Epic in dead ends and the vaults at the end of the deep runs, Legendary only in those vaults (37 / 18 / 6 spawn points). A chamber shut off by a standing cave-in is never used; the new <code>CaveInBeyond</code> attribute lists them.</li>
+  <li><b>Before it spawns</b> only a riddle ("A key for a door the cave closed itself.") and a broad area ("Kailaliman, kanlurang sanga", from depth and compass direction) are shown, never the chamber or the name.</li>
+  <li><b>Announcements</b> (gold chat lines, via <code>IslandNotice</code>):
+    <ul>
+      <li>60 s before a spawn: "A Mutya stirs in &hellip; One minute."</li>
+      <li>At spawn: "A Rare Mutya has surfaced in &hellip;! 6 minutes to claim it." Everyone in the cave also hears a low chime.</li>
+      <li>When found: "DARKxGRey found the Susi ng Yungib (Rare): clears a cave-in in one go."</li>
+      <li>If nobody gets there: "The Mutya in &hellip; dissolved. Nobody reached it in time."</li>
+    </ul>
+  </li>
+  <li><b>The badge and dropdown</b> are a new crystal-ball badge in the left status column (<code>MutyaHud</code>). It reads "LIVE 5:53" while one is out, otherwise the time to the next, ringed in its rarity colour. Tapping it opens MGA MUTYA, which scrolls when it is longer than the screen.</li>
+</ul>
+
+<h3>2. Finding one</h3>
+<figure class="solo"><img src="images/mutya-live.png" alt="A cave chamber with a tall cyan light shaft rising from a glowing orb; the prompt reads Mutya (Rare), Kunin; the badge on the left reads LIVE 5m48s"><figcaption>A live Mutya: a glowing orb with a light shaft up to the chamber ceiling. "Kunin" is a 3-second hold.</figcaption></figure>
+<ul>
+  <li>The orb bobs in its rarity colour, with sparkles, a light, and a shaft of light up to the chamber ceiling. It lasts <b>6 minutes</b>.</li>
+  <li>Collecting it is a <b>3 s hold</b> ("Kunin"). A shark hit during the hold, from an AI shark bite or a Pating's lunge or strike (the new <code>SharkHitAt</code> attribute), knocks it out of your hands: "A shark knocked the Mutya out of your hands! Grab it again." A Pating can't take one.</li>
+  <li>The prompt always shows, even next to a dropped item that uses the same key. In testing, a drowned diver's stash lying beside a Mutya hid its prompt completely.</li>
+</ul>
+
+<h3>3. The five Mutya</h3>
+<table>
+<tr><th>Mutya</th><th>Rarity</th><th>Kind</th><th>What it does</th></tr>
+<tr><td>Agimat ng Pating</td><td>Epic</td><td>finder-only, 3 uses</td><td>For 60 s no shark, AI or player, can touch you. AI sharks don't treat you as prey (<code>SharkService</code>), and a Pating's lunge and strike skip you (<code>SharkPlayerService</code>).</td></tr>
+<tr><td>Hininga ng Diwata</td><td>Rare</td><td>finder-only, 2 uses</td><td>Your air doesn't drain for 90 s (<code>BreathService</code>).</td></tr>
+<tr><td>Mata ng Bakunawa</td><td>Rare</td><td>finder-only, 2 uses</td><td>For 3 min the 25 nearest sharks, AI or player (eyes on or off), are outlined red through the rock (Roblox draws at most 31 outlines at once).</td></tr>
+<tr><td>Perlas ng Buwan</td><td>Rare</td><td>sellable find</td><td>Goes in the finds sack and sells for 1,500 Peso at the Palengke, or at a tolda. Lost on drowning like any find.</td></tr>
+<tr><td>Susi ng Yungib</td><td>Rare</td><td>sellable bag item</td><td>Goes in the bag (never refused for a full bag). Use it from the bag within 25 studs of a cave-in and that cave-in clears. It can be dropped, lost on drowning, stolen from a broken bodega, or sold at a tolda. The Palengke never sells one. It has its own small glowing key model for the bag and for drops.</td></tr>
+</table>
+<figure class="solo"><img src="images/mata-outlines.png" alt="A shark outlined in red against the dark, with badges on the left: air, the crystal ball 7m41s, and Hininga 53s"><figcaption>The Mata ng Bakunawa: a shark 169 studs away, outlined red. Below the crystal ball, the working Mutya counts down.</figcaption></figure>
+<ul>
+  <li><b>Finder-only Mutya</b> are kept on the profile (<code>profile.Mutya</code>). They can't be dropped, lost or stolen, and are used with <b>USE</b> in the dropdown. While one is working, a second badge counts it down ("Agimat 58s"). Using one again while it works is refused. They are session effects: rejoining mid-effect ends them.</li>
+  <li><b>Changed from the plan:</b> the plan listed the hotbar. Mutya are used from the dropdown instead, so the hotbar and top bar stay untouched, per the saved UI rule.</li>
+</ul>
+
+<h2 id="files">All changes</h2>
+<table>
+<tr><th>Instance</th><th></th><th>Change</th></tr>
+<tr><td><code>ServerScriptService.RareFindService</code></td><td><span class="tag new">new</span></td><td>Script: schedule, spawn points and areas, the Mutya model, collection with the shark-hit check, awarding by kind, announcements, USE, <code>MutyaJson</code> and <code>MutyaOwnedJson</code>. Studio-only hook <code>ServerStorage.DebugMutya</code> (<code>"spawn", key?</code>; <code>"give", player, key, uses?</code>; <code>"expire"</code>; <code>"reset", player</code>).</td></tr>
+<tr><td><code>StarterPlayer.StarterPlayerScripts.MutyaHud</code></td><td><span class="tag new">new</span></td><td>LocalScript: crystal-ball badge, working-Mutya badge, the MGA MUTYA dropdown, the Mata outlines, the cave chime.</td></tr>
+<tr><td><code>ReplicatedStorage.Remotes.MutyaEvent</code></td><td><span class="tag new">new</span></td><td>RemoteEvent (made by RareFindService): client <code>"use", key</code>; server <code>"chime", position, rarity</code>.</td></tr>
+<tr><td><code>ServerStorage.CaveInClearNear</code></td><td><span class="tag new">new</span></td><td>BindableFunction (made by CaveInService): <code>(position, player) &rarr; label | nil</code>, clearing the nearest standing cave-in within 25 studs. Used by the Susi.</td></tr>
+<tr><td><code>ServerStorage.ItemAssets.SusiKey</code>, <code>ReplicatedStorage.ItemIcons.susi</code></td><td><span class="tag new">new</span></td><td>A small key of 10 parts (slate shaft, bow and teeth, glowing blue gem): the drop model and the bag icon.</td></tr>
+<tr><td><code>ReplicatedStorage.ItemConfig</code></td><td><span class="tag mod">edit</span></td><td>New <code>MutyaRarity</code> and <code>Mutya</code> tables; <code>Items.susi</code> (<code>mutya = true</code>, kept out of the shop by <code>SortedShopItems</code>); <code>Loot.perlasbuwan</code> (sells 1,500); <code>RoleGear.susi</code> (every job but Pating).</td></tr>
+<tr><td><code>ServerScriptService.InventoryService</code></td><td><span class="tag mod">edit</span></td><td>Buying refuses a Mutya item; using the Susi calls <code>CaveInClearNear</code>.</td></tr>
+<tr><td><code>ServerScriptService.CaveInService</code></td><td><span class="tag mod">edit</span></td><td><code>CaveInClearNear</code>; <code>workspace.CaveInBeyond</code> (the chambers each standing plug shuts off); header note.</td></tr>
+<tr><td><code>ServerScriptService.SharkService</code></td><td><span class="tag mod">edit</span></td><td>An Agimat wearer is not prey; a bite sets <code>SharkHitAt</code>.</td></tr>
+<tr><td><code>ServerScriptService.SharkPlayerService</code></td><td><span class="tag mod">edit</span></td><td>An Agimat wearer is not a lunge or strike candidate; a lunge hit and a strike hit set <code>SharkHitAt</code>.</td></tr>
+<tr><td><code>ServerScriptService.BreathService</code></td><td><span class="tag mod">edit</span></td><td>No drain while <code>HiningaUntil</code> is ahead.</td></tr>
+<tr><td><code>ServerScriptService.PlayerProfileService</code></td><td><span class="tag mod">edit</span></td><td>Load default for the new field <code>Mutya</code>.</td></tr>
+<tr><td><code>Workspace.MutyaSpawns.Mutya</code></td><td><span class="tag new">runtime</span></td><td>The live Mutya: Orb (with <code>TakePrompt</code>), Halo, Shaft, ShaftGlow.</td></tr>
+</table>
+<p><b>New attributes:</b> ReplicatedStorage <code>MutyaJson</code>; workspace <code>CaveInBeyond</code>; player <code>MutyaOwnedJson</code>, <code>AgimatUntil</code>, <code>HiningaUntil</code>, <code>MataUntil</code> (server time the effect ends), <code>SharkHitAt</code>. <b>New profile field:</b> <code>Mutya</code>. <b>Tuning</b> (top of RareFindService): <code>FIRST_SPAWN</code> 600 s, <code>GAP_MIN</code>/<code>GAP_MAX</code> 20/35 min, <code>LIVE_SECONDS</code> 360, <code>NOTICE_BEFORE</code> 60, <code>HOLD_SECONDS</code> 3, <code>QUEUE</code> 3, <code>DEEP_Y</code> &minus;110; weights and uses in <code>ItemConfig.Mutya</code>/<code>MutyaRarity</code>. Every edited script was compile-checked with <code>loadstring</code>; nothing was removed from the map.</p>
+
+<h2 id="tests">Testing</h2>
+<p>Two playtests on MERS_Cov2 (display name DARKxGRey), each ended by kicking the player from the Server after <code>DebugMutya "reset"</code> took every Mutya back off the account. (Both kicks left Studio in Play mode with nobody in it, and it was stopped after that.) There were no script errors.</p>
+<ul>
+  <li><b>Schedule:</b> "Mutya online -- first in 10 min, then every 20-35 min; 37/18/6 spawn points". The queue held 3, at 576 s, 2,253 s and 4,186 s, each with a riddle and an area.</li>
+  <li><b>Collect:</b> an Agimat forced up in "Kailaliman, silangang sanga" was taken with a 3 s hold. The notice went to everyone, the finder got a toast, the profile got 3 uses, and the orb was removed.</li>
+  <li><b>Agimat vs real sharks:</b> placed 8 studs from an AI shark in open water, the diver was not bitten in 20 s with the Agimat on. With it off at the same spot: bitten within 1 s. A second USE while it worked was refused. The badge read "Agimat 58s".</li>
+  <li><b>Hininga:</b> underwater in the cave, air went 13.5 &rarr; 9.5 over 4 s without it, and held at 9.2 &rarr; 9.2 over 4 s with it.</li>
+  <li><b>Mata:</b> 25 outlines appeared (the cap) out of 188 sharks; screenshot above.</li>
+  <li><b>Perlas ng Buwan:</b> went into the finds sack. The test diver then ran out of air and drowned, and the Perlas dropped on the cave floor (<code>Dropped_perlasbuwan</code>), as a sellable Mutya should.</li>
+  <li><b>Shark hit during the hold:</b> a hit set one second into the hold gave "A shark knocked the Mutya out of your hands!" and the Mutya stayed. The next clean hold took it.</li>
+  <li><b>Susi:</b> taken into the bag, then used from the bag 13 studs from the Whisper Sump cave-in: "The Susi ng Yungib turns in the rock -- the rubble falls away." That cave-in cleared (another standing one did not), and the Susi was spent.</li>
+  <li><b>Dissolving:</b> a Mata left unclaimed gave "The Mutya in Pinakailaliman, hilagang sanga dissolved. Nobody reached it in time." and was removed.</li>
+  <li><b>Found by testing and fixed:</b> the dropped Perlas's pickup prompt hid the Mutya's prompt (both E, one per key), so the Mutya prompt is now always shown. The found-it notice read "With it, it sells for&hellip;", so the effect texts were reworded.</li>
+</ul>
+
+<h2 id="gaps">Gaps and things to check</h2>
+<ul>
+  <li><b>The natural clock was not watched</b>: the 60 s notice, the first spawn at 10 minutes, and the gaps. The Mutya were forced with the hook. The 60 s notice uses the same path as the other notices that were seen.</li>
+  <li><b>The chime was not heard</b> (no audio in these captures), and whether it plays only in the cave was not checked.</li>
+  <li><b>Not tested:</b> the Agimat against a real Pating player (needs two players; the code path is the one every lunge and strike uses); selling a Perlas ng Buwan or Susi at a tolda; and a Legendary, since none of the first five is one.</li>
+  <li><b>Only one working effect shows</b> on the second badge at a time (the one ending soonest). The dropdown lists each Mutya's own timer.</li>
+  <li><b>Test-only quirk:</b> while a script held the camera (Scriptable), no ProximityPrompt showed on the client. This is not a game issue, but worth knowing for future tests.</li>
+  <li><b>Test account:</b> it drowned once more (the Hininga wore off in the cave), a real 15% bill (5,752 &rarr; 4,890 Peso, saved). No Mutya are left on it, and the dropped Perlas was removed before the kick. No quick-test values are left in the place. <code>Bodega.AxeDamage = 20</code> from before is still there, to be restored in Phase 7.</li>
+</ul>
+</main>
+</body>
+</html>

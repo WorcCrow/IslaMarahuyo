@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Update 2026-09-30: Phase 8, the Gabay tutorial</title>
+<style>
+  :root { --ink:#1d2430; --dim:#5b6675; --line:#dde2e8; --bg:#fbfbf9; --accent:#c9485b; --ok:#2f8f6a; --warn:#b7791f; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width:960px; margin:0 auto; padding:32px 16px 64px; }
+  h1 { font-size:26px; margin:0 0 4px; }
+  h2 { font-size:20px; margin:40px 0 8px; padding-top:16px; border-top:1px solid var(--line); }
+  h3 { font-size:16px; margin:20px 0 4px; }
+  .meta { color:var(--dim); margin:0 0 20px; }
+  code { font:13px/1.4 ui-monospace, Consolas, monospace; background:#eef0f3; padding:1px 4px; border-radius:3px; }
+  table { border-collapse:collapse; width:100%; margin:8px 0 16px; font-size:14px; }
+  th, td { text-align:left; vertical-align:top; padding:6px 8px; border-bottom:1px solid var(--line); }
+  th { color:var(--dim); font-weight:600; }
+  .tag { display:inline-block; font-size:12px; font-weight:600; padding:0 6px; border-radius:3px; color:#fff; }
+  .new { background:var(--ok); } .mod { background:#3b6fb6; } .ret { background:#8a6d3b; }
+  .box { border-left:3px solid var(--warn); background:#fff8ec; padding:8px 12px; margin:12px 0; }
+  ul { padding-left:22px; }
+  nav a { margin-right:12px; }
+  figure.solo { margin:12px 0 20px; }
+  .pair { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:12px 0 20px; }
+  .pair figure { margin:0; }
+  @media (max-width:700px) { .pair { grid-template-columns:1fr; } }
+  figure img { width:100%; height:auto; border:1px solid var(--line); border-radius:4px; display:block; }
+  figcaption { color:var(--dim); font-size:13px; margin-top:4px; }
+</style>
+</head>
+<body>
+<main>
+<p><a href="../index.html">&larr; all updates</a></p>
+<h1>Phase 8: the Gabay tutorial</h1>
+<p class="meta">2026-09-30 &middot; place "[New Map]Isla Marahuyo" (placeId 128146022575640) &middot; follows <a href="../2026-09-30_0211_phase7-bodega-chests/index.html">Phase 7</a> &middot; plan: "Isla Marahuyo Roadmap" artifact (https://claude.ai/artifact/EHMUmaSk3nCsyiZbR6iLPT)</p>
+
+<nav><a href="#ask">What was asked</a><a href="#what">What changed</a><a href="#tracks">The tracks</a><a href="#files">All changes</a><a href="#tests">Testing</a><a href="#gaps">Gaps</a></nav>
+
+<div class="box"><b>Not live yet.</b> Like Phases 1 to 7, this reaches players only when the place is published from Studio.</div>
+
+<h2 id="ask">What was asked</h2>
+<ul>
+  <li>Tutorial cards with a description and a button, covering everything you can do on the island. Starting one walks you through it step by step with an arrow (for example the Mangingisda track). Each finished track pays a reward, and there is also a track on how to be a bad player.</li>
+  <li>Roadmap detail: a Gabay panel replacing the static help panel; guidance in the world and on the UI (an arrow at the screen edge, a pulsing button, a step card like "Hakbang 3/8 &middot; 42 m"); steps verified on the server; each track pays once per account; first join offers "Simulan ang Unang Araw?"</li>
+  <li><b>During the work</b> the owner sent a reference picture of the guide arrow they expected: a row of glowing chevrons along the ground from the player to the target. My first version had a single beam, which I replaced with that chevron trail.</li>
+</ul>
+
+<h2 id="what">What changed</h2>
+
+<h3>1. The first-join offer and the GABAY panel</h3>
+<div class="pair">
+<figure><img src="images/offer.png" alt="A GABAY dialog: Simulan ang Unang Araw? A short walk round the island: the market, the job board, the Health Post, your bodega and the pier. 50 Peso at the end. MAMAYA and SIMULAN buttons"><figcaption>First join (or the first time since the Gabay arrived): "Simulan ang Unang Araw?" SIMULAN starts it; MAMAYA leaves it for later. It's offered once per account.</figcaption></figure>
+<figure><img src="images/gabay-panel.png" alt="The GABAY panel: a grid of cream track cards (Unang Araw, Mangingisda, Maninisid, Lung Coral, Tindero, Nars) each with a coloured strip, title, subtitle, blurb, steps and Peso, a status chip and a START or STOP button"><figcaption>The GABAY panel (the menu's Help entry): one card per track, showing its steps and reward, a status chip (BAGO, GINAGAWA or TAPOS), and START, STOP or ULIT. It scrolls to all nine tracks.</figcaption></figure>
+</div>
+<ul>
+  <li>The old static "Mabuhay! Welcome" panel is retired, and the menu's "Help" entry now opens GABAY. The top bar itself is untouched.</li>
+  <li>The panel is built with the same kit (<code>ReplicatedStorage.UIKit</code>) as the Bag, Palengke and dialogs, so it matches every other panel. That kit is built from native instances, not uploaded images, like all the panels since the 29 Sep redesign.</li>
+  <li>One track is active at a time. Starting another replaces it, STOP drops it, and a finished track can be replayed (ULIT) without paying again.</li>
+</ul>
+
+<h3>2. Guidance: the step card, the chevron trail, the edge arrow and the button pulse</h3>
+<figure class="solo"><img src="images/chevron-trail.png" alt="On the beach: a row of glowing gold chevron marks along the sand from the player to the Bangkaan Pier, a gold marker over the pier reading Bangkaan Pier 48 m, and the step card HAKBANG 5/5 UNANG ARAW, Walk to the Bangkaan Pier, where bangka are hired, 48 m"><figcaption>The chevron trail, built to match the owner's picture: gold "&gt;" marks along the ground, drifting toward the target. A bouncing marker stands over the target with its name and distance, and the step card shows the step.</figcaption></figure>
+<div class="pair">
+<figure><img src="images/step-board.png" alt="On a grassy slope: the step card HAKBANG 1/8 MANGINGISDA, Take the Mangingisda job at the job board, 281 m; chevrons lead off to the right and a gold triangle on the right edge points the way"><figcaption>A target off-screen: the trail heads toward it, and a ▶ on the screen edge points the way (kept at mid-height, clear of the joystick and jump button).</figcaption></figure>
+<figure><img src="images/pulse-lambat.png" alt="The Palengke with the Lambat tile ringed in pulsing orange and an orange pointer bouncing above it"><figcaption>For a step with a button to press, that button pulses: here the Lambat tile, when "Buy a lambat" is the step.</figcaption></figure>
+</div>
+<ul>
+  <li><b>The step card</b> sits under the top bar, between the status column and the shark buttons. It reads "HAKBANG 2/8 &middot; MANGINGISDA", the instruction, the distance, and progress where it applies ("(1/2)", "(2/3)"). Tapping it opens GABAY. When a track ends it shows "TAPOS! &hellip; +N Peso".</li>
+  <li><b>The chevron trail:</b> 13 pairs of neon arms that follow the ground (level with you in the water), drifting at 5 studs a second, up to 42 studs ahead. It fades in by your feet and out at the far end. It is built from parts, so no image had to be uploaded.</li>
+  <li><b>The marker</b> is a bouncing ▼ with the place's name and distance, always on top and visible from any distance.</li>
+  <li><b>The edge arrow</b> is a ▶ turned toward the target when it's off-screen. The kit's font has no "➤", so the first version drew nothing until it was switched to ▶. For a target behind you it points left or right at mid-height.</li>
+  <li><b>The button pulse:</b> an orange ring, a pulsing fill and a bouncing pointer on the button to tap. A plain gold ring was tried first and was lost against the cream Palengke.</li>
+  <li><b>Dynamic targets:</b> "cave" is the nearest of the six cave mouths, "coral" the nearest Lung Coral, and "bodega" your own chest. All other places are fixed map positions, because with streaming a far place may not exist on the client.</li>
+</ul>
+
+<h3>3. Info steps</h3>
+<figure class="solo"><img src="images/info-step.png" alt="The step card HAKBANG 4/4 PATING, Beware of Shark Poison, with a paragraph about Shark Poison and shark bait, and a green OK button"><figcaption>A few steps are just something to know: the card shows the text and an OK button. This is the only kind of step the client can finish, and it pays nothing by itself.</figcaption></figure>
+
+<h2 id="tracks">The tracks</h2>
+<table>
+<tr><th>Track</th><th>Steps (how each is checked)</th><th>Reward</th></tr>
+<tr><td>Unang Araw (first day)</td><td>Palengke (visit) &rarr; job board (visit) &rarr; Health Post (visit) &rarr; put your bodega down (<code>BodegaUp</code>) &rarr; Bangkaan Pier (visit)</td><td>50</td></tr>
+<tr><td>Mangingisda</td><td>take the job (<code>Role</code>) &rarr; buy a lambat (<code>spend:Item_lambat</code>) &rarr; hire a bangka (<code>spend:BoatRental</code>) &rarr; sail past 550 studs, in the boat &rarr; plant the 4 stakes (<code>lambat_set</code>) &rarr; a shark through your net (<code>lambat_catch</code>) &rarr; pick up a catch (<code>lambat_pickup</code>) &rarr; sell at the Palengke (<code>earn:LootSold</code>)</td><td>150</td></tr>
+<tr><td>Maninisid</td><td>take the job &rarr; buy a glowstick <i>and</i> a battery &rarr; reach a cave mouth &rarr; drop a glowstick (<code>glowstick_drop</code>) &rarr; a find taken below y &minus;25 (<code>cave_find</code>) &rarr; back above y &minus;1.5 &rarr; sell</td><td>150</td></tr>
+<tr><td>Lung Coral</td><td>take a coral (<code>coral_pickup</code>) &rarr; reach your bodega (<code>AtBodega</code>) &rarr; into the banga (<code>coral_banga</code>) &rarr; info: the hourglass badge (pulsed)</td><td>100</td></tr>
+<tr><td>Tindero</td><td>take the job &rarr; restock 3 times (<code>quest:VendorRestock</code>) &rarr; closing pay (<code>earn:MarketShift</code>)</td><td>80</td></tr>
+<tr><td>Nars</td><td>take the job &rarr; go to the Health Post &rarr; get paid for a revive (<code>earn:NurseWork</code>)</td><td>80</td></tr>
+<tr><td>Pulis</td><td>take the job &rarr; patrol to Bantay Tanaw (visit) &rarr; seize a tolda (<code>earn:Confiscation</code>) &rarr; make an arrest (<code>arrest</code>)</td><td>100</td></tr>
+<tr><td>Pating</td><td>take the job &rarr; swim more than 70 studs out of the den &rarr; leap (<code>pating_leap</code>) &rarr; info: Shark Poison and bait</td><td>80</td></tr>
+<tr><td>Pasaway (the bad side)</td><td>buy a tolda from Suki (<code>spend:Item_tolda</code>) &rarr; pitch it (<code>tolda_pitch</code>) &rarr; put something up for sale (<code>tolda_list</code>) &rarr; take the axe to someone's bodega (<code>bodega_swing</code>) &rarr; info: stars, ronda and the Piitan</td><td>100</td></tr>
+</table>
+<p><b>Changed from the plan:</b></p>
+<ul>
+  <li>The Pating's "follow the sense ring" became "swim out of the den" (the sense ring needs another player to smell).</li>
+  <li>Pasaway's "sell a find" became "put something up for sale", and "break a bodega" became "take your axe to someone's bodega" (a counted swing). A sale or a finished break-in needs another player to go along with it.</li>
+  <li>The Nars track's "answer a call" and "play the rhythm" are one step: being paid for a revive.</li>
+</ul>
+
+<h2 id="files">All changes</h2>
+<table>
+<tr><th>Instance</th><th></th><th>Change</th></tr>
+<tr><td><code>ReplicatedStorage.TutorialTracks</code></td><td><span class="tag new">new</span></td><td>ModuleScript: places (fixed positions, the six cave mouths, the three corals), <code>Nearest</code>, the track order and the nine tracks with their steps.</td></tr>
+<tr><td><code>ServerScriptService.TutorialService</code></td><td><span class="tag new">new</span></td><td>Script: progress on <code>profile.Tutorial</code> (<code>offered</code>, <code>done</code>, <code>active</code>, <code>step</code>, <code>count</code>, <code>got</code>). A 0.5 s tick checks visit, role and check steps. It listens to <code>CurrencyService.Observers</code>, <code>QuestService.OnReport</code> and <code>ServerStorage.TutorialEvent</code>, advances steps, and pays each track once (<code>AddShells</code>, source <code>"Tutorial"</code>). It sends the first-join offer. Studio-only hook <code>ServerStorage.DebugTutorial</code>: <code>"reset"</code>, <code>"restore", tbl</code>, <code>"note", key</code>, <code>"step", n</code>, <code>"trace", bool</code>, <code>"dump"</code>.</td></tr>
+<tr><td><code>ServerStorage.TutorialEvent</code></td><td><span class="tag new">new</span></td><td>BindableEvent (made by TutorialService) that services fire with <code>(player, key)</code>.</td></tr>
+<tr><td><code>ReplicatedStorage.Remotes.TutorialState</code>, <code>RequestTutorial</code></td><td><span class="tag new">new</span></td><td>RemoteEvents. The server sends progress (plus <code>offer</code>, <code>started</code>, <code>advanced</code>, <code>finished</code>, <code>reward</code>); the client sends <code>"start", key</code>, <code>"stop"</code>, <code>"ack"</code> (info steps only) or <code>"sync"</code>.</td></tr>
+<tr><td><code>StarterPlayer.StarterPlayerScripts.TutorialController</code></td><td><span class="tag mod">rewrite</span></td><td>The GABAY panel (registered as PanelUtil "help"), the step card, the chevron trail, the target marker, the edge arrow, the button pulse and the first-join offer. It builds <code>PlayerGui.GabayGui</code>, <code>GabayStep</code>, <code>GabayArrow</code> and a client-only <code>workspace.GabayGuide</code>.</td></tr>
+<tr><td><code>ServerScriptService.CurrencyService</code></td><td><span class="tag mod">edit</span></td><td>New <code>CurrencyService.Observers</code>, told <code>(player, signedAmount, source)</code> after every <code>AddShells</code> and <code>TrySpend</code>, each in its own thread so a listener can never break a payment.</td></tr>
+<tr><td><code>ServerScriptService.QuestService</code></td><td><span class="tag mod">edit</span></td><td>New <code>QuestService.OnReport</code>, told about every report.</td></tr>
+<tr><td><code>LambatService</code>, <code>InventoryService</code>, <code>LungCoralService</code>, <code>BlackMarketService</code>, <code>PoliceService</code>, <code>SharkPlayerService</code>, <code>BodegaService</code> (all in ServerScriptService)</td><td><span class="tag mod">edit</span></td><td>One <code>TutorialEvent:Fire</code> at the moment each fact happens: lambat_set, lambat_catch, lambat_pickup; glowstick_drop; coral_pickup, coral_banga; tolda_pitch, tolda_list; arrest; pating_leap; bodega_swing. Nothing else in these services changed.</td></tr>
+<tr><td><code>ServerStorage._Retired.StarterGui__TutorialGui_preGabay</code>, <code>StarterPlayer_StarterPlayerScripts__TutorialController_preGabay</code></td><td><span class="tag ret">retired</span></td><td>The old welcome panel, and a disabled copy of the old controller.</td></tr>
+</table>
+<p>Every edited script was compile-checked with <code>loadstring</code>. <code>MobileUIController</code> still lists <code>TutorialGui</code> in its targets; with that gone it simply finds nothing, which is harmless.</p>
+
+<h2 id="tests">Testing</h2>
+<p>Five short playtests on MERS_Cov2 (display name DARKxGRey), each ended by kicking the player from the Server; Studio was then stopped from Play mode with nobody in it. There were no script errors.</p>
+<ul>
+  <li><b>The offer</b> appeared on join ("Simulan ang Unang Araw?"), and the server marked it offered.</li>
+  <li><b>Unang Araw end to end, on server checks:</b> Palengke, job board and Health Post by teleporting to each; the bodega step by really placing the Kahon/Bakal; the pier by walking onto it. It ended "TAPOS! Unang Araw done. +50 Peso". The balance went 4,414 &rarr; 4,464. The trace showed the reward as an <code>earn:Tutorial</code> fact, which proves the <code>CurrencyService</code> hook.</li>
+  <li><b>Pating, with the track pre-marked done:</b> taking the job (free Studio hook), swimming out of the den, and the real leap each advanced a step. The info step's OK then gave "Pating done again." with no payment.</li>
+  <li><b>An "all" step:</b> faked glowstick and battery purchases showed "(1/2)" and then advanced. A stray client OK on that step did nothing.</li>
+  <li><b>Guidance:</b> 13 chevrons drawn toward the pier, the edge arrow on a target behind the camera, and the Lambat tile pulsing with the Palengke open. Screenshots above.</li>
+  <li><b>Fixed while testing:</b>
+    <ul>
+      <li>The single beam was replaced with the chevron trail from the owner's picture. It was then made bigger and deeper gold, because the pale marks washed out on sand.</li>
+      <li>The edge arrow's "➤" is missing from Fredoka, so it became ▶, kept at mid-height and away from the touch controls.</li>
+      <li>The button ring was too faint and got stronger.</li>
+      <li>The step card once sat under the top bar (its height wasn't known yet) and now follows the top bar.</li>
+    </ul></li>
+  <li><b>Put back:</b> the account's Gabay progress was reset to empty (it had none before), so it will get the offer again. The 50 Peso Unang Araw reward stays on the test account.</li>
+</ul>
+
+<h2 id="gaps">Gaps and things to check</h2>
+<ul>
+  <li><b>Most purchase and money steps were faked in testing</b> (buying a lambat, glowstick, battery or tolda, a bangka hire, selling, shift and nurse pay, a seizure). A test purchase would put real Peso into the Community Fund's cross-server lifetime total. They all come through the <code>CurrencyService</code> hook, which the reward proved, by source names read from the services.</li>
+  <li><b>Needs other players:</b> the Pulis steps (a seizure and an arrest), the Nars bill, Pasaway's axe step, and a lambat catch (an AI shark has to swim through).</li>
+  <li><b>Not played through:</b> Mangingisda, Maninisid, Lung Coral and Tindero. Their facts come from the hooks above, and the <code>quest:</code> path (VendorRestock, SeaHarvest) was not seen firing.</li>
+  <li><b>Lung Coral</b> can't be done by a player whose lungs are already full (3 corals), because the coral refuses them. The card doesn't say so yet.</li>
+  <li><b>Tapping the cards and buttons</b> (START, OK, SIMULAN) wasn't pressed by hand; Studio's touch emulation can't press them. The same remotes were sent instead.</li>
+  <li><b>Straight lines:</b> the chevron trail runs straight at the target, over hills and through walls.</li>
+  <li><b>Pulse pointer clipping:</b> a button in the top row of a scrolling grid may have its pointer clipped.</li>
+  <li>No quick-test values were added.</li>
+</ul>
+</main>
+</body>
+</html>

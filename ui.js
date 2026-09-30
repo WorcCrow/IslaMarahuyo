@@ -63,12 +63,13 @@
   var hudEarn = document.getElementById('hud-earn');
   var bar = document.querySelector('#progress span');
 
+  // Payouts are the Palengke sell prices in ItemConfig.Loot; keep them in step with the game.
   var ZONES = [
-    { to: 1, name: 'Ibabaw · Surface', risk: 'safe', label: 'Safe', earn: 'Boats, palengke, kubo plots' },
-    { to: 15, name: 'Kabibe · Shallows', risk: 'safe', label: 'Safe', earn: '6–7 shells per item · 45 s of air' },
-    { to: 20.5, name: 'Bahura · Reef band', risk: 'low', label: 'Low', earn: '17 shells per item · sonar country' },
-    { to: 40, name: 'Yungib · Cave systems', risk: 'mid', label: 'Moderate', earn: '36–39 shells · 3 Lung Corals hidden' },
-    { to: 999, name: 'Kailaliman · The abyss', risk: 'high', label: 'High · sharks', earn: '81–82 shells · 12× payouts · relics' }
+    { to: 1, name: 'Ibabaw · Surface', risk: 'safe', label: 'Safe', earn: 'Palengke, bangka, job board' },
+    { to: 15, name: 'Kabibe · Shallows', risk: 'safe', label: 'Low', earn: 'Kabibe 10 Peso · 45 s of air' },
+    { to: 20.5, name: 'Bahura · Reef band', risk: 'mid', label: 'Moderate · sharks', earn: 'Bahura coral 26 Peso · lambat nets' },
+    { to: 40, name: 'Yungib · The cave', risk: 'high', label: 'High · air', earn: 'Cave pearl 95 Peso · 3 Lung Corals hidden' },
+    { to: 999, name: 'Kailaliman · Past the last air', risk: 'high', label: 'Extreme', earn: '200–600 Peso · hoards, kristal, Perlas Hollow' }
   ];
 
   function zoneFor(d) {
@@ -81,7 +82,7 @@
 
   function paintHud(depth) {
     var shown = Math.max(0, Math.round(depth));
-    if (shown !== lastNum) {
+    if (hudNum && shown !== lastNum) {
       hudNum.textContent = shown;
       lastNum = shown;
     }
